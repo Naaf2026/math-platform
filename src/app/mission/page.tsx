@@ -2,18 +2,26 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, Flame, Home, Lightbulb, Play, RotateCcw, Sparkles, Target, Trophy, X, XCircle, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Flame, Lightbulb, RotateCcw, Target, Trophy, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import InteractiveQuestionEngine from "@/components/interactive-question-engine";
 
-type Question = { id:string; topicId:string; topic:string; prompt:string; options:string[]; answer:string; explanation:string; difficulty:string; skill:string; points:number };
+type Question = {
+  id:string;
+  topicId:string;
+  topic:string;
+  prompt:string;
+  options:string[];
+  answer:string;
+  explanation:string;
+  difficulty:string;
+  skill:string;
+  points:number;
+  interaction_type?:string|null;
+  question_type?:string|null;
+  hint?:string|null;
+};
 
-const optionStyles = [
-  "border-sky-200 bg-sky-50 hover:border-sky-400 hover:bg-sky-100 hover:shadow-sky-100",
-  "border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 hover:shadow-violet-100",
-  "border-emerald-200 bg-emerald-50 hover:border-emerald-400 hover:bg-emerald-100 hover:shadow-emerald-100",
-  "border-orange-200 bg-orange-50 hover:border-orange-400 hover:bg-orange-100 hover:shadow-orange-100",
-];
-const optionLetters=["A","B","C","D"];
 const topicItems=[
   {name:"Place Value",emoji:"🔢",tone:"bg-sky-100 text-sky-700"},
   {name:"Addition & Subtraction",emoji:"➕",tone:"bg-violet-100 text-violet-700"},
@@ -74,17 +82,17 @@ export default function MissionPage(){
 
           <div className="grid xl:grid-cols-[minmax(0,1fr)_260px]">
             <div className="p-5 sm:p-8 lg:p-10">
-              <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex gap-2"><span className="rounded-full bg-sky-100 px-3 py-1.5 text-xs font-black text-sky-700">{q.topic}</span><span className="rounded-full bg-violet-100 px-3 py-1.5 text-xs font-black text-violet-700">{difficulty}</span></div><span className="rounded-full bg-yellow-100 px-3 py-1.5 text-xs font-black text-orange-700">⭐ +{q.points} XP</span></div>
-              <div className="mt-7 rounded-[1.75rem] border-2 border-slate-100 bg-[#fbfcff] px-5 py-8 text-center sm:px-10 sm:py-12"><p className="mx-auto max-w-3xl text-2xl font-black leading-tight text-[#15233f] sm:text-4xl">{q.prompt}</p><div className="mt-7 inline-flex items-center gap-3 rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-500 shadow-sm ring-1 ring-slate-100"><span className="text-2xl">{topicEmoji}</span><span>Take your time · Think step by step</span><span>💡</span></div></div>
+              <div key={q.id} className="question-enter">
+                <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex gap-2"><span className="rounded-full bg-sky-100 px-3 py-1.5 text-xs font-black text-sky-700">{q.topic}</span><span className="rounded-full bg-violet-100 px-3 py-1.5 text-xs font-black text-violet-700">{difficulty}</span></div><span className="rounded-full bg-yellow-100 px-3 py-1.5 text-xs font-black text-orange-700">⭐ +{q.points} XP</span></div>
+                <div className="mt-7 rounded-[1.75rem] border-2 border-slate-100 bg-[#fbfcff] px-5 py-8 text-center sm:px-10 sm:py-12"><p className="mx-auto max-w-3xl text-2xl font-black leading-tight text-[#15233f] sm:text-4xl">{q.prompt}</p><div className="mt-7 inline-flex items-center gap-3 rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-500 shadow-sm ring-1 ring-slate-100"><span className="text-2xl">{topicEmoji}</span><span>Take your time · Think step by step</span><span>💡</span></div></div>
+                <InteractiveQuestionEngine question={q} selected={selected} disabled={Boolean(selected)||saving} onAnswer={choose}/>
+              </div>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">{q.options.map((option,index)=>{const isSelected=selected===option,isCorrect=option===q.answer;let cls=optionStyles[index%optionStyles.length];if(selected&&isCorrect)cls="border-emerald-400 bg-emerald-100 ring-4 ring-emerald-100 shadow-emerald-100";else if(selected&&isSelected)cls="border-rose-400 bg-rose-100 ring-4 ring-rose-100 shadow-rose-100";return <button key={option} onClick={()=>choose(option)} disabled={Boolean(selected)||saving} className={`group relative flex min-h-[82px] items-center gap-4 rounded-2xl border-2 px-4 py-3 text-left font-black text-[#15233f] shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg disabled:cursor-default disabled:hover:translate-y-0 ${cls}`}><span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-base font-black shadow-sm ring-1 ring-slate-200">{optionLetters[index]}</span><span className="flex-1 text-lg sm:text-xl">{option}</span>{selected&&isCorrect?<CheckCircle2 className="text-emerald-600" size={27}/>:selected&&isSelected?<XCircle className="text-rose-600" size={27}/>:<span className="h-6 w-6 rounded-full border-2 border-white bg-white/70 shadow-sm"/>}</button>})}</div>
-
-              {selected&&<div className={`mt-5 rounded-2xl border-2 p-5 ${selected===q.answer?"border-emerald-200 bg-emerald-50":"border-rose-200 bg-rose-50"}`}><div className="flex items-start gap-3">{selected===q.answer?<CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600" size={26}/>:<XCircle className="mt-0.5 shrink-0 text-rose-600" size={26}/>}<div><p className={`text-lg font-black ${selected===q.answer?"text-emerald-700":"text-rose-700"}`}>{selected===q.answer?"Excellent! You got it! 🎉":`Good try! The correct answer is ${q.answer}.`}</p><p className="mt-1 text-sm font-bold leading-6 text-slate-600">{q.explanation}</p></div></div></div>}
               {error&&<p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm font-bold text-amber-700">{error}</p>}
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="inline-flex items-center gap-2 text-xs font-bold text-slate-400"><Lightbulb size={16} className="text-yellow-500"/> Mistakes are part of learning!</div>{selected&&<button onClick={next} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-orange-500 px-7 py-4 font-black text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:bg-orange-600">{current===questions.length-1?"Finish Mission":"Next Question"} <ArrowRight size={19}/></button>}</div>
             </div>
 
-            <aside className="hidden border-l border-slate-100 bg-[#fbfcff] p-5 xl:block"><div className="sticky top-24 space-y-4"><div className="rounded-[1.5rem] bg-white p-5 text-center shadow-sm ring-1 ring-slate-100"><div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-yellow-100 via-pink-100 to-violet-100 text-6xl shadow-inner">🧑‍🚀</div><p className="mt-4 text-lg font-black text-[#15233f]">Keep going!</p><p className="mt-1 text-xs font-bold text-slate-500">You’re doing great ⭐</p></div><div className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-slate-100"><div className="flex items-center justify-between"><p className="text-xs font-black uppercase tracking-wider text-slate-400">Your rewards</p><Zap className="text-yellow-500" size={18}/></div><p className="mt-2 text-2xl font-black text-orange-600">+{q.points} XP</p><div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-gradient-to-r from-yellow-300 to-orange-400" style={{width:`${Math.max(6,levelProgress)}%`}}/></div><p className="mt-2 text-[11px] font-bold text-slate-500">{Math.max(0,nextLevelXp-totalXp)} XP to Level {level+1}</p></div><div className="rounded-[1.5rem] bg-violet-50 p-5"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600 text-white"><Flame size={19}/></div><div><p className="text-[10px] font-black uppercase tracking-wider text-violet-500">Streak</p><p className="text-lg font-black text-violet-800">{streak} days</p></div></div></div><button type="button" className="flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-100 px-4 py-3 text-sm font-black text-sky-700"><Lightbulb size={17}/> Need a hint?</button></div></aside>
+            <aside className="hidden border-l border-slate-100 bg-[#fbfcff] p-5 xl:block"><div className="sticky top-24 space-y-4"><div className="rounded-[1.5rem] bg-white p-5 text-center shadow-sm ring-1 ring-slate-100"><div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-yellow-100 via-pink-100 to-violet-100 text-6xl shadow-inner">🧑‍🚀</div><p className="mt-4 text-lg font-black text-[#15233f]">Keep going!</p><p className="mt-1 text-xs font-bold text-slate-500">You’re doing great ⭐</p></div><div className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-slate-100"><div className="flex items-center justify-between"><p className="text-xs font-black uppercase tracking-wider text-slate-400">Your rewards</p><Zap className="text-yellow-500" size={18}/></div><p className="mt-2 text-2xl font-black text-orange-600">+{q.points} XP</p><div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-gradient-to-r from-yellow-300 to-orange-400" style={{width:`${Math.max(6,levelProgress)}%`}}/></div><p className="mt-2 text-[11px] font-bold text-slate-500">{Math.max(0,nextLevelXp-totalXp)} XP to Level {level+1}</p></div><div className="rounded-[1.5rem] bg-violet-50 p-5"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600 text-white"><Flame size={19}/></div><div><p className="text-[10px] font-black uppercase tracking-wider text-violet-500">Streak</p><p className="text-lg font-black text-violet-800">{streak} days</p></div></div></div><div className="flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-100 px-4 py-3 text-sm font-black text-sky-700"><Lightbulb size={17}/> Interactive learning mode</div></div></aside>
           </div>
         </div>
 
@@ -94,4 +102,5 @@ export default function MissionPage(){
   </main>;
 }
 
-function ResultStat({icon,value,label}:{icon:ReactNode;value:string|number;label:string}){return <div className="rounded-2xl bg-slate-50 p-4 text-center"><div className="mx-auto flex h-9 w-9 items-center justify-center text-orange-500">{icon}</div><p className="mt-1 text-2xl font-black text-[#15233f]">{value}</p><p className="text-[11px] font-bold text-slate-500">{label}</p></div>;}
+function ResultStat({icon,value,label}:{icon:ReactNode;value:string|number;label:string}){return <div className="rounded-2xl bg-slate-50 p-4 text-center"><div className="mx-auto flex h-9 w-9 items-center justify-center text-orange-500">{icon}</div><p className="mt-1 text-2xl font-black text-[#15233f]">{value}</p><p className="text-[11px] font-bold text-slate-500">{label}</p></div>;
+}
