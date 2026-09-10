@@ -2,26 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light;
-}
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: #f7f9fc; color: #071b3a; font-family: Arial, Helvetica, sans-serif; }
+button, a { -webkit-tap-highlight-color: transparent; }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  background: #f7f9fc;
-  color: #071b3a;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
-}
+@keyframes question-enter { 0% { opacity: 0; transform: translateY(18px) scale(.98); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes answer-pop { 0% { transform: scale(.96); } 55% { transform: scale(1.035); } 100% { transform: scale(1); } }
+@keyframes correct-burst { 0% { opacity: 0; transform: scale(.7); } 70% { opacity: 1; transform: scale(1.15); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes gentle-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.question-enter { animation: question-enter .42s cubic-bezier(.22,1,.36,1) both; }
+.answer-pop { animation: answer-pop .32s cubic-bezier(.22,1,.36,1) both; }
+.correct-burst { animation: correct-burst .5s cubic-bezier(.22,1,.36,1) both; }
+.gentle-shake { animation: gentle-shake .3s ease-in-out both; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; } }
