@@ -32,3 +32,5 @@ Then open `http://localhost:3000`.
 ## Important
 
 Environment variables and service credentials will be added only when the corresponding Supabase phase begins. Never commit Supabase service-role keys or other secrets.
+
+<!-- Cloudflare GitHub integration trigger test: 2026-09-10 -->
