@@ -18,7 +18,7 @@ export default function LoginPage() {
     setMessage("");
     const supabase = createClient();
     if (!supabase) {
-      setMessage("Supabase is not configured yet. Add the project URL and anon key to the deployment environment.");
+      setMessage("Supabase is not configured yet. Add the project URL and publishable key to the deployment environment.");
       return;
     }
 
