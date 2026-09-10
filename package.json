@@ -1,6 +1,6 @@
 {
   "name": "fahi-vissnun-math-platform",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "latest",
+    "@vitejs/plugin-rsc": "0.5.34",
     "@types/node": "20.17.57",
     "@types/react": "19.2.6",
     "@types/react-dom": "19.2.6",
