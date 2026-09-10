@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Flame, LockKeyhole, Sparkles, Trophy, Zap } from "lucide-react";
+import { ArrowLeft, BarChart3, CheckCircle2, Flame, LockKeyhole, Map, Sparkles, Trophy, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile={xp:number;current_streak:number;best_streak:number};
@@ -45,7 +45,11 @@ export default function RewardsPage(){
  const remaining=Math.max(0,nextLevelXp-profile.xp);
  const earnedCount=earned.size;
  const badgeProgress=achievements.length?Math.round((earnedCount/achievements.length)*100):0;
- const message=useMemo(()=>profile.current_streak>=7?"Amazing! Your learning habit is on fire. 🔥":profile.current_streak>=3?"Great streak! Keep your maths adventure moving.":"Start a daily mission to build your streak.",[profile.current_streak]);
+ const message=useMemo(()=>profile.current_streak>=30?"30 days! You are building an incredible maths habit. 🏆":profile.current_streak>=14?"Two weeks strong! Your consistency is becoming a superpower. 🔥":profile.current_streak>=7?"Amazing! Your learning habit is on fire. 🔥":profile.current_streak>=3?"Great streak! Keep your maths adventure moving.":"Start a daily mission to build your streak.",[profile.current_streak]);
+
+ const streakMilestones=[3,7,14,30];
+ const nextStreak=streakMilestones.find(n=>n>profile.current_streak)||30;
+ const streakProgress=Math.min(100,Math.round((profile.current_streak/nextStreak)*100));
 
  if(loading)return <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-6"><div className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center"><div className="rounded-[2rem] bg-white p-10 text-center shadow-xl"><div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-violet-100 border-t-violet-600"/><p className="mt-5 font-black text-[#071b3a]">Loading your rewards…</p></div></div></main>;
 
@@ -68,9 +72,17 @@ export default function RewardsPage(){
     <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-yellow-100"><Trophy className="text-yellow-500" size={24}/><p className="mt-4 text-3xl font-black text-[#071b3a]">{earnedCount}/{achievements.length}</p><p className="text-sm text-slate-500">Badges earned</p><p className="mt-2 text-xs font-bold text-yellow-600">{badgeProgress}% complete</p></div>
    </section>
 
+   <section className="mt-6 grid gap-4 sm:grid-cols-3">
+    <Link href="/challenge" className="group rounded-3xl bg-gradient-to-br from-pink-500 to-rose-500 p-5 text-white shadow-lg shadow-pink-100 transition hover:-translate-y-1"><Zap size={22}/><h2 className="mt-4 text-xl font-black">Daily Challenge</h2><p className="mt-1 text-sm text-pink-50">Take today's maths sprint and earn XP.</p><span className="mt-4 inline-flex text-sm font-black">Play now →</span></Link>
+    <Link href="/progress" className="group rounded-3xl bg-gradient-to-br from-cyan-400 to-blue-500 p-5 text-white shadow-lg shadow-cyan-100 transition hover:-translate-y-1"><Map size={22}/><h2 className="mt-4 text-xl font-black">Progress Map</h2><p className="mt-1 text-sm text-cyan-50">See your topic mastery and learning journey.</p><span className="mt-4 inline-flex text-sm font-black">View progress →</span></Link>
+    <Link href="/learn" className="group rounded-3xl bg-gradient-to-br from-violet-500 to-indigo-600 p-5 text-white shadow-lg shadow-violet-100 transition hover:-translate-y-1"><BarChart3 size={22}/><h2 className="mt-4 text-xl font-black">Keep Learning</h2><p className="mt-1 text-sm text-violet-100">Continue lessons and build your skills.</p><span className="mt-4 inline-flex text-sm font-black">Open lessons →</span></Link>
+   </section>
+
+   <section className="mt-8 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-orange-100 sm:p-8"><div className="flex items-center justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.15em] text-orange-600">Streak journey</p><h2 className="mt-1 text-2xl font-black text-[#071b3a]">Next milestone: {nextStreak} days 🔥</h2></div><Flame className="text-orange-500"/></div><div className="mt-5 h-4 overflow-hidden rounded-full bg-orange-50"><div className="h-full rounded-full bg-gradient-to-r from-orange-400 to-rose-500 transition-all" style={{width:`${streakProgress}%`}}/></div><div className="mt-4 grid grid-cols-4 gap-2">{streakMilestones.map(m=><div key={m} className={`rounded-2xl p-3 text-center ${profile.current_streak>=m?"bg-orange-100 text-orange-700":"bg-slate-50 text-slate-400"}`}><p className="text-lg font-black">{m}</p><p className="text-[10px] font-bold uppercase">days</p></div>)}</div></section>
+
    <section className="mt-8 rounded-3xl border border-white bg-white p-6 shadow-sm sm:p-8"><div className="flex items-center justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.15em] text-violet-600">Achievement journey</p><h2 className="mt-1 text-2xl font-black text-[#071b3a]">Your badge collection</h2></div><Trophy className="text-yellow-500"/></div><div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{achievements.map(a=>{const isEarned=earned.has(a.id);return <div key={a.id} className={`rounded-3xl border-2 p-5 transition ${isEarned?"border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50":"border-slate-100 bg-slate-50"}`}><div className="flex items-start justify-between"><div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-3xl ${isEarned?"bg-white shadow-sm":"bg-slate-200 grayscale"}`}>{isEarned?a.icon:"🔒"}</div>{isEarned?<CheckCircle2 className="text-emerald-500"/>:<LockKeyhole className="text-slate-400" size={20}/>}</div><h3 className="mt-4 font-black text-[#071b3a]">{a.title}</h3><p className="mt-1 text-sm leading-5 text-slate-500">{a.description}</p><p className={`mt-4 text-xs font-black uppercase tracking-wider ${isEarned?"text-emerald-600":"text-slate-400"}`}>{isEarned?"Unlocked":"Keep learning"}</p></div>})}</div></section>
 
-   <section className="mt-6 rounded-3xl bg-gradient-to-r from-amber-50 via-white to-violet-50 p-6 ring-1 ring-amber-100 sm:p-8"><div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-black uppercase tracking-wider text-orange-600">Keep the adventure going</p><h2 className="mt-1 text-2xl font-black text-[#071b3a]">Earn more XP today</h2><p className="mt-2 text-sm text-slate-600">Complete a Daily Mission, finish lessons and build your streak to unlock more rewards.</p></div><Link href="/learn" className="inline-flex shrink-0 items-center justify-center rounded-2xl bg-violet-600 px-5 py-3.5 font-black text-white shadow-lg shadow-violet-200 hover:bg-violet-700">Start learning 🚀</Link></div></section>
+   <section className="mt-6 rounded-3xl bg-gradient-to-r from-amber-50 via-white to-violet-50 p-6 ring-1 ring-amber-100 sm:p-8"><div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-black uppercase tracking-wider text-orange-600">Keep the adventure going</p><h2 className="mt-1 text-2xl font-black text-[#071b3a]">Earn more XP today</h2><p className="mt-2 text-sm text-slate-600">Complete a Daily Challenge, finish lessons and build your streak to unlock more rewards.</p></div><Link href="/challenge" className="inline-flex shrink-0 items-center justify-center rounded-2xl bg-violet-600 px-5 py-3.5 font-black text-white shadow-lg shadow-violet-200 hover:bg-violet-700">Take today's challenge 🚀</Link></div></section>
   </div>
  </main>;
 }
