@@ -11,6 +11,7 @@ type InteractiveQuestion = {
   points?: number;
   interaction_type?: string | null;
   question_type?: string | null;
+  interaction_config?: Record<string, unknown> | null;
   hint?: string | null;
 };
 
@@ -30,11 +31,14 @@ const colors = [
 const letters = ["A", "B", "C", "D"];
 
 function normalizeType(question: InteractiveQuestion) {
-  return (question.interaction_type || question.question_type || "multiple_choice").toLowerCase().replace(/[- ]/g, "_");
+  return (question.interaction_type || question.question_type || "multiple_choice")
+    .toLowerCase()
+    .replace(/[- ]/g, "_");
 }
 
 export default function InteractiveQuestionEngine({ question, selected, disabled, onAnswer }: Props) {
   const type = normalizeType(question);
+  const config = question.interaction_config || {};
   const [value, setValue] = useState("");
   const [ordered, setOrdered] = useState<string[]>(question.options || []);
   const [showHint, setShowHint] = useState(false);
@@ -52,23 +56,45 @@ export default function InteractiveQuestionEngine({ question, selected, disabled
   }
 
   if (["number_input", "numeric", "text_input", "short_answer"].includes(type)) {
+    const isNumeric = type === "number_input" || type === "numeric";
+    const allowDecimal = config.allowDecimal === true;
+    const placeholder = typeof config.placeholder === "string" ? config.placeholder : "?";
+    const unit = typeof config.unit === "string" ? config.unit : "";
+    const label = typeof config.label === "string" ? config.label : isNumeric ? "Type your answer" : "Write your answer";
+
     return (
       <div className="mt-6">
         <div className="mx-auto flex max-w-xl flex-col items-center gap-4 rounded-[1.75rem] border-2 border-slate-100 bg-[#fbfcff] p-6 sm:p-8">
           <div className="flex items-center gap-2 rounded-full bg-violet-50 px-4 py-2 text-xs font-black text-violet-700">
-            <Zap size={15} /> Type your answer
+            <Zap size={15} /> {label}
           </div>
-          <input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
-            disabled={disabled || isAnswered}
-            inputMode={type === "number_input" || type === "numeric" ? "numeric" : "text"}
-            aria-label="Your answer"
-            className={`w-full rounded-2xl border-2 bg-white px-5 py-4 text-center text-3xl font-black text-[#15233f] outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100 ${answerState === "correct" ? "border-emerald-400" : answerState === "incorrect" ? "border-rose-400" : "border-slate-200"}`}
-            placeholder="?"
-          />
-          {!isAnswered && <button onClick={() => submit()} disabled={!value.trim() || disabled} className="w-full rounded-2xl bg-orange-500 px-6 py-4 font-black text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50">Check answer</button>}
+          <div className="flex w-full items-center gap-3">
+            <input
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
+              disabled={disabled || isAnswered}
+              inputMode={isNumeric ? (allowDecimal ? "decimal" : "numeric") : "text"}
+              type="text"
+              aria-label="Your answer"
+              className={`min-w-0 flex-1 rounded-2xl border-2 bg-white px-5 py-4 text-center text-3xl font-black text-[#15233f] outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100 ${answerState === "correct" ? "border-emerald-400" : answerState === "incorrect" ? "border-rose-400" : "border-slate-200"}`}
+              placeholder={placeholder}
+            />
+            {unit && <span className="shrink-0 text-xl font-black text-slate-500">{unit}</span>}
+          </div>
+          {!isAnswered && (
+            <button onClick={() => submit()} disabled={!value.trim() || disabled} className="w-full rounded-2xl bg-orange-500 px-6 py-4 font-black text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50">
+              Check answer
+            </button>
+          )}
+          {question.hint && !isAnswered && (
+            <div className="w-full">
+              <button onClick={() => setShowHint((v) => !v)} className="mx-auto flex items-center gap-2 text-sm font-black text-violet-600 hover:text-violet-700">
+                <Lightbulb size={16} /> {showHint ? "Hide hint" : "Need a hint?"}
+              </button>
+              {showHint && <p className="mt-3 rounded-2xl bg-yellow-50 p-4 text-sm font-bold leading-6 text-yellow-800">{question.hint}</p>}
+            </div>
+          )}
           {isAnswered && <Feedback question={question} correct={correct} />}
         </div>
       </div>
