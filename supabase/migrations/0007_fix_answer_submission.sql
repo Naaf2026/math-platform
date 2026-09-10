@@ -29,29 +29,17 @@ begin
     raise exception 'Question not found';
   end if;
 
-  -- Ensure every authenticated learner has a profile before awarding XP.
   insert into public.profiles (id)
   values (v_user_id)
   on conflict (id) do nothing;
 
   v_correct := p_selected_answer = v_question.answer;
 
-  -- The answer itself is the critical operation. If this succeeds, the learner's
-  -- attempt is persisted and the transaction must not be rolled back by optional
-  -- streak/achievement maintenance below.
   insert into public.question_attempts (
-    user_id,
-    question_id,
-    selected_answer,
-    is_correct,
-    xp_awarded
+    user_id, question_id, selected_answer, is_correct, xp_awarded
   )
   values (
-    v_user_id,
-    p_question_id,
-    p_selected_answer,
-    v_correct,
-    0
+    v_user_id, p_question_id, p_selected_answer, v_correct, 0
   )
   returning id into v_attempt_id;
 
@@ -75,16 +63,10 @@ begin
   v_topic_id := v_question.topic_id;
 
   insert into public.topic_progress (
-    user_id,
-    topic_id,
-    questions_answered,
-    correct_answers,
-    updated_at
+    user_id, topic_id, questions_answered, correct_answers, updated_at
   )
   values (
-    v_user_id,
-    v_topic_id,
-    1,
+    v_user_id, v_topic_id, 1,
     case when v_correct then 1 else 0 end,
     now()
   )
@@ -102,15 +84,12 @@ begin
   update public.topic_progress
      set mastery = least(
        100,
-       round(
-         (v_correct_count::numeric / greatest(v_answered, 1)) * 100
-       )::integer
+       round((v_correct_count::numeric / greatest(v_answered, 1)) * 100)::integer
      )
    where user_id = v_user_id
      and topic_id = v_topic_id;
 
-  -- These are secondary gamification updates. Do not let a problem in either
-  -- helper prevent the answer, XP and topic progress from being saved.
+  -- Secondary gamification updates must never prevent the answer from saving.
   begin
     perform public.record_learning_activity();
   exception when others then
@@ -124,13 +103,12 @@ begin
   end;
 
   return query
-  select
-    v_correct,
-    v_question.answer,
-    v_question.explanation,
-    v_xp;
+  select v_correct, v_question.answer, v_question.explanation, v_xp;
 end;
 $$;
 
 revoke all on function public.submit_learning_answer(text, text) from public, anon;
 grant execute on function public.submit_learning_answer(text, text) to authenticated;
+
+-- Refresh PostgREST's function metadata after replacing the RPC signature/body.
+notify pgrst, 'reload schema';
