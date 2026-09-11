@@ -152,8 +152,12 @@ begin
     and qa.created_at >= current_date - interval '6 days'
     and qa.created_at < current_date + interval '1 day';
 
-  select coalesce(p.current_streak,0) into v_streak
-  from public.profiles p where p.id = p_student_id;
+  -- Keep the legacy milestone check independent of profiles columns.
+  -- A 7-day streak is represented when there is recorded practice on
+  -- each of the last seven calendar days.
+  if v_recent_days = 7 then
+    v_streak := 7;
+  end if;
 
   if v_recent_questions = 0 then
     insert into public.parent_learning_alerts(student_id,alert_type,title,message,priority)
@@ -181,7 +185,7 @@ begin
 
   if v_streak >= 7 then
     insert into public.parent_learning_alerts(student_id,alert_type,title,message,priority)
-    values (p_student_id,'streak_milestone','Learning streak milestone','The learner has reached a '||v_streak::text||'-day learning streak. Celebrate the consistency!',3)
+    values (p_student_id,'streak_milestone','Learning streak milestone','The learner has reached a 7-day learning streak. Celebrate the consistency!',3)
     on conflict (student_id,alert_type,title) do nothing;
     if found then v_created := v_created + 1; end if;
   end if;
