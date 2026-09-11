@@ -6,7 +6,6 @@ import { ArrowLeft, Plus, RefreshCw, ShieldCheck, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type ClassRow = { id:number; name:string; class_code:string; grade:string|null; learning_level:string|null; description:string; status:string };
-
 type Profile = { id:string; full_name:string|null; display_name:string|null; grade:string|null; learning_level:string|null };
 
 export default function AdminClassesPage(){
@@ -18,11 +17,12 @@ export default function AdminClassesPage(){
  async function load(){
   if(!supabase){setStatus("Supabase is not configured yet.");return;}
   setStatus("Loading class management…");setNotice("");
-  const{data:{user}}=await supabase.auth.getUser();
+  const{data:{user},error:userError}=await supabase.auth.getUser();
+  if(userError){setStatus(`Authentication check failed: ${userError.message}`);return;}
   if(!user){window.location.href="/login";return;}
   const{data:isAdmin,error:roleError}=await supabase.rpc("has_role",{p_role:"admin"});
   if(roleError){setStatus(`Administrator verification failed: ${roleError.message}`);return;}
-  if(isAdmin!==true){setStatus("Admin access is required. Your account must have the admin role.");return;}
+  if(isAdmin!==true){setStatus("Admin access is required. Your account must have the admin role.\n\nDiagnostic: the signed-in session is valid, but has_role('admin') returned false. This usually means the deployed app is connected to a different Supabase project, or the admin role is not present in that project.");return;}
   const[{data:cs,error:ce},{data:ps,error:pe}]=await Promise.all([
    supabase.from("classes").select("id,name,class_code,grade,learning_level,description,status").order("created_at",{ascending:false}),
    supabase.from("profiles").select("id,full_name,display_name,grade,learning_level").order("full_name")
@@ -39,7 +39,7 @@ export default function AdminClassesPage(){
   setName("");setCode("");setGrade("");setLevel("");setDescription("");setNotice("Class created successfully.");await load();
  }
 
- if(status)return <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50 p-6"><div className="mx-auto mt-24 max-w-xl rounded-[2rem] bg-white p-10 text-center shadow-xl ring-1 ring-slate-100"><ShieldCheck className="mx-auto text-violet-600" size={48}/><h1 className="mt-4 text-2xl font-black text-[#071b3a]">Admin Class Management</h1><p className="mt-3 text-sm leading-6 text-slate-500">{status}</p><Link href="/dashboard" className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 font-black text-white"><ArrowLeft size={17}/> Dashboard</Link></div></main>;
+ if(status)return <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50 p-6"><div className="mx-auto mt-24 max-w-xl rounded-[2rem] bg-white p-10 text-center shadow-xl ring-1 ring-slate-100"><ShieldCheck className="mx-auto text-violet-600" size={48}/><h1 className="mt-4 text-2xl font-black text-[#071b3a]">Admin Class Management</h1><p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-500">{status}</p><Link href="/dashboard" className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 font-black text-white"><ArrowLeft size={17}/> Dashboard</Link></div></main>;
 
  return <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50 p-5 pb-24 sm:p-8"><div className="mx-auto max-w-7xl">
   <header className="flex flex-wrap items-center justify-between gap-4"><Link href="/dashboard" className="inline-flex items-center gap-2 font-bold text-slate-600"><ArrowLeft size={18}/> Dashboard</Link><div className="flex gap-2"><Link href="/admin/users" className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-violet-700 ring-1 ring-slate-200">User Management</Link><button onClick={()=>void load()} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600"><RefreshCw size={16}/> Refresh</button></div></header>
