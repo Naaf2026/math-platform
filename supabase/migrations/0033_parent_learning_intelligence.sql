@@ -178,20 +178,30 @@ begin
       3;
   end if;
 
-  -- Weak-topic signal: only consider topics with enough attempts to avoid
-  -- overreacting to a single difficult question.
+  -- Weak-topic signal. question_attempts stores the question id; topic names
+  -- are resolved through learning_questions -> learning_topics.
   select
-    qa.topic_title,
+    lt.title as topic_title,
     count(*)::integer as attempts,
-    round(count(*) filter (where qa.is_correct)::numeric / nullif(count(*)::numeric,0) * 100,0) as topic_accuracy
+    round(
+      count(*) filter (where qa.is_correct)::numeric
+      / nullif(count(*)::numeric,0) * 100,
+      0
+    ) as topic_accuracy
   into v_topic
   from public.question_attempts qa
+  join public.learning_questions lq on lq.id = qa.question_id
+  join public.learning_topics lt on lt.id = lq.topic_id
   where qa.user_id = p_student_id
     and qa.created_at >= current_date - interval '13 days'
-    and qa.topic_title is not null
-  group by qa.topic_title
+  group by lt.id, lt.title
   having count(*) >= 5
-  order by (count(*) filter (where qa.is_correct)::numeric / nullif(count(*)::numeric,0)) asc, count(*) desc
+  order by
+    (
+      count(*) filter (where qa.is_correct)::numeric
+      / nullif(count(*)::numeric,0)
+    ) asc,
+    count(*) desc
   limit 1;
 
   if v_topic.topic_title is not null and v_topic.topic_accuracy < 65 then
@@ -212,8 +222,11 @@ begin
 end;
 $$;
 
-revoke all on function public.get_parent_learning_insights(uuid) from public, anon;
-grant execute on function public.get_parent_learning_insights(uuid) to authenticated;
+revoke all on function public.get_parent_learning_insights(uuid)
+from public, anon;
+
+grant execute on function public.get_parent_learning_insights(uuid)
+to authenticated;
 
 -- Generates only parent-safe smart alerts. Existing alerts remain intact;
 -- unique alert titles prevent repeated inserts on every dashboard visit.
@@ -359,5 +372,8 @@ begin
 end;
 $$;
 
-revoke all on function public.generate_parent_smart_alerts(uuid) from public, anon;
-grant execute on function public.generate_parent_smart_alerts(uuid) to authenticated;
+revoke all on function public.generate_parent_smart_alerts(uuid)
+from public, anon;
+
+grant execute on function public.generate_parent_smart_alerts(uuid)
+to authenticated;
