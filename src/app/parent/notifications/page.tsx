@@ -46,12 +46,14 @@ export default function ParentNotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [refreshWarning, setRefreshWarning] = useState("");
 
   const load = useCallback(async () => {
     const s = createClient();
     if (!s) return;
     setLoading(true);
     setError("");
+    setRefreshWarning("");
 
     const { data: { user } } = await s.auth.getUser();
     if (!user) { location.href = "/login"; return; }
@@ -68,8 +70,10 @@ export default function ParentNotificationsPage() {
     const studentId = links?.[0]?.student_id;
     if (!studentId) { setError("No linked student found."); setLoading(false); return; }
 
+    // Alert generation is best-effort. Existing notifications should remain
+    // visible even if a fresh smart-alert calculation temporarily fails.
     const { error: generationError } = await s.rpc("generate_parent_smart_alerts", { p_student_id: studentId });
-    if (generationError) setError(generationError.message);
+    if (generationError) setRefreshWarning("New smart alerts could not be refreshed right now. Your existing alerts are still available.");
 
     const { data, error: alertError } = await s.rpc("get_parent_learning_alerts", {
       p_student_id: studentId,
@@ -142,6 +146,7 @@ export default function ParentNotificationsPage() {
         </section>
 
         {error && <div className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm font-semibold text-amber-800">Some smart notifications are temporarily unavailable. Please refresh and try again.</div>}
+        {refreshWarning && !error && <div className="mt-4 rounded-2xl bg-slate-100 p-4 text-sm font-semibold text-slate-700">{refreshWarning}</div>}
 
         <section className="mt-5 space-y-3">
           {loading ? <div className="rounded-3xl bg-white p-10 text-center text-sm font-semibold text-slate-500 shadow-sm">Loading notifications…</div> : filtered.length === 0 ? <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-slate-100"><Bell className="mx-auto text-slate-300" size={42}/><h2 className="mt-4 text-xl font-black text-slate-800">Nothing here yet</h2><p className="mt-2 text-sm text-slate-500">There are no alerts matching this view.</p></div> : filtered.map(alert => {
