@@ -42,7 +42,7 @@ export default function GameMechanicsSystem() {
       }
     };
     const onAnswer = (event: Event) => {
-      const detail = (event as CustomEvent<{ correct?: boolean }>) .detail;
+      const detail = (event as CustomEvent<{ correct?: boolean }>).detail;
       if (detail?.correct) {
         setCombo(v => {
           const next = v + 1;
@@ -115,7 +115,15 @@ export default function GameMechanicsSystem() {
     </div>
     <div className="fixed bottom-20 left-1/2 z-[65] w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 pointer-events-none"><div className="h-1.5 overflow-hidden rounded-full bg-slate-200/70 shadow"><div className={`h-full transition-all duration-1000 ${seconds <= 10 ? "bg-rose-400" : "bg-orange-400"}`} style={{width:`${progress}%`}}/></div></div>
     {retryReady && lives > 0 && <div className="fixed bottom-5 left-1/2 z-[75] flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-rose-200 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur"><RotateCcw size={16} className="text-rose-500"/><span className="text-xs font-black text-slate-700">Retry for a fresh chance</span><button onClick={()=>window.dispatchEvent(new CustomEvent("fv:retry-question"))} className="rounded-xl bg-rose-500 px-3 py-2 text-xs font-black text-white">Retry</button></div>}
-    {lives === 0 && <div className="fixed bottom-5 left-1/2 z-[76] flex -translate-x-1/2 items-center gap-3 rounded-3xl border-2 border-rose-200 bg-white/95 px-5 py-4 shadow-2xl backdrop-blur"><Heart size={22} className="text-rose-500"/><div><p className="font-black text-[#15233f]">Out of lives</p><p className="text-xs font-bold text-slate-500">Your adventure has ended. Try again to start a fresh run.</p></div></div>}
+    {lives === 0 && <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/65 p-5 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-[2rem] bg-white p-7 text-center shadow-2xl ring-1 ring-rose-200 sm:p-9">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-rose-50 text-rose-500"><Heart size={40} fill="currentColor"/></div>
+        <p className="mt-5 text-xs font-black uppercase tracking-[.2em] text-rose-500">Adventure paused</p>
+        <h2 className="mt-2 text-3xl font-black text-[#15233f]">Out of lives</h2>
+        <p className="mt-3 text-sm font-bold leading-6 text-slate-500">You used all 3 lives. Start a fresh adventure to try the challenge again.</p>
+        <button onClick={()=>window.location.reload()} className="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-pink-500 px-7 py-4 font-black text-white shadow-lg shadow-orange-200"><RotateCcw size={18}/> Start Fresh Adventure</button>
+      </div>
+    </div>}
     {perfect && <div className="fixed inset-x-0 bottom-6 z-[76] mx-auto flex max-w-md items-center gap-3 rounded-3xl border-2 border-yellow-300 bg-gradient-to-r from-yellow-50 to-orange-50 p-4 shadow-2xl"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-yellow-300"><Sparkles size={21}/></div><div><p className="font-black text-[#15233f]">PERFECT RUN! 🌟</p><p className="text-xs font-bold text-slate-600">No hints, no timeouts — perfect bonus unlocked.</p></div><Gift size={22} className="ml-auto text-orange-500"/></div>}
   </>;
 }
