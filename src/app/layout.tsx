@@ -3,6 +3,7 @@ import "./globals.css";
 import StudentNavigation from "@/components/student-navigation";
 import SoundCelebrationSystem from "@/components/sound-celebration-system";
 import GameMechanicsSystem from "@/components/game-mechanics-system";
+import RewardsPersistenceSystem from "@/components/rewards-persistence-system";
 
 export const metadata: Metadata = {
   title: "FAHI VISSNUN Math Learning Platform",
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <StudentNavigation />
         <SoundCelebrationSystem />
         <GameMechanicsSystem />
+        <RewardsPersistenceSystem />
       </body>
     </html>
   );
