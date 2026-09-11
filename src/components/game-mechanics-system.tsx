@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Clock3, Crown, Flame, Gift, Heart, RotateCcw, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Clock3, Crown, Flame, Gift, Heart, RotateCcw, Sparkles } from "lucide-react";
 
 const DEFAULT_SECONDS = 45;
 
@@ -17,19 +17,12 @@ export default function GameMechanicsSystem() {
   const [retryReady, setRetryReady] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
-  const bonus = useMemo(() => Math.max(0, multiplier - 1), [multiplier]);
-
   useEffect(() => {
     if (!window.location.pathname.startsWith("/mission")) return;
     const root = document.body;
     const readState = () => {
       const text = root.innerText || "";
       const question = (text.match(/Math Adventure · ([^\n]+)/)?.[1] || "").trim();
-      const isBoss = /\bBOSS\b/i.test(text.slice(0, 5000));
-      const hasHint = /Helpful hint/i.test(text);
-      const isCorrect = /Correct!|Great job!/i.test(text);
-      const isWrong = /Not quite yet|Try again/i.test(text);
-      const finish = /Math Champion!|Adventure complete/i.test(text);
       if (question && question !== lastQuestion) {
         setLastQuestion(question);
         setSeconds(DEFAULT_SECONDS);
@@ -37,32 +30,30 @@ export default function GameMechanicsSystem() {
         setHintUsed(false);
         setRetryReady(false);
       }
-      setBoss(isBoss);
-      setHintUsed(v => v || hasHint);
-      if (isCorrect) {
-        setCombo(v => {
-          const next = v + 1;
-          setMultiplier(Math.min(3, 1 + Math.floor(next / 2) * 0.5));
-          return next;
-        });
-        setRetryReady(false);
-      } else if (isWrong) {
-        setCombo(0);
-        setMultiplier(1);
-        setRetryReady(true);
-      }
+      setBoss(/\bBOSS\b/i.test(text.slice(0, 5000)));
+      setHintUsed(v => v || /Helpful hint/i.test(text));
+      const finish = /Math Champion!|Adventure complete/i.test(text);
       if (finish) {
         const match = text.match(/(\d+)\/(\d+)\s*Correct/i);
         const allCorrect = match ? match[1] === match[2] : /10\/10/.test(text);
-        setPerfect(allCorrect && !hintUsed && !timedOut);
+        setPerfect(allCorrect && !hintUsed && !timedOut && retryCount === 0);
       }
     };
-
+    const onAnswer = (event:Event) => {
+      const detail=(event as CustomEvent<{correct?:boolean}>).detail;
+      if(detail?.correct){
+        setCombo(v=>{const next=v+1;setMultiplier(Math.min(3,1+Math.floor(next/2)*0.5));return next;});
+        setRetryReady(false);
+      } else {
+        setCombo(0);setMultiplier(1);setRetryReady(true);
+      }
+    };
     const observer = new MutationObserver(readState);
     observer.observe(root, { childList: true, subtree: true, characterData: true });
+    window.addEventListener("fv:answer-result", onAnswer);
     readState();
-    return () => observer.disconnect();
-  }, [lastQuestion, hintUsed, timedOut]);
+    return () => { observer.disconnect(); window.removeEventListener("fv:answer-result", onAnswer); };
+  }, [lastQuestion, hintUsed, timedOut, retryCount]);
 
   useEffect(() => {
     if (!window.location.pathname.startsWith("/mission")) return;
@@ -80,6 +71,7 @@ export default function GameMechanicsSystem() {
       setSeconds(DEFAULT_SECONDS);
       setCombo(0);
       setMultiplier(1);
+      setPerfect(false);
     };
     window.addEventListener("fv:retry-question", onRetry);
     return () => window.removeEventListener("fv:retry-question", onRetry);
@@ -99,15 +91,8 @@ export default function GameMechanicsSystem() {
       {boss && <div className="flex items-center gap-1.5 rounded-2xl border border-yellow-300 bg-yellow-50/95 px-3 py-2 text-xs font-black text-yellow-800 shadow-lg"><Crown size={15}/> BOSS</div>}
       {hintUsed && <div className="flex items-center gap-1.5 rounded-2xl border border-violet-200 bg-violet-50/95 px-3 py-2 text-xs font-black text-violet-700 shadow-lg"><Heart size={14}/> Hint used</div>}
     </div>
-    <div className="fixed bottom-20 left-1/2 z-[65] w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 pointer-events-none">
-      <div className="h-1.5 overflow-hidden rounded-full bg-slate-200/70 shadow"><div className={`h-full transition-all duration-1000 ${seconds <= 10 ? "bg-rose-400" : "bg-orange-400"}`} style={{width:`${progress}%`}}/></div>
-    </div>
-    {retryReady && <div className="fixed bottom-5 left-1/2 z-[75] flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-rose-200 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur">
-      <RotateCcw size={16} className="text-rose-500"/><span className="text-xs font-black text-slate-700">Retry for a fresh chance</span><button onClick={()=>window.dispatchEvent(new CustomEvent("fv:retry-question"))} className="rounded-xl bg-rose-500 px-3 py-2 text-xs font-black text-white">Retry</button>
-    </div>}
-    {perfect && <div className="fixed inset-x-0 bottom-6 z-[76] mx-auto flex max-w-md items-center gap-3 rounded-3xl border-2 border-yellow-300 bg-gradient-to-r from-yellow-50 to-orange-50 p-4 shadow-2xl">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-yellow-300"><Sparkles size={21}/></div><div><p className="font-black text-[#15233f]">PERFECT RUN! 🌟</p><p className="text-xs font-bold text-slate-600">No hints, no timeouts — perfect bonus unlocked.</p></div><Gift size={22} className="ml-auto text-orange-500"/>
-    </div>}
-    {retryCount > 0 && <div className="sr-only" aria-live="polite">Retry used</div>}
+    <div className="fixed bottom-20 left-1/2 z-[65] w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 pointer-events-none"><div className="h-1.5 overflow-hidden rounded-full bg-slate-200/70 shadow"><div className={`h-full transition-all duration-1000 ${seconds <= 10 ? "bg-rose-400" : "bg-orange-400"}`} style={{width:`${progress}%`}}/></div></div>
+    {retryReady && <div className="fixed bottom-5 left-1/2 z-[75] flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-rose-200 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur"><RotateCcw size={16} className="text-rose-500"/><span className="text-xs font-black text-slate-700">Retry for a fresh chance</span><button onClick={()=>window.dispatchEvent(new CustomEvent("fv:retry-question"))} className="rounded-xl bg-rose-500 px-3 py-2 text-xs font-black text-white">Retry</button></div>}
+    {perfect && <div className="fixed inset-x-0 bottom-6 z-[76] mx-auto flex max-w-md items-center gap-3 rounded-3xl border-2 border-yellow-300 bg-gradient-to-r from-yellow-50 to-orange-50 p-4 shadow-2xl"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-yellow-300"><Sparkles size={21}/></div><div><p className="font-black text-[#15233f]">PERFECT RUN! 🌟</p><p className="text-xs font-bold text-slate-600">No hints, no timeouts — perfect bonus unlocked.</p></div><Gift size={22} className="ml-auto text-orange-500"/></div>}
   </>;
 }
