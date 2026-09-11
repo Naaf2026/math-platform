@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { interactiveMotionCss } from "@/lib/interactive-motion";
 
 /** Presents the Mission's existing question engine as a focused game window. */
 export default function MissionQuestionPopup() {
@@ -10,11 +11,12 @@ export default function MissionQuestionPopup() {
     const applyWindow = () => {
       document.querySelectorAll<HTMLElement>(".question-enter").forEach((el) => {
         el.classList.add("mission-question-window");
+        el.classList.add("fv-motion-idle");
       });
     };
     const clearWindow = () => {
       document.querySelectorAll<HTMLElement>(".question-enter").forEach((el) => {
-        el.classList.remove("mission-question-window");
+        el.classList.remove("mission-question-window", "fv-motion-idle");
       });
     };
 
@@ -45,6 +47,10 @@ export default function MissionQuestionPopup() {
       const signature = `${result}::${text.slice(-500)}`;
       if (signature === lastFeedback) return;
       lastFeedback = signature;
+      document.querySelectorAll<HTMLElement>(".mission-question-window").forEach((el) => {
+        el.classList.remove("fv-motion-idle", "fv-motion-correct", "fv-motion-incorrect");
+        el.classList.add(result === "correct" ? "fv-motion-correct" : "fv-motion-incorrect");
+      });
       scheduleAdvance();
     };
 
@@ -88,6 +94,7 @@ export default function MissionQuestionPopup() {
   return (
     <>
       <style jsx global>{`
+        ${interactiveMotionCss}
         .mission-question-backdrop {
           position: fixed;
           inset: 0;
