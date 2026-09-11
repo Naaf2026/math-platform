@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Volume2, VolumeX } from "lucide-react";
 
 type Tone = "tap" | "correct" | "incorrect" | "complete";
@@ -46,11 +47,16 @@ function burst() {
 }
 
 export default function SoundCelebrationSystem() {
+  const pathname = usePathname();
   const [muted, setMuted] = useState(false);
   const lastText = useRef("");
 
+  const isLearningExperience = /^\/(learn|challenge|mission)(\/|$)/.test(pathname);
+
   useEffect(() => {
     setMuted(localStorage.getItem("fv-math-muted") === "1");
+    if (!isLearningExperience) return;
+
     const style = document.createElement("style");
     style.textContent = "@keyframes fv-confetti{to{transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) rotate(var(--r));opacity:0}}";
     document.head.appendChild(style);
@@ -89,7 +95,9 @@ export default function SoundCelebrationSystem() {
       observer.disconnect();
       style.remove();
     };
-  }, [muted]);
+  }, [isLearningExperience, muted]);
+
+  if (!isLearningExperience) return null;
 
   const toggle = () => {
     setMuted(v => {
