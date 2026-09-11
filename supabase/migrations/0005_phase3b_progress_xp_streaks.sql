@@ -148,7 +148,9 @@ $$;
 revoke all on function public.refresh_learning_achievements() from public, anon;
 grant execute on function public.refresh_learning_achievements() to authenticated;
 
-create or replace function public.complete_learning_lesson(p_lesson_id text)
+drop function if exists public.complete_learning_lesson(text);
+
+create function public.complete_learning_lesson(p_lesson_id text)
 returns integer
 language plpgsql
 security definer
