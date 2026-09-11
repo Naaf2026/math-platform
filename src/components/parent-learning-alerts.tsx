@@ -35,13 +35,23 @@ export default function ParentLearningAlerts() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [open, setOpen] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(false);
 
   const load = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+
     const s = createClient();
-    if (!s) return;
+    if (!s) {
+      setLoading(false);
+      return;
+    }
+
     const { data: { user } } = await s.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     const { data: links } = await s
       .from("student_relationships")
@@ -52,16 +62,32 @@ export default function ParentLearningAlerts() {
       .limit(1);
 
     const studentId = links?.[0]?.student_id;
-    if (!studentId) { setLoading(false); return; }
+    if (!studentId) {
+      setLoading(false);
+      return;
+    }
 
-    // Smart generation supersedes the original alert generator. It includes
-    // weekly summaries, learning-pattern signals, and goal pacing.
-    const { error: generationError } = await s.rpc("generate_parent_smart_alerts", { p_student_id: studentId });
-    if (generationError) setError(generationError.message);
+    // Generation is best-effort. The notification center must remain usable
+    // even if a newly-added smart-alert calculation is temporarily unavailable.
+    const { error: generationError } = await s.rpc("generate_parent_smart_alerts", {
+      p_student_id: studentId,
+    });
 
-    const { data, error: alertsError } = await s.rpc("get_parent_learning_alerts", { p_student_id: studentId, p_limit: 20 });
-    if (alertsError) setError(alertsError.message);
-    else setAlerts((data ?? []) as Alert[]);
+    // Always fetch existing alerts, even when generation fails. This prevents
+    // one unavailable smart calculation from blanking the whole notification UI.
+    const { data, error: alertsError } = await s.rpc("get_parent_learning_alerts", {
+      p_student_id: studentId,
+      p_limit: 20,
+    });
+
+    if (alertsError) {
+      setError(true);
+    } else {
+      setAlerts((data ?? []) as Alert[]);
+      // A generation failure is only shown when there are no usable alerts.
+      if (generationError && !(data ?? []).length) setError(true);
+    }
+
     setLoading(false);
   }, []);
 
@@ -71,8 +97,13 @@ export default function ParentLearningAlerts() {
     const s = createClient();
     if (!s) return;
     const { error: markError } = await s.rpc("mark_parent_learning_alert_read", { p_alert_id: alertId });
-    if (markError) { setError(markError.message); return; }
-    setAlerts(current => current.map(alert => alert.alert_id === alertId ? { ...alert, read_at: new Date().toISOString() } : alert));
+    if (markError) {
+      setError(true);
+      return;
+    }
+    setAlerts(current => current.map(alert =>
+      alert.alert_id === alertId ? { ...alert, read_at: new Date().toISOString() } : alert
+    ));
   }
 
   const unread = alerts.filter(alert => !alert.read_at).length;
@@ -94,7 +125,7 @@ export default function ParentLearningAlerts() {
         </div>
       </div>
 
-      {error && <div className="mt-4 rounded-2xl bg-amber-50 p-3 text-xs font-semibold text-amber-800">Some smart alerts are temporarily unavailable. Please try refreshing the page.</div>}
+      {error && <div className="mt-4 rounded-2xl bg-amber-50 p-3 text-xs font-semibold text-amber-800">Some smart notifications are temporarily unavailable. Please refresh and try again.</div>}
 
       {open && alerts.length > 0 && <div className="mt-5 space-y-3">{alerts.map(alert => {
         const Icon = iconFor(alert.alert_type);
