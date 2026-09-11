@@ -1,4 +1,4 @@
-import { normalizeInteractionType, type InteractiveQuestion } from "@/lib/interactive-question";
+import { answersMatch, normalizeInteractionType, type InteractiveQuestion } from "@/lib/interactive-question";
 
 export type InteractionAuthoring = {
   interaction_type: string;
@@ -56,13 +56,15 @@ export function validateInteractiveQuestion(question: InteractiveQuestion): stri
   const type = normalizeInteractionType(question);
   if (!question.prompt?.trim()) errors.push("Question prompt is required.");
   if (!String(question.answer ?? "").trim()) errors.push("Answer is required.");
+
   if (type === "multiple_choice" || type === "true_false") {
     const options = type === "true_false" ? ["True", "False"] : question.options || [];
     if (options.length < 2) errors.push("At least two answer options are required.");
-    if (!options.some((option) => String(option).trim() === String(question.answer).trim())) {
+    if (!options.some((option) => answersMatch(option, question.answer))) {
       errors.push("The correct answer must exist in the answer options.");
     }
   }
+
   if (type === "ordering" && (question.options || []).length < 2) {
     errors.push("Ordering questions need at least two items.");
   }
