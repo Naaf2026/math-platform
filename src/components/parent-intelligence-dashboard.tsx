@@ -68,8 +68,11 @@ export default function ParentIntelligenceDashboard() {
   const [insights, setInsights] = useState<Insight[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [studentId, setStudentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [available, setAvailable] = useState(true);
+  const [savingRecommendation, setSavingRecommendation] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (pathname !== "/parent") return;
@@ -88,14 +91,15 @@ export default function ParentIntelligenceDashboard() {
         .in("relationship", ["parent", "guardian"])
         .eq("status", "active")
         .limit(1);
-      const studentId = links?.[0]?.student_id;
-      if (linkError || !studentId) { if (!cancelled) { setAvailable(false); setLoading(false); } return; }
+      const id = links?.[0]?.student_id;
+      if (linkError || !id) { if (!cancelled) { setAvailable(false); setLoading(false); } return; }
+      setStudentId(id);
 
       const [summaryResult, insightsResult, recommendationsResult, goalsResult] = await Promise.all([
-        s.rpc("get_parent_learning_summary", { p_student_id: studentId }),
-        s.rpc("get_parent_learning_insights", { p_student_id: studentId }),
-        s.rpc("get_parent_goal_recommendations", { p_student_id: studentId }),
-        s.rpc("get_parent_learning_goals", { p_student_id: studentId }),
+        s.rpc("get_parent_learning_summary", { p_student_id: id }),
+        s.rpc("get_parent_learning_insights", { p_student_id: id }),
+        s.rpc("get_parent_goal_recommendations", { p_student_id: id }),
+        s.rpc("get_parent_learning_goals", { p_student_id: id }),
       ]);
 
       if (cancelled) return;
@@ -119,6 +123,39 @@ export default function ParentIntelligenceDashboard() {
       { label: "XP earned", current: summary.xp_earned, previous: summary.previous_xp, suffix: " XP", icon: ArrowUpRight },
     ];
   }, [summary]);
+
+  async function acceptRecommendation(item: Recommendation) {
+    if (!studentId || savingRecommendation) return;
+    const s = createClient();
+    if (!s) return;
+    setSavingRecommendation(item.recommendation_id);
+    setMessage("");
+    const start = new Date();
+    const due = new Date(start);
+    due.setDate(due.getDate() + 6);
+
+    const { error } = await s.rpc("create_parent_learning_goal", {
+      p_student_id: studentId,
+      p_title: item.title,
+      p_description: item.description,
+      p_goal_type: item.goal_type,
+      p_target_value: Number(item.target_value),
+      p_topic_title: item.topic_title,
+      p_start_date: start.toISOString().slice(0, 10),
+      p_due_date: due.toISOString().slice(0, 10),
+    });
+
+    if (error) {
+      setMessage("We could not add that goal right now. Please try again.");
+    } else {
+      setMessage("Goal added. It will now appear in Goal Progress.");
+      const { data } = await s.rpc("get_parent_learning_goals", { p_student_id: studentId });
+      setGoals(((data ?? []) as Goal[]).filter(g => g.status === "active"));
+      const { data: nextRecommendations } = await s.rpc("get_parent_goal_recommendations", { p_student_id: studentId });
+      setRecommendations((nextRecommendations ?? []) as Recommendation[]);
+    }
+    setSavingRecommendation(null);
+  }
 
   if (pathname !== "/parent") return null;
   if (loading) return <section className="mx-auto mt-6 max-w-6xl rounded-3xl bg-white p-6 shadow-sm ring-1 ring-violet-100"><div className="h-5 w-48 animate-pulse rounded bg-slate-100"/><div className="mt-5 grid gap-3 sm:grid-cols-4">{[1,2,3,4].map(i => <div key={i} className="h-24 animate-pulse rounded-2xl bg-slate-50"/>)}</div></section>;
@@ -144,7 +181,7 @@ export default function ParentIntelligenceDashboard() {
         {comparisons.map(item => {
           const Icon = item.icon;
           const change = delta(item.current, item.previous);
-          const positive = item.label === "Accuracy" ? change >= 0 : change >= 0;
+          const positive = change >= 0;
           return <div key={item.label} className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
             <div className="flex items-center justify-between"><div className="rounded-2xl bg-violet-50 p-2.5 text-violet-600"><Icon size={18}/></div><span className={`inline-flex items-center gap-1 text-xs font-black ${positive ? "text-emerald-600" : "text-rose-600"}`}>{positive ? <TrendingUp size={14}/> : <TrendingDown size={14}/>} {change > 0 ? "+" : ""}{change}%</span></div>
             <p className="mt-4 text-sm font-bold text-slate-500">{item.label}</p>
@@ -172,8 +209,9 @@ export default function ParentIntelligenceDashboard() {
 
       <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100 sm:p-7">
         <div className="flex items-center justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-wider text-violet-600">Smart recommendations</p><h3 className="mt-1 text-xl font-black text-[#071b3a]">Good next steps</h3></div><TrendingUp className="text-violet-500" size={22}/></div>
+        {message && <div className="mt-4 rounded-2xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-800">{message}</div>}
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          {recommendations.slice(0, 3).map(item => <div key={item.recommendation_id} className="rounded-2xl bg-gradient-to-br from-violet-50 to-cyan-50 p-5"><p className="text-xs font-black uppercase tracking-wider text-violet-600">{item.topic_title || item.goal_type.replaceAll("_", " ")}</p><h4 className="mt-2 font-black text-slate-800">{item.title}</h4><p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p><div className="mt-3 rounded-xl bg-white/80 p-3 text-xs font-semibold text-slate-600"><span className="font-black text-slate-800">Why:</span> {item.reason}</div></div>)}
+          {recommendations.slice(0, 3).map(item => <div key={item.recommendation_id} className="rounded-2xl bg-gradient-to-br from-violet-50 to-cyan-50 p-5"><p className="text-xs font-black uppercase tracking-wider text-violet-600">{item.topic_title || item.goal_type.replaceAll("_", " ")}</p><h4 className="mt-2 font-black text-slate-800">{item.title}</h4><p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p><div className="mt-3 rounded-xl bg-white/80 p-3 text-xs font-semibold text-slate-600"><span className="font-black text-slate-800">Why:</span> {item.reason}</div><button type="button" onClick={() => acceptRecommendation(item)} disabled={savingRecommendation !== null} className="mt-4 w-full rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60">{savingRecommendation === item.recommendation_id ? "Adding…" : "Add as a goal"}</button></div>)}
           {!recommendations.length && <p className="md:col-span-3 rounded-2xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">There are no new recommendations right now. Continue with the current routine.</p>}
         </div>
       </div>
