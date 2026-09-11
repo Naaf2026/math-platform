@@ -17,18 +17,66 @@ export default function MissionQuestionPopup() {
         el.classList.remove("mission-question-window");
       });
     };
-    const onComplete = () => { setActive(false); clearWindow(); };
-    const onRestart = () => { setActive(true); window.setTimeout(applyWindow, 0); };
-    const onRetry = () => { setActive(true); window.setTimeout(applyWindow, 0); };
+
+    let advanceTimer = 0;
+    let lastFeedback = "";
+    const scheduleAdvance = () => {
+      window.clearTimeout(advanceTimer);
+      advanceTimer = window.setTimeout(() => {
+        const panel = document.querySelector<HTMLElement>(".mission-question-window");
+        if (!panel) return;
+        const buttons = Array.from(panel.querySelectorAll<HTMLButtonElement>("button"));
+        const nextButton = buttons.find((button) => {
+          const label = (button.innerText || button.getAttribute("aria-label") || "").trim().toLowerCase();
+          return /^(next|next question|continue|continue adventure|next challenge|finish)$/i.test(label);
+        });
+        if (nextButton && !nextButton.disabled) nextButton.click();
+      }, 1100);
+    };
+
+    const inspectFeedback = () => {
+      const panel = document.querySelector<HTMLElement>(".mission-question-window");
+      if (!panel) return;
+      const text = panel.innerText || "";
+      const correct = /(?:^|\n)(?:Correct!|Great job|Well done|Excellent)/i.test(text);
+      const incorrect = /(?:^|\n)(?:Not quite|Incorrect|Try again|Good try)/i.test(text);
+      if (!correct && !incorrect) return;
+      const result = correct ? "correct" : "incorrect";
+      const signature = `${result}::${text.slice(-500)}`;
+      if (signature === lastFeedback) return;
+      lastFeedback = signature;
+      scheduleAdvance();
+    };
+
+    const onComplete = () => {
+      window.clearTimeout(advanceTimer);
+      setActive(false);
+      clearWindow();
+    };
+    const onRestart = () => {
+      lastFeedback = "";
+      setActive(true);
+      window.setTimeout(applyWindow, 0);
+    };
+    const onRetry = () => {
+      window.clearTimeout(advanceTimer);
+      lastFeedback = "";
+      setActive(true);
+      window.setTimeout(applyWindow, 0);
+    };
 
     applyWindow();
-    const observer = new MutationObserver(applyWindow);
-    observer.observe(document.body, { childList: true, subtree: true });
+    const observer = new MutationObserver(() => {
+      applyWindow();
+      inspectFeedback();
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
     window.addEventListener("fv:mission-complete", onComplete);
     window.addEventListener("fv:mission-restart", onRestart);
     window.addEventListener("fv:retry-question", onRetry);
 
     return () => {
+      window.clearTimeout(advanceTimer);
       observer.disconnect();
       clearWindow();
       window.removeEventListener("fv:mission-complete", onComplete);
