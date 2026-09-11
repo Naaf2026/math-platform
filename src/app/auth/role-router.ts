@@ -23,7 +23,7 @@ export async function getUserRole(supabase: SupabaseClient, userId: string): Pro
 
 export function roleHome(role: AppRole | null) {
   switch (role) {
-    case "admin": return "/admin/classes";
+    case "admin": return "/admin";
     case "teacher": return "/teacher";
     case "parent":
     case "guardian": return "/parent";
