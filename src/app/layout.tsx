@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import StudentNavigation from "@/components/student-navigation";
+import SoundCelebrationSystem from "@/components/sound-celebration-system";
 
 export const metadata: Metadata = {
   title: "FAHI VISSNUN Math Learning Platform",
@@ -13,6 +14,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         {children}
         <StudentNavigation />
+        <SoundCelebrationSystem />
       </body>
     </html>
   );
