@@ -68,9 +68,27 @@ export default function MissionQuestionPopup() {
           animation: mission-question-pop 360ms cubic-bezier(.2,.8,.2,1) both;
           overscroll-behavior: contain;
         }
-        .mission-question-window > div:first-child {
-          border-radius: 32px;
+        .mission-question-window > div:first-child { border-radius: 32px; }
+        .mission-exit-button {
+          position: fixed;
+          top: 18px;
+          right: 18px;
+          z-index: 75;
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          border-radius: 999px;
+          padding: 10px 15px;
+          background: rgba(255, 255, 255, 0.96);
+          color: #475569;
+          font-size: 12px;
+          font-weight: 900;
+          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+          border: 1px solid rgba(226, 232, 240, 0.95);
+          transition: transform 160ms ease, background 160ms ease, color 160ms ease;
         }
+        .mission-exit-button:hover { transform: translateY(-1px); background: white; color: #dc2626; }
+        .mission-exit-button:focus-visible { outline: 3px solid rgba(139, 92, 246, 0.35); outline-offset: 2px; }
         @keyframes mission-question-pop {
           0% { opacity: 0; transform: translate(-50%, -46%) scale(.94); }
           60% { opacity: 1; transform: translate(-50%, -50%) scale(1.015); }
@@ -78,10 +96,17 @@ export default function MissionQuestionPopup() {
         }
         @media (max-width: 640px) {
           .mission-question-window { width: calc(100vw - 16px) !important; max-height: 92vh !important; border-radius: 24px; }
+          .mission-exit-button { top: 10px; right: 10px; padding: 9px 12px; }
         }
         @media (prefers-reduced-motion: reduce) { .mission-question-window { animation: none; } }
       `}</style>
       <div className="mission-question-backdrop" aria-hidden="true" />
+      {active && (
+        <a className="mission-exit-button" href="/dashboard" aria-label="Exit mission and return to dashboard">
+          <span aria-hidden="true">✕</span>
+          Exit Mission
+        </a>
+      )}
     </>
   );
 }
