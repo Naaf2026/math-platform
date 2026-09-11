@@ -1,0 +1,143 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { Archive, Copy, Eye, Filter, LibraryBig, Pencil, Plus, Save, Send, Trash2, X } from "lucide-react";
+import InteractiveQuestionAuthoringPanel from "@/components/interactive-question-authoring-panel";
+import InteractiveQuestionEngine from "@/components/interactive-question-engine";
+import {
+  archiveQuestionBankItem,
+  createQuestionBankItem,
+  duplicateQuestionBankItem,
+  publishQuestionBankItem,
+  questionAccuracy,
+  recordQuestionUsage,
+  updateQuestionBankItem,
+  validateQuestionBankItem,
+  type QuestionBankDifficulty,
+  type QuestionBankItem,
+  type QuestionBankStatus,
+} from "@/lib/question-bank-management";
+
+const STORAGE_KEY = "fv:question-bank:v1";
+const seed = createQuestionBankItem({ prompt: "What is 7 + 5?", answer: "12", options: ["10", "11", "12", "13"], interaction_type: "multiple_choice", explanation: "7 + 5 = 12." });
+
+export default function QuestionBankManager() {
+  const [items, setItems] = useState<QuestionBankItem[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | QuestionBankStatus>("all");
+  const [difficultyFilter, setDifficultyFilter] = useState<"all" | QuestionBankDifficulty>("all");
+  const [preview, setPreview] = useState(false);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      setItems(raw ? JSON.parse(raw) : [seed]);
+    } catch {
+      setItems([seed]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (items.length) localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }, [items]);
+
+  const selected = items.find((item) => item.id === selectedId) ?? null;
+  const filtered = useMemo(() => items.filter((item) => {
+    const text = `${item.title} ${item.prompt} ${item.topic} ${item.tags.join(" ")}`.toLowerCase();
+    return (!query || text.includes(query.toLowerCase())) && (statusFilter === "all" || item.status === statusFilter) && (difficultyFilter === "all" || item.difficulty === difficultyFilter);
+  }), [items, query, statusFilter, difficultyFilter]);
+
+  const choose = (item: QuestionBankItem) => { setSelectedId(item.id); setPreview(false); setMessage(""); };
+  const updateSelected = (next: QuestionBankItem) => setItems((current) => current.map((item) => item.id === next.id ? next : item));
+
+  const create = () => {
+    const item = createQuestionBankItem({ prompt: "", answer: "", options: ["Option 1", "Option 2"], interaction_type: "multiple_choice" });
+    setItems((current) => [item, ...current]);
+    setSelectedId(item.id);
+    setPreview(false);
+  };
+
+  const duplicate = () => {
+    if (!selected) return;
+    const item = duplicateQuestionBankItem(selected);
+    setItems((current) => [item, ...current]);
+    setSelectedId(item.id);
+    setPreview(false);
+    setMessage("Question duplicated as a draft.");
+  };
+
+  const publish = () => {
+    if (!selected) return;
+    try {
+      updateSelected(publishQuestionBankItem(selected));
+      setMessage("Published. This version is ready for mission assignment.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Validation failed.");
+    }
+  };
+
+  const archive = () => {
+    if (!selected) return;
+    updateSelected(archiveQuestionBankItem(selected));
+    setMessage("Question archived.");
+  };
+
+  const remove = () => {
+    if (!selected) return;
+    if (selected.status === "published") { setMessage("Published questions cannot be deleted. Archive them instead."); return; }
+    setItems((current) => current.filter((item) => item.id !== selected.id));
+    setSelectedId(null);
+    setMessage("Draft removed.");
+  };
+
+  const save = () => {
+    if (!selected) return;
+    const errors = validateQuestionBankItem(selected);
+    setMessage(errors.length ? `Saved as draft. ${errors.join(" ")}` : `Saved version ${selected.version}.`);
+  };
+
+  const answerPreview = (answer: string) => {
+    if (!selected) return;
+    const correct = answer.trim().toLowerCase() === String(selected.answer).trim().toLowerCase();
+    updateSelected(recordQuestionUsage(selected, correct));
+  };
+
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50 p-5 pb-24 sm:p-8">
+      <div className="mx-auto max-w-7xl">
+        <header className="flex flex-wrap items-center justify-between gap-4">
+          <div><Link href="/teacher" className="text-sm font-black text-violet-600">← Teacher Dashboard</Link><h1 className="mt-2 flex items-center gap-3 text-3xl font-black text-[#071b3a]"><LibraryBig className="text-violet-600"/> Question Bank</h1><p className="mt-1 text-sm text-slate-500">Create, validate, preview, publish, version and assign interactive maths questions.</p></div>
+          <button onClick={create} className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 font-black text-white shadow-lg"><Plus size={18}/> New question</button>
+        </header>
+
+        <div className="mt-6 grid gap-5 lg:grid-cols-[330px_1fr]">
+          <aside className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400"><Filter size={15}/> Bank filters</div>
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search questions…" className="mt-3 w-full rounded-2xl border-2 border-slate-100 px-4 py-3 text-sm font-semibold outline-none focus:border-violet-300"/>
+            <div className="mt-3 grid grid-cols-2 gap-2"><select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold"><option value="all">All status</option><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select><select value={difficultyFilter} onChange={(e) => setDifficultyFilter(e.target.value as typeof difficultyFilter)} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold"><option value="all">All levels</option><option value="foundation">Foundation</option><option value="developing">Developing</option><option value="proficient">Proficient</option><option value="challenge">Challenge</option></select></div>
+            <div className="mt-4 space-y-2">{filtered.map((item) => <button key={item.id} onClick={() => choose(item)} className={`w-full rounded-2xl border p-4 text-left transition ${selectedId === item.id ? "border-violet-300 bg-violet-50" : "border-slate-100 hover:border-violet-200 hover:bg-slate-50"}`}><div className="flex items-start justify-between gap-2"><span className="line-clamp-2 font-black text-[#071b3a]">{item.title}</span><span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black uppercase">{item.status}</span></div><p className="mt-2 text-xs text-slate-500">{item.topic} · {item.interaction_type?.replaceAll("_", " ")} · v{item.version}</p></button>)}{filtered.length === 0 && <p className="rounded-2xl bg-slate-50 p-5 text-center text-sm text-slate-500">No questions match these filters.</p>}</div>
+          </aside>
+
+          <section className="min-w-0 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100 sm:p-7">
+            {!selected ? <div className="flex min-h-[520px] flex-col items-center justify-center text-center"><LibraryBig size={54} className="text-violet-200"/><h2 className="mt-4 text-2xl font-black text-[#071b3a]">Select a question</h2><p className="mt-2 max-w-md text-sm text-slate-500">Choose a question from the bank or create a new one to start authoring.</p></div> : <>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-5"><div><p className="text-xs font-black uppercase tracking-wider text-violet-600">Content record · {selected.id}</p><h2 className="mt-1 text-2xl font-black text-[#071b3a]">{selected.title}</h2><p className="mt-1 text-xs text-slate-400">Version {selected.version} · Updated {new Date(selected.updatedAt).toLocaleString()}</p></div><div className="flex flex-wrap gap-2"><button onClick={() => setPreview((v) => !v)} className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-sm font-black text-slate-700"><Eye size={16}/>{preview ? "Edit" : "Preview"}</button><button onClick={duplicate} className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-sm font-black text-slate-700"><Copy size={16}/>Duplicate</button><button onClick={save} className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-sm font-black text-white"><Save size={16}/>Save</button></div></div>
+
+              {message && <div className="mt-4 rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-sm font-bold text-violet-700">{message}</div>}
+
+              {preview ? <div className="mt-6 rounded-3xl bg-slate-50 p-5 sm:p-8"><div className="mb-4 flex items-center justify-between"><div><p className="text-xs font-black uppercase tracking-wider text-emerald-600">Learner preview</p><p className="text-sm font-bold text-slate-500">Answers are recorded only as local usage telemetry in this MVP.</p></div><button onClick={() => setPreview(false)} className="rounded-full bg-white p-2"><X size={18}/></button></div><div className="rounded-3xl bg-white p-5 shadow-sm"><InteractiveQuestionEngine key={`${selected.id}-${selected.version}`} question={selected} selected={null} onAnswer={answerPreview}/></div></div> : <div className="mt-6"><InteractiveQuestionAuthoringPanel initialQuestion={selected} onChange={(question) => updateSelected({ ...selected, ...question, title: question.prompt?.slice(0, 72) || "Untitled question", updatedAt: new Date().toISOString() })}/>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2"><MetaField label="Title" value={selected.title} onChange={(title) => updateSelected(updateQuestionBankItem(selected, { title }))}/><MetaField label="Topic" value={selected.topic} onChange={(topic) => updateSelected(updateQuestionBankItem(selected, { topic }))}/><MetaField label="Tags" value={selected.tags.join(", ")} onChange={(value) => updateSelected(updateQuestionBankItem(selected, { tags: value.split(",").map((v) => v.trim()).filter(Boolean) }))}/><MetaSelect label="Difficulty" value={selected.difficulty} options={["foundation","developing","proficient","challenge"]} onChange={(difficulty) => updateSelected(updateQuestionBankItem(selected, { difficulty: difficulty as QuestionBankDifficulty }))}/><MetaField label="Mission IDs" value={selected.missionIds.join(", ")} onChange={(value) => updateSelected(updateQuestionBankItem(selected, { missionIds: value.split(",").map((v) => v.trim()).filter(Boolean) }))}/><div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs font-black uppercase tracking-wider text-slate-400">Usage</p><p className="mt-2 text-lg font-black text-[#071b3a]">{selected.usageCount} attempts · {questionAccuracy(selected)}% accuracy</p><p className="text-xs text-slate-500">Published content keeps its usage history.</p></div></div>
+                <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-5"><button onClick={publish} disabled={selected.status === "published"} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-black text-white disabled:opacity-40"><Send size={16}/>Publish</button><button onClick={archive} disabled={selected.status === "archived"} className="inline-flex items-center gap-2 rounded-xl bg-amber-100 px-4 py-2.5 text-sm font-black text-amber-800"><Archive size={16}/>Archive</button><button onClick={remove} className="inline-flex items-center gap-2 rounded-xl bg-rose-50 px-4 py-2.5 text-sm font-black text-rose-700"><Trash2 size={16}/>Delete draft</button><span className="ml-auto text-xs font-bold text-slate-400">Status: {selected.status} · v{selected.version}</span></div>
+              </div>}
+            </>}
+          </section>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function MetaField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) { return <label className="rounded-2xl border border-slate-100 bg-white p-4 text-sm font-black text-slate-700">{label}<input value={value} onChange={(e) => onChange(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 font-semibold outline-none focus:border-violet-300"/></label>; }
+function MetaSelect({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) { return <label className="rounded-2xl border border-slate-100 bg-white p-4 text-sm font-black text-slate-700">{label}<select value={value} onChange={(e) => onChange(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 font-semibold">{options.map((item) => <option key={item}>{item}</option>)}</select></label>; }
