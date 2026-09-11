@@ -20,6 +20,11 @@ type Intervention = {
   completed_at: string | null;
 };
 
+type ClassRosterRow = {
+  student_id: string;
+  display_name: string | null;
+};
+
 export default function TeacherInterventionsPage() {
   const [classes, setClasses] = useState<ClassRow[]>([]);
   const [students, setStudents] = useState<StudentRow[]>([]);
@@ -84,57 +89,32 @@ export default function TeacherInterventionsPage() {
       const supabase = createClient();
       if (!supabase) return;
 
-      // Load active membership IDs first, then resolve profile names separately.
-      // This avoids relying on a PostgREST relationship alias for profiles.
-      const { data: memberData, error: memberError } = await supabase
-        .from("class_members")
-        .select("student_id")
-        .eq("class_id", Number(classId))
-        .eq("status", "active");
+      setError("");
 
-      if (memberError) {
-        setError(memberError.message);
-        setStudents([]);
-        return;
-      }
-
-      const studentIds = (memberData ?? [])
-        .map((row) => row.student_id as string)
-        .filter(Boolean);
-
-      if (!studentIds.length) {
-        setStudents([]);
-        setStudentId("");
-        void loadInterventions(classId);
-        return;
-      }
-
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("id,display_name,full_name")
-        .in("id", studentIds);
-
-      if (profileError) {
-        setError(profileError.message);
-        setStudents([]);
-        setStudentId("");
-        return;
-      }
-
-      const profilesById = new Map(
-        (profileData ?? []).map((profile) => [
-          profile.id as string,
-          (profile.display_name || profile.full_name || "Student") as string,
-        ])
+      // Use the existing secure teacher class-roster RPC instead of querying
+      // profiles directly. This respects the teacher's class-scoped access
+      // and returns the profile display name/full name resolved server-side.
+      const { data: rosterData, error: rosterError } = await supabase.rpc(
+        "get_class_roster_report",
+        { p_class_id: Number(classId) }
       );
 
-      const rows = studentIds.map((id) => ({
-        id,
-        name: profilesById.get(id) || "Student",
+      if (rosterError) {
+        setError(rosterError.message);
+        setStudents([]);
+        setStudentId("");
+        return;
+      }
+
+      const rows = ((rosterData ?? []) as ClassRosterRow[]).map((row) => ({
+        id: row.student_id,
+        name: row.display_name || "Student",
       }));
 
       setStudents(rows);
-      setStudentId((current) => rows.some((row) => row.id === current) ? current : rows[0]?.id ?? "");
+      setStudentId((current) =>
+        rows.some((row) => row.id === current) ? current : rows[0]?.id ?? ""
+      );
       void loadInterventions(classId);
     }
     void loadStudents();
