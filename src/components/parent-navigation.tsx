@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, GraduationCap, Home, ShieldCheck, Users } from "lucide-react";
+import { BarChart3, BookOpen, GraduationCap, Home, ShieldCheck, Users } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const items = [
   { href: "/parent", label: "Overview", icon: Home },
   { href: "/parent", label: "Progress", icon: BarChart3 },
   { href: "/parent", label: "Child", icon: Users },
+  { href: "/parent/history", label: "Learning History", icon: BookOpen },
 ];
 
 function isActive(pathname: string, href: string, label: string) {
@@ -21,13 +22,13 @@ export default function ParentNavigation() {
   return (
     <>
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200/80 bg-slate-50/95 px-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.10)] backdrop-blur-xl lg:hidden" aria-label="Parent and guardian navigation">
-        <div className="mx-auto grid max-w-lg grid-cols-3 gap-1">
+        <div className="mx-auto grid max-w-lg grid-cols-4 gap-1">
           {items.map(({ href, label, icon: Icon }) => {
             const active = isActive(pathname, href, label);
             return (
-              <Link key={label} href={href} aria-current={active ? "page" : undefined} className={`flex min-h-14 flex-col items-center justify-center rounded-2xl text-[11px] font-black transition ${active ? "bg-violet-100 text-violet-700" : "text-slate-500 hover:bg-white hover:text-violet-600"}`}>
+              <Link key={label} href={href} aria-current={active ? "page" : undefined} className={`flex min-h-14 flex-col items-center justify-center rounded-2xl text-[10px] font-black transition ${active ? "bg-violet-100 text-violet-700" : "text-slate-500 hover:bg-white hover:text-violet-600"}`}>
                 <Icon size={20} strokeWidth={active ? 2.7 : 2.2} />
-                <span className="mt-1">{label}</span>
+                <span className="mt-1 text-center">{label}</span>
               </Link>
             );
           })}
