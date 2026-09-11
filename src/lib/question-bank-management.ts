@@ -26,6 +26,7 @@ export type QuestionBankPatch = Partial<Omit<QuestionBankItem, "id" | "version" 
 export function createQuestionBankItem(question: InteractiveQuestion = {}): QuestionBankItem {
   const now = new Date().toISOString();
   const id = question.id || `q_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const { id: questionId, ...questionData } = question;
   return {
     id,
     title: question.prompt?.slice(0, 72) || "Untitled question",
@@ -40,7 +41,7 @@ export function createQuestionBankItem(question: InteractiveQuestion = {}): Ques
     correctCount: 0,
     createdAt: now,
     updatedAt: now,
-    ...question,
+    ...questionData,
     interaction_type: normalizeInteractionType(question),
     interaction_config: question.interaction_config || {},
   };
@@ -51,7 +52,8 @@ export function updateQuestionBankItem(item: QuestionBankItem, patch: QuestionBa
 }
 
 export function duplicateQuestionBankItem(item: QuestionBankItem): QuestionBankItem {
-  const copy = createQuestionBankItem({ ...item, id: undefined });
+  const { id, version, createdAt, updatedAt, publishedAt, status, usageCount, correctCount, missionIds, ...question } = item;
+  const copy = createQuestionBankItem(question);
   return { ...copy, title: `${item.title} (Copy)`, status: "draft", version: 1, usageCount: 0, correctCount: 0, missionIds: [] };
 }
 
