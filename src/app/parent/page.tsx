@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BarChart3, CalendarDays, CheckCircle2, Flame, Gem, GraduationCap, Medal, Plus, ShieldCheck, Sparkles, Target, TrendingUp, Trophy } from "lucide-react";
+import { ArrowLeft, BarChart3, CalendarDays, CheckCircle2, Flame, Gem, GraduationCap, Lightbulb, Medal, Plus, ShieldCheck, Sparkles, Target, TrendingUp, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Report = {
@@ -19,6 +19,10 @@ type Goal = {
   target_value: number; current_value: number; progress_percent: number; topic_title: string | null;
   start_date: string; due_date: string; status: string; days_remaining: number;
 };
+type Recommendation = {
+  recommendation_id: string; goal_type: string; title: string; description: string;
+  target_value: number; topic_title: string | null; reason: string; priority: number;
+};
 
 const goalLabels: Record<string, string> = {
   questions: "Questions",
@@ -32,8 +36,10 @@ export default function ParentPage() {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [weekly, setWeekly] = useState<WeeklyDay[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [status, setStatus] = useState("Loading family report…");
   const [weeklyAvailable, setWeeklyAvailable] = useState(true);
+  const [recommendationsAvailable, setRecommendationsAvailable] = useState(true);
   const [authDebug, setAuthDebug] = useState<{ id: string; email: string | null; name: string | null } | null>(null);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [showGoalForm, setShowGoalForm] = useState(false);
@@ -44,6 +50,12 @@ export default function ParentPage() {
   const loadGoals = async (client: ReturnType<typeof createClient>, id: string) => {
     const { data, error } = await client.rpc("get_parent_learning_goals", { p_student_id: id });
     if (!error) setGoals((data ?? []) as Goal[]);
+    return error;
+  };
+
+  const loadRecommendations = async (client: ReturnType<typeof createClient>, id: string) => {
+    const { data, error } = await client.rpc("get_parent_goal_recommendations", { p_student_id: id });
+    if (!error) setRecommendations((data ?? []) as Recommendation[]);
     return error;
   };
 
@@ -60,17 +72,19 @@ export default function ParentPage() {
       if (linkError) { setStatus(`Relationship lookup failed: ${linkError.message}`); return; }
       if (!id) { setStatus("No linked student found. A parent account must be explicitly linked to a student first."); return; }
       setStudentId(id);
-      const [{ data, error }, { data: tp }, { data: wa, error: weeklyError }, { data: gl }] = await Promise.all([
+      const [{ data, error }, { data: tp }, { data: wa, error: weeklyError }, { data: gl }, { data: recs, error: recommendationError }] = await Promise.all([
         s.rpc("get_learning_report", { p_student_id: id }),
         s.rpc("get_linked_student_topics", { p_student_id: id }),
         s.rpc("get_parent_weekly_activity", { p_student_id: id }),
         s.rpc("get_parent_learning_goals", { p_student_id: id }),
+        s.rpc("get_parent_goal_recommendations", { p_student_id: id }),
       ]);
       if (error || !data?.[0]) { setStatus(error?.message || "The linked student report is unavailable."); return; }
       setReport(data[0] as Report);
       setTopics((tp ?? []) as Topic[]);
       if (weeklyError) setWeeklyAvailable(false); else setWeekly((wa ?? []) as WeeklyDay[]);
       setGoals((gl ?? []) as Goal[]);
+      if (recommendationError) setRecommendationsAvailable(false); else setRecommendations((recs ?? []) as Recommendation[]);
       setStatus("");
     })();
   }, []);
@@ -113,8 +127,34 @@ export default function ParentPage() {
       setGoalForm({ title: "", description: "", goal_type: "questions", target_value: "20", topic_title: "", due_date: "" });
       setShowGoalForm(false); setGoalMessage("Goal created successfully.");
       await loadGoals(s, studentId);
+      await loadRecommendations(s, studentId);
     }
     setGoalSaving(false);
+  }
+
+  async function acceptRecommendation(recommendation: Recommendation) {
+    if (!studentId) return;
+    const s = createClient();
+    if (!s) return;
+    setGoalMessage("");
+    const due = new Date();
+    due.setDate(due.getDate() + 6);
+    const { error } = await s.rpc("create_parent_learning_goal", {
+      p_student_id: studentId,
+      p_title: recommendation.title,
+      p_description: recommendation.description,
+      p_goal_type: recommendation.goal_type,
+      p_target_value: Number(recommendation.target_value),
+      p_topic_title: recommendation.topic_title,
+      p_start_date: new Date().toISOString().slice(0, 10),
+      p_due_date: due.toISOString().slice(0, 10),
+    });
+    if (error) setGoalMessage(error.message);
+    else {
+      setGoalMessage("Recommended goal added.");
+      await loadGoals(s, studentId);
+      await loadRecommendations(s, studentId);
+    }
   }
 
   if (status && !report) return <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-6"><div className="mx-auto mt-24 max-w-xl rounded-[2rem] bg-white p-10 text-center shadow-xl"><ShieldCheck className="mx-auto text-violet-600" size={48}/><h1 className="mt-4 text-2xl font-black text-[#071b3a]">Parent & Guardian Report</h1><p className="mt-3 text-sm leading-6 text-slate-500">{status}</p>{authDebug && <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-left text-xs text-slate-600"><p className="font-black text-slate-800">Authentication diagnostic</p><p className="mt-2 break-all"><b>User ID:</b> {authDebug.id}</p><p className="mt-1"><b>Email:</b> {authDebug.email || "Not available"}</p><p className="mt-1"><b>Profile:</b> {authDebug.name || "Not found"}</p></div>}<Link href="/dashboard" className="mt-6 inline-flex rounded-2xl bg-violet-600 px-5 py-3 font-black text-white">Back to dashboard</Link></div></main>;
@@ -131,6 +171,8 @@ export default function ParentPage() {
       <div className="mt-6 space-y-4">{activeGoals.map(g => <GoalCard key={g.goal_id} goal={g}/>)}{completedGoals.length > 0 && <div className="pt-3"><p className="mb-3 text-xs font-black uppercase tracking-wider text-emerald-700">Completed goals</p>{completedGoals.slice(0,4).map(g => <GoalCard key={g.goal_id} goal={g} completed/>)}</div>}{!goals.length && !showGoalForm && <div className="rounded-2xl bg-slate-50 p-6 text-center"><p className="font-black text-[#071b3a]">No learning goals yet</p><p className="mt-1 text-sm text-slate-500">Create a first goal to give the learner a clear, measurable next step.</p></div>}</div>
     </section>
 
+    <section className="mt-6 rounded-3xl bg-gradient-to-br from-amber-50 via-white to-violet-50 p-6 shadow-sm ring-1 ring-amber-100 sm:p-8"><div className="flex items-center justify-between gap-4"><div className="flex items-center gap-3"><Lightbulb className="text-amber-500"/><div><p className="text-xs font-black uppercase tracking-wider text-amber-700">Smart recommendations</p><h2 className="text-2xl font-black text-[#071b3a]">Suggested next goals</h2><p className="mt-1 text-sm text-slate-500">Recommendations are based on the learner’s current topic mastery, accuracy and recent practice consistency.</p></div></div><Sparkles className="hidden text-violet-500 sm:block"/></div>{recommendationsAvailable ? recommendations.length ? <div className="mt-6 grid gap-4 lg:grid-cols-3">{recommendations.map(r => <RecommendationCard key={r.recommendation_id} recommendation={r} onAccept={() => acceptRecommendation(r)}/>)}</div> : <div className="mt-5 rounded-2xl bg-white/80 p-5 text-sm text-slate-600">No new recommendations right now. The learner is already working on the main areas identified by the system.</div> : <div className="mt-5 rounded-2xl bg-amber-100/70 p-5 text-sm text-amber-800">Smart recommendations are ready in the app code but the new Supabase function still needs to be applied.</div>}</section>
+
     <section className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_.8fr]"><div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100 sm:p-7"><div className="flex items-center justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-wider text-violet-600">Overall progress</p><h2 className="text-2xl font-black text-[#071b3a]">How learning is going</h2></div><Sparkles className="text-cyan-500"/><TrendingUp className="text-violet-500"/></div><Progress label="Accuracy" value={accuracyProgress} suffix="%"/><Progress label="Average mastery" value={masteryProgress} suffix="%"/><div className="mt-6 grid gap-3 sm:grid-cols-3"><MiniStat label="Questions" value={report?.total_questions ?? 0}/><MiniStat label="Topics explored" value={report?.topics_explored ?? 0}/><MiniStat label="Best combo" value={report?.best_combo ?? 0}/></div></div><div className="rounded-3xl bg-gradient-to-br from-cyan-50 to-blue-50 p-6 ring-1 ring-cyan-100 sm:p-7"><p className="text-xs font-black uppercase tracking-wider text-cyan-700">Learning snapshot</p><h2 className="mt-2 text-2xl font-black text-[#071b3a]">{masteryProgress >= 75 ? "Strong progress" : masteryProgress >= 50 ? "Building steadily" : "Keep strengthening foundations"}</h2><p className="mt-3 text-sm leading-6 text-slate-600">{masteryProgress >= 75 ? "The learner is showing strong overall mastery. Keep reinforcing regular practice and challenging them with new topics." : "Short, consistent practice sessions can help strengthen foundations and build confidence over time."}</p><div className="mt-5 grid grid-cols-2 gap-3"><Reward icon={<Medal/>} label="Coins" value={report?.coins ?? 0}/><Reward icon={<Gem/>} label="Gems" value={report?.gems ?? 0}/></div></div></section>
     <section className="mt-6 grid gap-6 lg:grid-cols-[1.35fr_.65fr]"><div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-violet-100 sm:p-8"><div className="flex items-center gap-3"><BarChart3 className="text-violet-600"/><div><p className="text-xs font-black uppercase tracking-wider text-violet-600">Topic mastery</p><h2 className="text-2xl font-black text-[#071b3a]">Learning progress</h2></div></div><div className="mt-6 space-y-4">{topics.length ? topics.map(t => <TopicBar key={t.topic_id} topic={t}/>) : <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Topic detail will appear after the student completes practice.</p>}</div></div><div className="space-y-6"><TopicList title="Strengths" tone="emerald" topics={strongest}/><TopicList title="Needs more practice" tone="amber" topics={support}/></div></section>
     <section className="mt-6 grid gap-6 sm:grid-cols-2"><div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100"><div className="flex items-center gap-3"><Trophy className="text-amber-500"/><div><p className="text-xs font-black uppercase tracking-wider text-violet-600">Achievements</p><h2 className="text-xl font-black text-[#071b3a]">Learning milestones</h2></div></div><div className="mt-5 grid grid-cols-2 gap-3"><Milestone label="Missions" value={report?.missions_completed ?? 0}/><Milestone label="Best streak" value={`${report?.best_streak ?? 0} days`}/><Milestone label="Best combo" value={report?.best_combo ?? 0}/><Milestone label="Topics" value={report?.topics_explored ?? 0}/></div></div><div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100"><p className="text-xs font-black uppercase tracking-wider text-violet-600">Parent view</p><h2 className="mt-2 text-xl font-black text-[#071b3a]">A simple picture of progress</h2><p className="mt-3 text-sm leading-6 text-slate-600">Use this report to celebrate consistency, notice topics that need support, and encourage regular practice. Detailed teacher interventions remain protected inside the teacher workspace.</p><div className="mt-5 rounded-2xl bg-violet-50 p-4 text-sm font-bold text-violet-800">Tip: celebrate effort and consistency, not only high scores.</div></div></section>
@@ -142,6 +184,10 @@ function GoalCard({ goal, completed = false }: { goal: Goal; completed?: boolean
   const target = Number(goal.target_value || 0);
   const suffix = goal.goal_type === "accuracy" ? "%" : "";
   return <div className={`rounded-3xl border p-5 ${completed ? "border-emerald-100 bg-emerald-50/60" : "border-violet-100 bg-white"}`}><div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h3 className="text-lg font-black text-[#071b3a]">{goal.title}</h3><span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${completed ? "bg-emerald-100 text-emerald-700" : "bg-violet-100 text-violet-700"}`}>{completed ? "Completed" : goalLabels[goal.goal_type] || goal.goal_type}</span></div>{goal.description && <p className="mt-1 text-sm text-slate-500">{goal.description}</p>}{goal.topic_title && <p className="mt-2 text-xs font-bold text-cyan-700">Topic: {goal.topic_title}</p>}</div><div className="text-right"><p className="text-2xl font-black text-violet-700">{value}{suffix}<span className="text-sm font-bold text-slate-400"> / {target}{suffix}</span></p><p className="text-xs font-bold text-slate-400">{completed ? "Goal reached" : `${goal.days_remaining} day${goal.days_remaining === 1 ? "" : "s"} remaining`}</p></div></div><div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full transition-all ${completed ? "bg-emerald-500" : "bg-gradient-to-r from-violet-500 to-cyan-400"}`} style={{width:`${Math.min(100,Math.max(0,Number(goal.progress_percent || 0)))}%`}}/></div><div className="mt-2 flex justify-between text-xs font-bold text-slate-400"><span>{Math.min(100,Math.max(0,Number(goal.progress_percent || 0)))}% complete</span><span>Due {new Date(`${goal.due_date}T12:00:00`).toLocaleDateString()}</span></div></div>;
+}
+function RecommendationCard({ recommendation, onAccept }: { recommendation: Recommendation; onAccept: () => void }) {
+  const suffix = recommendation.goal_type === "accuracy" ? "%" : "";
+  return <div className="rounded-3xl border border-amber-100 bg-white p-5 shadow-sm"><div className="flex items-start justify-between gap-3"><div className="rounded-2xl bg-amber-50 p-3 text-amber-600"><Lightbulb size={20}/></div><span className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-violet-700">{goalLabels[recommendation.goal_type] || recommendation.goal_type}</span></div><h3 className="mt-4 text-lg font-black text-[#071b3a]">{recommendation.title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{recommendation.description}</p>{recommendation.topic_title && <p className="mt-3 text-xs font-bold text-cyan-700">Topic: {recommendation.topic_title}</p>}<div className="mt-4 rounded-2xl bg-slate-50 p-3"><p className="text-xs font-bold text-slate-400">Why this goal?</p><p className="mt-1 text-xs leading-5 text-slate-600">{recommendation.reason}</p></div><div className="mt-4 flex items-center justify-between gap-3"><span className="text-sm font-black text-violet-700">Target: {Number(recommendation.target_value)}{suffix}</span><button type="button" onClick={onAccept} className="rounded-2xl bg-violet-600 px-4 py-2.5 text-xs font-black text-white hover:bg-violet-700">Use this goal</button></div></div>;
 }
 function Metric({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) { return <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100"><div className="text-violet-600">{icon}</div><p className="mt-3 text-3xl font-black text-[#071b3a]">{value}</p><p className="text-sm text-slate-500">{label}</p></div>; }
 function MiniStat({ label, value }: { label: string; value: number | string }) { return <div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs font-bold text-slate-500">{label}</p><p className="mt-1 text-xl font-black text-[#071b3a]">{value}</p></div>; }
