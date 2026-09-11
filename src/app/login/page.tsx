@@ -24,10 +24,7 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
 
     if (error) {
       setLoading(false);
@@ -41,6 +38,23 @@ export default function LoginPage() {
       return;
     }
 
+    const { data: accountStatus, error: statusError } = await supabase.rpc("get_my_account_status");
+    if (statusError) {
+      await supabase.auth.signOut();
+      setLoading(false);
+      setMessage("We could not verify your account status. Please try again.");
+      return;
+    }
+
+    if (accountStatus !== "active") {
+      await supabase.auth.signOut();
+      setLoading(false);
+      setMessage(accountStatus === "inactive"
+        ? "This account is currently inactive. Please contact an administrator to reactivate it."
+        : "This account is not active yet. Please contact an administrator for activation.");
+      return;
+    }
+
     let role = await getUserRole(supabase, data.user.id);
 
     // Accounts created before role registration was introduced can still be
@@ -48,9 +62,7 @@ export default function LoginPage() {
     if (!role) {
       const requestedRole = data.user.user_metadata?.requested_role;
       if (typeof requestedRole === "string" && requestedRoles.includes(requestedRole as AppRole)) {
-        const { error: roleError } = await supabase.rpc("register_user_role", {
-          p_role: requestedRole,
-        });
+        const { error: roleError } = await supabase.rpc("register_user_role", { p_role: requestedRole });
         if (!roleError) role = await getUserRole(supabase, data.user.id);
       }
     }
