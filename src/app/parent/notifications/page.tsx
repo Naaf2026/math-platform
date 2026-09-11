@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Bell, Check, CheckCheck, Clock3, Flame, Info, Target, TrendingDown } from "lucide-react";
+import { ArrowLeft, Bell, Check, CheckCheck, Clock3, Flame, Info, Target, TrendingDown, TrendingUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Alert = {
@@ -19,17 +19,18 @@ type Alert = {
 type Filter = "all" | "unread" | "practice" | "accuracy" | "goals" | "streaks";
 
 const filterTypes: Record<Exclude<Filter, "all" | "unread">, string[]> = {
-  practice: ["practice_consistency", "no_recent_practice"],
-  accuracy: ["accuracy_attention", "accuracy_positive"],
-  goals: ["goal_deadline"],
+  practice: ["practice_consistency", "no_recent_practice", "consistency", "consistency_attention", "engagement", "positive_momentum", "weekly_summary"],
+  accuracy: ["accuracy_attention", "accuracy_positive", "accuracy_decline", "improvement", "topic_support"],
+  goals: ["goal_deadline", "goal_achieved", "goal_behind"],
   streaks: ["streak_milestone"],
 };
 
 function iconFor(type: string) {
   if (type === "streak_milestone") return Flame;
-  if (type === "goal_deadline") return Target;
-  if (type === "accuracy_attention" || type === "accuracy_positive") return TrendingDown;
-  if (type === "practice_consistency" || type === "no_recent_practice") return Clock3;
+  if (type === "goal_deadline" || type === "goal_achieved" || type === "goal_behind") return Target;
+  if (type === "accuracy_attention" || type === "accuracy_decline" || type === "topic_support") return TrendingDown;
+  if (type === "accuracy_positive" || type === "improvement" || type === "consistency" || type === "engagement" || type === "positive_momentum") return TrendingUp;
+  if (type === "practice_consistency" || type === "no_recent_practice" || type === "consistency_attention") return Clock3;
   return Info;
 }
 
@@ -67,7 +68,9 @@ export default function ParentNotificationsPage() {
     const studentId = links?.[0]?.student_id;
     if (!studentId) { setError("No linked student found."); setLoading(false); return; }
 
-    await s.rpc("generate_parent_learning_alerts", { p_student_id: studentId });
+    const { error: generationError } = await s.rpc("generate_parent_smart_alerts", { p_student_id: studentId });
+    if (generationError) setError(generationError.message);
+
     const { data, error: alertError } = await s.rpc("get_parent_learning_alerts", {
       p_student_id: studentId,
       p_limit: 50,
@@ -115,8 +118,8 @@ export default function ParentNotificationsPage() {
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-black uppercase tracking-wider"><Bell size={14}/> Parent notifications</div>
-              <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Learning alerts</h1>
-              <p className="mt-3 max-w-2xl text-indigo-100">A clear history of the learning signals that can help you support steady progress at home.</p>
+              <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Smart learning alerts</h1>
+              <p className="mt-3 max-w-2xl text-indigo-100">Learning patterns, weekly progress, goal pacing, and practical signals designed to help you support progress at home.</p>
             </div>
             <div className="rounded-3xl bg-white/10 p-5 text-center backdrop-blur">
               <p className="text-xs text-indigo-100">Unread</p>
@@ -138,7 +141,7 @@ export default function ParentNotificationsPage() {
           </div>
         </section>
 
-        {error && <div className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm font-semibold text-amber-800">Notifications are temporarily unavailable. Please refresh and try again.</div>}
+        {error && <div className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm font-semibold text-amber-800">Some smart notifications are temporarily unavailable. Please refresh and try again.</div>}
 
         <section className="mt-5 space-y-3">
           {loading ? <div className="rounded-3xl bg-white p-10 text-center text-sm font-semibold text-slate-500 shadow-sm">Loading notifications…</div> : filtered.length === 0 ? <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-slate-100"><Bell className="mx-auto text-slate-300" size={42}/><h2 className="mt-4 text-xl font-black text-slate-800">Nothing here yet</h2><p className="mt-2 text-sm text-slate-500">There are no alerts matching this view.</p></div> : filtered.map(alert => {
