@@ -2,38 +2,36 @@
 
 import { useEffect } from "react";
 
-/**
- * Bridges the existing question engine to the Mission game-mechanics layer.
- * The engine renders explicit correctness feedback after an answer is submitted;
- * this bridge watches that feedback and emits the authoritative game event once.
- */
+/** Bridges rendered answer feedback into one authoritative Mission event. */
 export default function MissionAnswerBridge() {
   useEffect(() => {
     if (!window.location.pathname.startsWith("/mission")) return;
-
     let lastSignature = "";
     let timer = 0;
 
     const inspect = () => {
-      const root = document.body;
-      const text = root.innerText || "";
+      const text = document.body.innerText || "";
       const question = (text.match(/Math Adventure · ([^\n]+)/)?.[1] || "").trim();
       if (!question) return;
-
-      // The interactive engine's Feedback view renders one of these states after
-      // submit. We only emit once per question + result, so MutationObserver churn
-      // cannot consume multiple lives for one answer.
       const correct = /(?:^|\n)(?:Correct!|Great job|Well done|Excellent)/i.test(text);
       const incorrect = /(?:^|\n)(?:Not quite|Incorrect|Try again|Good try)/i.test(text);
       if (!correct && !incorrect) return;
-
       const result = correct ? "correct" : "incorrect";
       const signature = `${question}::${result}`;
       if (signature === lastSignature) return;
       lastSignature = signature;
 
+      const pointsMatch = text.match(/⭐\s*\+\s*(\d+)\s*XP/i);
+      const difficulty = /\bBOSS\b/i.test(text) ? "hard" : /\bSTARTER\b/i.test(text) ? "easy" : "medium";
+      const hintUsed = /Helpful hint/i.test(text);
       window.dispatchEvent(new CustomEvent("fv:answer-result", {
-        detail: { correct, questionId: question },
+        detail: {
+          correct,
+          questionId: question,
+          points: pointsMatch ? Number(pointsMatch[1]) : 0,
+          difficulty,
+          hintUsed,
+        },
       }));
     };
 
@@ -50,13 +48,11 @@ export default function MissionAnswerBridge() {
       timer = window.setTimeout(inspect, 0);
     };
     window.addEventListener("fv:retry-question", resetForQuestion);
-
     return () => {
       window.clearTimeout(timer);
       observer.disconnect();
       window.removeEventListener("fv:retry-question", resetForQuestion);
     };
   }, []);
-
   return null;
 }
