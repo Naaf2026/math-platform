@@ -1,34 +1,29 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Award, Coins, Gem, Gift, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type RewardResult={coins_awarded:number;gems_awarded:number;badge_key:string|null;daily_bonus:number};
+type MissionResult={score:number;correct:number;answered:number;lives:number;combo:number;perfect:boolean;timedOut:boolean};
 
 export default function RewardsPersistenceSystem(){
  const [coins,setCoins]=useState(0),[gems,setGems]=useState(0),[badges,setBadges]=useState(0),[flash,setFlash]=useState<RewardResult|null>(null);
- const claimed=useRef(false);
  useEffect(()=>{
   if(typeof window!=="undefined"&&!window.location.pathname.startsWith("/mission"))return;
   const supabase=createClient(); if(!supabase)return;
   let active=true;
   (async()=>{const {data}=await supabase.rpc("get_student_rewards");if(active&&data?.[0]){setCoins(data[0].coins??0);setGems(data[0].gems??0);} const b=await supabase.from("student_badges").select("id",{count:"exact",head:true});if(active)setBadges(b.count??0);})();
-  const finish=async()=>{
-   if(claimed.current)return;
-   const text=document.body.innerText||"";
-   if(!/Math Champion!|Adventure complete/i.test(text))return;
-   claimed.current=true;
-   const correct=Number((text.match(/(\d+)\s*\/\s*(\d+)\s*Correct/i)||[])[1]||0),total=Number((text.match(/(\d+)\s*\/\s*(\d+)\s*Correct/i)||[])[2]||10);
-   const combo=Number((text.match(/Best Combo[^\d]*(\d+)/i)||[])[1]||0);
-   const xp=Number((text.match(/(?:Score|XP)[^\d]*(\d+)/i)||[])[1]||0);
-   const perfect=/PERFECT|Perfect Run/i.test(text);
-   const {data}=await supabase.rpc("award_mission_rewards",{p_xp:xp,p_combo:combo,p_correct:correct,p_total:total,p_perfect:perfect});
+
+  const finish=async(event:Event)=>{
+   const result=(event as CustomEvent<MissionResult>).detail;
+   if(!result || result.answered<10) return;
+   const {data}=await supabase.rpc("award_mission_rewards",{p_xp:result.score,p_combo:result.combo,p_correct:result.correct,p_total:result.answered,p_perfect:result.perfect});
    const r=data?.[0] as RewardResult|undefined;
-   if(r){setCoins(v=>v+(r.coins_awarded||0));setGems(v=>v+(r.gems_awarded||0));setFlash(r);window.setTimeout(()=>setFlash(null),5000);}
+   if(r){setCoins(v=>v+(r.coins_awarded||0));setGems(v=>v+(r.gems_awarded||0));if(r.badge_key)setBadges(v=>v+1);setFlash(r);window.setTimeout(()=>setFlash(null),5000);}
   };
-  const observer=new MutationObserver(finish);observer.observe(document.body,{childList:true,subtree:true,characterData:true});finish();
-  return()=>{active=false;observer.disconnect()};
+  window.addEventListener("fv:mission-complete",finish);
+  return()=>{active=false;window.removeEventListener("fv:mission-complete",finish)};
  },[]);
  if(typeof window!=="undefined"&&!window.location.pathname.startsWith("/mission"))return null;
  return <>
