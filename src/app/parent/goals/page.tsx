@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Plus, Sparkles, Target, TrendingUp } from "lucide-react";
+import { ArrowLeft, Check, CheckCircle2, Pencil, Play, Plus, Sparkles, Target, TrendingUp, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Goal = {
@@ -25,6 +25,8 @@ export default function ParentGoalsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [accepting, setAccepting] = useState<string | null>(null);
+  const [mutating, setMutating] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Goal | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [form, setForm] = useState({ title: "", description: "", goal_type: "questions", target_value: "20", topic_title: "", due_date: "" });
@@ -49,6 +51,46 @@ export default function ParentGoalsPage() {
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  function startEdit(goal: Goal) {
+    setError(""); setMessage("");
+    setEditing(goal);
+  }
+
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editing) return;
+    const target = Number(form.target_value);
+    if (!form.title.trim() || !Number.isFinite(target) || target <= 0 || !form.due_date) {
+      setError("Enter a title, positive target and due date."); return;
+    }
+    const s = createClient(); if (!s) return;
+    setSaving(true); setError(""); setMessage("");
+    const { error: saveError } = await s.rpc("update_parent_learning_goal", {
+      p_goal_id: editing.goal_id,
+      p_title: form.title.trim(),
+      p_description: form.description,
+      p_target_value: target,
+      p_topic_title: form.topic_title,
+      p_due_date: form.due_date,
+    });
+    if (saveError) setError(saveError.message);
+    else { setMessage("Goal updated successfully."); setEditing(null); await load(); }
+    setSaving(false);
+  }
+
+  function cancelEdit() {
+    setEditing(null); setError(""); setMessage("");
+  }
+
+  async function changeStatus(goal: Goal, status: "active" | "completed" | "paused" | "cancelled") {
+    const s = createClient(); if (!s) return;
+    setMutating(`${goal.goal_id}:${status}`); setError(""); setMessage("");
+    const { error: statusError } = await s.rpc("set_parent_learning_goal_status", { p_goal_id: goal.goal_id, p_status: status });
+    if (statusError) setError(statusError.message);
+    else { setMessage(`Goal ${status === "cancelled" ? "cancelled" : status === "completed" ? "completed" : status === "paused" ? "paused" : "resumed"}.`); await load(); }
+    setMutating(null);
+  }
 
   async function createGoal(e: React.FormEvent) {
     e.preventDefault(); if (!studentId) return;
@@ -97,6 +139,20 @@ export default function ParentGoalsPage() {
           </div>
         </section>
 
+        {editing && (
+          <section className="mt-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-violet-200 sm:p-7">
+            <div className="flex items-center justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-wider text-violet-600">Edit goal</p><h2 className="text-xl font-black text-[#071b3a]">Update learning goal</h2></div><button type="button" onClick={cancelEdit} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100" aria-label="Close edit form"><X size={20}/></button></div>
+            <form onSubmit={saveEdit} className="mt-5 grid gap-4 md:grid-cols-2">
+              <input value={form.title} onChange={e => setForm(v => ({ ...v, title: e.target.value }))} placeholder="Goal title" className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold outline-none focus:border-violet-400" />
+              <input type="date" min={editing.start_date} value={form.due_date} onChange={e => setForm(v => ({ ...v, due_date: e.target.value }))} className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold" />
+              <textarea value={form.description} onChange={e => setForm(v => ({ ...v, description: e.target.value }))} placeholder="Description" rows={3} className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold md:col-span-2" />
+              <input type="number" min="1" value={form.target_value} onChange={e => setForm(v => ({ ...v, target_value: e.target.value }))} placeholder="Target" className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold" />
+              <input value={form.topic_title} onChange={e => setForm(v => ({ ...v, topic_title: e.target.value }))} placeholder="Topic (optional)" className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold" />
+              <div className="flex gap-3 md:col-span-2"><button disabled={saving} className="rounded-2xl bg-violet-600 px-5 py-3 font-black text-white hover:bg-violet-700 disabled:opacity-50">{saving ? "Saving…" : "Save changes"}</button><button type="button" onClick={cancelEdit} className="rounded-2xl bg-slate-100 px-5 py-3 font-black text-slate-700">Cancel</button></div>
+            </form>
+          </section>
+        )}
+
         <div className="mt-6 grid gap-6 lg:grid-cols-[.8fr_1.2fr]">
           <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-violet-100 sm:p-7">
             <div className="flex items-center gap-3"><Plus className="text-violet-600"/><div><p className="text-xs font-black uppercase tracking-wider text-violet-600">Create</p><h2 className="text-xl font-black text-[#071b3a]">New learning goal</h2></div></div>
@@ -122,7 +178,15 @@ export default function ParentGoalsPage() {
 
             <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-violet-100 sm:p-7">
               <div className="flex items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wider text-violet-600">Progress</p><h2 className="text-xl font-black text-[#071b3a]">All learning goals</h2></div><TrendingUp className="text-violet-500"/></div>
-              <div className="mt-5 space-y-3">{loading ? <div className="rounded-2xl bg-slate-50 p-6 text-center text-sm font-semibold text-slate-500">Loading goals…</div> : goals.length === 0 ? <div className="rounded-2xl bg-slate-50 p-6 text-center text-sm text-slate-500">No goals yet. Create the first one on the left.</div> : goals.map(goal => <article key={goal.goal_id} className="rounded-2xl border border-slate-100 p-4"><div className="flex items-start justify-between gap-3"><div><h3 className="font-black text-slate-800">{goal.title}</h3>{goal.topic_title && <p className="mt-1 text-xs font-bold text-violet-600">{goal.topic_title}</p>}</div><span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${goal.status === "completed" ? "bg-emerald-50 text-emerald-700" : "bg-violet-50 text-violet-700"}`}>{goal.status}</span></div><div className="mt-3 flex items-center justify-between text-xs font-bold text-slate-500"><span>{labels[goal.goal_type] || goal.goal_type}</span><span>{Math.round(goal.current_value)} / {Math.round(goal.target_value)}</span></div><div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-violet-500" style={{ width: `${Math.min(100, Math.max(0, Number(goal.progress_percent || 0)))}%` }}/></div><div className="mt-2 flex justify-between text-[11px] text-slate-400"><span>{Math.round(goal.progress_percent)}% complete</span><span>{goal.days_remaining <= 0 ? "Due" : `${goal.days_remaining} days left`}</span></div>{goal.status === "completed" && <div className="mt-2 flex items-center gap-1 text-xs font-bold text-emerald-700"><CheckCircle2 size={14}/> Goal achieved</div>}</article>)}</div>
+              <div className="mt-5 space-y-3">{loading ? <div className="rounded-2xl bg-slate-50 p-6 text-center text-sm font-semibold text-slate-500">Loading goals…</div> : goals.length === 0 ? <div className="rounded-2xl bg-slate-50 p-6 text-center text-sm text-slate-500">No goals yet. Create the first one on the left.</div> : goals.map(goal => <article key={goal.goal_id} className="rounded-2xl border border-slate-100 p-4"><div className="flex items-start justify-between gap-3"><div><h3 className="font-black text-slate-800">{goal.title}</h3>{goal.topic_title && <p className="mt-1 text-xs font-bold text-violet-600">{goal.topic_title}</p>}</div><span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${goal.status === "completed" ? "bg-emerald-50 text-emerald-700" : goal.status === "paused" ? "bg-amber-50 text-amber-700" : goal.status === "cancelled" ? "bg-slate-100 text-slate-500" : "bg-violet-50 text-violet-700"}`}>{goal.status}</span></div><div className="mt-3 flex items-center justify-between text-xs font-bold text-slate-500"><span>{labels[goal.goal_type] || goal.goal_type}</span><span>{Math.round(goal.current_value)} / {Math.round(goal.target_value)}</span></div><div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-violet-500" style={{ width: `${Math.min(100, Math.max(0, Number(goal.progress_percent || 0)))}%` }}/></div><div className="mt-2 flex justify-between text-[11px] text-slate-400"><span>{Math.round(goal.progress_percent)}% complete</span><span>{goal.days_remaining <= 0 ? "Due" : `${goal.days_remaining} days left`}</span></div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {(goal.status === "active" || goal.status === "paused") && <button onClick={() => { setForm({ title: goal.title, description: goal.description || "", goal_type: goal.goal_type, target_value: String(goal.target_value), topic_title: goal.topic_title || "", due_date: goal.due_date }); startEdit(goal); }} disabled={mutating?.startsWith(goal.goal_id + ":")} className="inline-flex items-center gap-1.5 rounded-xl bg-violet-50 px-3 py-2 text-xs font-black text-violet-700 hover:bg-violet-100 disabled:opacity-50"><Pencil size={14}/> Edit</button>}
+                  {goal.status === "active" && <><button onClick={() => void changeStatus(goal, "paused")} disabled={mutating === `${goal.goal_id}:paused`} className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-black text-amber-700 hover:bg-amber-100 disabled:opacity-50">{mutating === `${goal.goal_id}:paused` ? "Pausing…" : "Pause"}</button><button onClick={() => void changeStatus(goal, "completed")} disabled={mutating === `${goal.goal_id}:completed`} className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"><Check size={14}/>{mutating === `${goal.goal_id}:completed` ? "Completing…" : "Complete"}</button><button onClick={() => void changeStatus(goal, "cancelled")} disabled={mutating === `${goal.goal_id}:cancelled`} className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-600 hover:bg-slate-200 disabled:opacity-50">{mutating === `${goal.goal_id}:cancelled` ? "Cancelling…" : "Cancel"}</button></>}
+                  {goal.status === "paused" && <><button onClick={() => void changeStatus(goal, "active")} disabled={mutating === `${goal.goal_id}:active`} className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"><Play size={14}/>{mutating === `${goal.goal_id}:active` ? "Resuming…" : "Resume"}</button><button onClick={() => void changeStatus(goal, "cancelled")} disabled={mutating === `${goal.goal_id}:cancelled`} className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-600 hover:bg-slate-200 disabled:opacity-50">{mutating === `${goal.goal_id}:cancelled` ? "Cancelling…" : "Cancel"}</button></>}
+                </div>
+                {goal.status === "completed" && <div className="mt-2 flex items-center gap-1 text-xs font-bold text-emerald-700"><CheckCircle2 size={14}/> Goal achieved</div>}
+                {goal.status === "cancelled" && <div className="mt-2 flex items-center gap-1 text-xs font-bold text-slate-500"><X size={14}/> Goal cancelled</div>}
+              </article>)}</div>
             </section>
           </div>
         </div>
