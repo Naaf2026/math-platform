@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Check, Clock3, Flame, Info, Target, TrendingDown } from "lucide-react";
+import { Bell, Check, Clock3, Flame, Info, Target, TrendingDown, TrendingUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Alert = {
@@ -18,9 +18,10 @@ type Alert = {
 
 const iconFor = (type: string) => {
   if (type === "streak_milestone") return Flame;
-  if (type === "goal_deadline") return Target;
-  if (type === "accuracy_attention" || type === "accuracy_positive") return TrendingDown;
-  if (type === "practice_consistency" || type === "no_recent_practice") return Clock3;
+  if (type === "goal_deadline" || type === "goal_achieved" || type === "goal_behind") return Target;
+  if (type === "accuracy_attention" || type === "accuracy_decline" || type === "topic_support") return TrendingDown;
+  if (type === "accuracy_positive" || type === "improvement" || type === "consistency" || type === "engagement" || type === "positive_momentum") return TrendingUp;
+  if (type === "practice_consistency" || type === "no_recent_practice" || type === "consistency_attention") return Clock3;
   return Info;
 };
 
@@ -53,7 +54,9 @@ export default function ParentLearningAlerts() {
     const studentId = links?.[0]?.student_id;
     if (!studentId) { setLoading(false); return; }
 
-    const { error: generationError } = await s.rpc("generate_parent_learning_alerts", { p_student_id: studentId });
+    // Smart generation supersedes the original alert generator. It includes
+    // weekly summaries, learning-pattern signals, and goal pacing.
+    const { error: generationError } = await s.rpc("generate_parent_smart_alerts", { p_student_id: studentId });
     if (generationError) setError(generationError.message);
 
     const { data, error: alertsError } = await s.rpc("get_parent_learning_alerts", { p_student_id: studentId, p_limit: 20 });
@@ -83,7 +86,7 @@ export default function ParentLearningAlerts() {
             <Bell size={21}/>
             {unread > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white">{unread > 9 ? "9+" : unread}</span>}
           </span>
-          <span className="min-w-0"><span className="block text-xs font-black uppercase tracking-wider text-violet-600">Parent notifications</span><span className="block truncate text-xl font-black text-[#071b3a]">Learning alerts</span></span>
+          <span className="min-w-0"><span className="block text-xs font-black uppercase tracking-wider text-violet-600">Parent notifications</span><span className="block truncate text-xl font-black text-[#071b3a]">Smart learning alerts</span></span>
         </button>
         <div className="flex items-center gap-2">
           <Link href="/parent/notifications" className="rounded-xl bg-violet-50 px-3 py-2 text-xs font-black text-violet-700 hover:bg-violet-100">View all</Link>
@@ -91,7 +94,7 @@ export default function ParentLearningAlerts() {
         </div>
       </div>
 
-      {error && <div className="mt-4 rounded-2xl bg-amber-50 p-3 text-xs font-semibold text-amber-800">Alerts are temporarily unavailable. Please try refreshing the page.</div>}
+      {error && <div className="mt-4 rounded-2xl bg-amber-50 p-3 text-xs font-semibold text-amber-800">Some smart alerts are temporarily unavailable. Please try refreshing the page.</div>}
 
       {open && alerts.length > 0 && <div className="mt-5 space-y-3">{alerts.map(alert => {
         const Icon = iconFor(alert.alert_type);
