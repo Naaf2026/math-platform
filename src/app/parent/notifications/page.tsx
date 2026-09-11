@@ -21,13 +21,13 @@ type Filter = "all" | "unread" | "practice" | "accuracy" | "goals" | "streaks";
 const filterTypes: Record<Exclude<Filter, "all" | "unread">, string[]> = {
   practice: ["practice_consistency", "no_recent_practice", "consistency", "consistency_attention", "engagement", "positive_momentum", "weekly_summary"],
   accuracy: ["accuracy_attention", "accuracy_positive", "accuracy_decline", "improvement", "topic_support"],
-  goals: ["goal_deadline", "goal_achieved", "goal_behind"],
+  goals: ["goal_deadline", "goal_achieved", "goal_behind", "goal_overdue"],
   streaks: ["streak_milestone"],
 };
 
 function iconFor(type: string) {
   if (type === "streak_milestone") return Flame;
-  if (type === "goal_deadline" || type === "goal_achieved" || type === "goal_behind") return Target;
+  if (type === "goal_deadline" || type === "goal_achieved" || type === "goal_behind" || type === "goal_overdue") return Target;
   if (type === "accuracy_attention" || type === "accuracy_decline" || type === "topic_support") return TrendingDown;
   if (type === "accuracy_positive" || type === "improvement" || type === "consistency" || type === "engagement" || type === "positive_momentum") return TrendingUp;
   if (type === "practice_consistency" || type === "no_recent_practice" || type === "consistency_attention") return Clock3;
@@ -135,8 +135,8 @@ export default function ParentNotificationsPage() {
         <section className="mt-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-violet-100 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-2">
-              {(["all", "unread", "practice", "accuracy", "goals", "streaks"] as Filter[]).map(value => (
-                <button key={value} type="button" onClick={() => setFilter(value)} className={`rounded-full px-4 py-2 text-xs font-black capitalize transition ${filter === value ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-violet-50 hover:text-violet-700"}`}>
+              {["all", "unread", "practice", "accuracy", "goals", "streaks"].map(value => (
+                <button key={value} type="button" onClick={() => setFilter(value as Filter)} className={`rounded-full px-4 py-2 text-xs font-black capitalize transition ${filter === value ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-violet-50 hover:text-violet-700"}`}>
                   {value === "all" ? "All" : value === "unread" ? `Unread (${unreadCount})` : value}
                 </button>
               ))}
