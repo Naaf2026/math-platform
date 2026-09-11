@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, ClipboardList, GraduationCap, Home, Users } from "lucide-react";
+import { BarChart3, ClipboardList, GraduationCap, History, Home, Users } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const items = [
   { href: "/teacher", label: "My Classes", icon: Home },
   { href: "/teacher/insights", label: "Insights", icon: BarChart3 },
   { href: "/teacher/interventions", label: "Interventions", icon: ClipboardList },
+  { href: "/teacher/history", label: "Action History", icon: History },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -21,7 +22,7 @@ export default function TeacherNavigation() {
   return (
     <>
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200/80 bg-slate-50/95 px-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.10)] backdrop-blur-xl lg:hidden" aria-label="Teacher navigation">
-        <div className="mx-auto grid max-w-lg grid-cols-3 gap-1">
+        <div className="mx-auto grid max-w-lg grid-cols-4 gap-1">
           {items.map(({ href, label, icon: Icon }) => {
             const active = isActive(pathname, href);
             return (
