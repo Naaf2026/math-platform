@@ -12,8 +12,20 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @keyframes answer-pop { 0% { transform: scale(.96); } 55% { transform: scale(1.035); } 100% { transform: scale(1); } }
 @keyframes correct-burst { 0% { opacity: 0; transform: scale(.7); } 70% { opacity: 1; transform: scale(1.15); } 100% { opacity: 1; transform: scale(1); } }
 @keyframes gentle-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+@keyframes mini-pop { 0% { opacity: 0; transform: translateY(8px) scale(.72) rotate(-4deg); } 70% { opacity: 1; transform: translateY(-2px) scale(1.08) rotate(2deg); } 100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); } }
+@keyframes counter-pop { 0% { transform: scale(.65); opacity: .2; } 70% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes celebrate-float { 0% { opacity: 0; transform: translateY(24px) scale(.5) rotate(-20deg); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-70px) scale(1.25) rotate(25deg); } }
+@keyframes coin-pop { 0% { transform: translateY(8px) scale(.9); } 60% { transform: translateY(-6px) scale(1.06); } 100% { transform: translateY(0) scale(1); } }
 .question-enter { animation: question-enter .42s cubic-bezier(.22,1,.36,1) both; }
 .answer-pop { animation: answer-pop .32s cubic-bezier(.22,1,.36,1) both; }
 .correct-burst { animation: correct-burst .5s cubic-bezier(.22,1,.36,1) both; }
 .gentle-shake { animation: gentle-shake .3s ease-in-out both; }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; } }
+.base-ten-pop { display:inline-block; animation: mini-pop .32s cubic-bezier(.22,1,.36,1) both; }
+.counter-pop { animation: counter-pop .22s cubic-bezier(.22,1,.36,1) both; }
+.coin-pop { animation: coin-pop .35s cubic-bezier(.22,1,.36,1) both; }
+.celebrate-particle { position:absolute; animation: celebrate-float 1s cubic-bezier(.22,1,.36,1) both; }
+.pizza-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; width:min(270px,78vw); aspect-ratio:1; padding:7px; border-radius:999px; background:#f59e0b; box-shadow:0 14px 35px rgba(245,158,11,.22); overflow:hidden; }
+.pizza-slice { border:0; background:#fff7d6; min-width:0; min-height:0; font-size:clamp(2rem,8vw,4rem); line-height:1; transition:transform .2s, filter .2s, background .2s; }
+.pizza-slice:hover { transform:scale(1.04); }
+.pizza-slice.filled { background:#fde68a; filter:saturate(1.2); transform:scale(.96); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:.01ms !important; } }
