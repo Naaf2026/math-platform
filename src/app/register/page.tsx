@@ -18,13 +18,45 @@ export default function RegisterPage() {
   const [busy, setBusy] = useState(false);
 
   async function submit(e: FormEvent) {
-    e.preventDefault(); setBusy(true); setStatus("");
+    e.preventDefault();
+    setBusy(true);
+    setStatus("");
     const supabase = createClient();
-    if (!supabase) { setStatus("Supabase is not configured yet."); setBusy(false); return; }
-    const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: { data: { display_name: name.trim(), requested_role: role } } });
-    if (error) { setStatus(error.message); setBusy(false); return; }
-    if (data.session) location.href = role === "teacher" ? "/teacher" : role === "parent" ? "/parent" : "/dashboard";
-    else setStatus("Account created. Check your email to confirm your account, then sign in.");
+    if (!supabase) {
+      setStatus("Supabase is not configured yet.");
+      setBusy(false);
+      return;
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: { display_name: name.trim(), full_name: name.trim(), requested_role: role },
+      },
+    });
+
+    if (error) {
+      setStatus(error.message);
+      setBusy(false);
+      return;
+    }
+
+    // When email confirmation is disabled, persist the selected role now.
+    // When confirmation is required, login will safely persist requested_role
+    // after authentication using the authenticated register_user_role RPC.
+    if (data.session && data.user) {
+      const { error: roleError } = await supabase.rpc("register_user_role", { p_role: role });
+      if (roleError) {
+        setStatus(`Account created, but role setup needs attention: ${roleError.message}`);
+        setBusy(false);
+        return;
+      }
+      location.href = role === "teacher" ? "/teacher" : role === "parent" ? "/parent" : "/dashboard";
+      return;
+    }
+
+    setStatus("Account created. Check your email to confirm your account, then sign in.");
     setBusy(false);
   }
 
