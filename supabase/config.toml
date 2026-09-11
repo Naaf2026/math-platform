@@ -1,0 +1,8 @@
+# Supabase CLI project configuration
+# Edge Functions are deployed from supabase/functions/<function-name>/index.ts
+
+[functions.process-book]
+verify_jwt = true
+
+[functions.generate-ai-questions]
+verify_jwt = true
