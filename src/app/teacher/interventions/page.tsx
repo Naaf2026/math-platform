@@ -12,9 +12,9 @@ type Intervention = {
   class_id: number;
   student_id: string;
   student_name: string;
-  action: "review" | "reinforce" | "extend";
+  intervention_type: "review" | "reinforce" | "extend";
   topic_id: string | null;
-  note: string;
+  notes: string;
   status: "open" | "completed";
   created_at: string;
   completed_at: string | null;
@@ -26,7 +26,7 @@ export default function TeacherInterventionsPage() {
   const [items, setItems] = useState<Intervention[]>([]);
   const [classId, setClassId] = useState("");
   const [studentId, setStudentId] = useState("");
-  const [action, setAction] = useState<Intervention["action"]>("review");
+  const [action, setAction] = useState<Intervention["intervention_type"]>("review");
   const [topic, setTopic] = useState("");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(true);
@@ -83,21 +83,58 @@ export default function TeacherInterventionsPage() {
       if (!classId) return;
       const supabase = createClient();
       if (!supabase) return;
-      const { data, error: studentError } = await supabase
+
+      // Load active membership IDs first, then resolve profile names separately.
+      // This avoids relying on a PostgREST relationship alias for profiles.
+      const { data: memberData, error: memberError } = await supabase
         .from("class_members")
-        .select("student_id,profiles:student_id(id,display_name,full_name)")
+        .select("student_id")
         .eq("class_id", Number(classId))
         .eq("status", "active");
-      if (studentError) {
-        setError(studentError.message);
+
+      if (memberError) {
+        setError(memberError.message);
+        setStudents([]);
         return;
       }
-      const rows = (data ?? []).map((row: any) => ({
-        id: row.student_id,
-        name: row.profiles?.display_name || row.profiles?.full_name || "Student",
-      })) as StudentRow[];
+
+      const studentIds = (memberData ?? [])
+        .map((row) => row.student_id as string)
+        .filter(Boolean);
+
+      if (!studentIds.length) {
+        setStudents([]);
+        setStudentId("");
+        void loadInterventions(classId);
+        return;
+      }
+
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("id,display_name,full_name")
+        .in("id", studentIds);
+
+      if (profileError) {
+        setError(profileError.message);
+        setStudents([]);
+        setStudentId("");
+        return;
+      }
+
+      const profilesById = new Map(
+        (profileData ?? []).map((profile) => [
+          profile.id as string,
+          (profile.display_name || profile.full_name || "Student") as string,
+        ])
+      );
+
+      const rows = studentIds.map((id) => ({
+        id,
+        name: profilesById.get(id) || "Student",
+      }));
+
       setStudents(rows);
-      setStudentId(rows[0]?.id ?? "");
+      setStudentId((current) => rows.some((row) => row.id === current) ? current : rows[0]?.id ?? "");
       void loadInterventions(classId);
     }
     void loadStudents();
@@ -170,7 +207,7 @@ export default function TeacherInterventionsPage() {
           <div className="mt-6 space-y-4">
             <Field label="Class"><select value={classId} onChange={(e) => setClassId(e.target.value)} className="input"><option value="">Select class</option>{classes.map((c) => <option key={c.id} value={c.id}>{c.name} · {c.class_code}</option>)}</select></Field>
             <Field label="Student"><select value={studentId} onChange={(e) => setStudentId(e.target.value)} className="input"><option value="">Select student</option>{students.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></Field>
-            <Field label="Action"><select value={action} onChange={(e) => setAction(e.target.value as Intervention["action"])} className="input"><option value="review">Needs Review</option><option value="reinforce">Reinforce</option><option value="extend">Extend</option></select></Field>
+            <Field label="Action"><select value={action} onChange={(e) => setAction(e.target.value as Intervention["intervention_type"])} className="input"><option value="review">Needs Review</option><option value="reinforce">Reinforce</option><option value="extend">Extend</option></select></Field>
             <Field label="Topic (optional)"><input value={topic} onChange={(e) => setTopic(e.target.value)} className="input" placeholder="e.g. Fractions"/></Field>
             <Field label="Teacher note"><textarea value={note} onChange={(e) => setNote(e.target.value)} className="input min-h-28 resize-y" placeholder="What should the learner practise or review?"/></Field>
             <button disabled={saving || !selectedClass || !studentId} className="w-full rounded-2xl bg-violet-600 px-5 py-3 font-black text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-50">{saving ? "Saving…" : "Add intervention"}</button>
@@ -182,8 +219,8 @@ export default function TeacherInterventionsPage() {
           <div className="mt-6 space-y-3">
             {items.length ? items.map((item) => (
               <article key={item.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-black text-[#071b3a]">{item.student_name}</p><p className="text-xs font-bold uppercase tracking-wider text-violet-600">{item.action}{item.topic_id ? ` · ${item.topic_id}` : ""}</p></div><button onClick={() => complete(item.id)} className="inline-flex items-center gap-2 rounded-xl bg-emerald-100 px-3 py-2 text-xs font-black text-emerald-700"><CheckCircle2 size={15}/> Complete</button></div>
-                {item.note && <p className="mt-3 text-sm leading-6 text-slate-600">{item.note}</p>}
+                <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-black text-[#071b3a]">{item.student_name}</p><p className="text-xs font-bold uppercase tracking-wider text-violet-600">{item.intervention_type}{item.topic_id ? ` · ${item.topic_id}` : ""}</p></div><button onClick={() => complete(item.id)} className="inline-flex items-center gap-2 rounded-xl bg-emerald-100 px-3 py-2 text-xs font-black text-emerald-700"><CheckCircle2 size={15}/> Complete</button></div>
+                {item.notes && <p className="mt-3 text-sm leading-6 text-slate-600">{item.notes}</p>}
                 <p className="mt-2 text-xs text-slate-400">Created {new Date(item.created_at).toLocaleDateString()}</p>
               </article>
             )) : <div className="rounded-2xl bg-slate-50 p-8 text-center text-sm font-bold text-slate-500">No open interventions for this class.</div>}
