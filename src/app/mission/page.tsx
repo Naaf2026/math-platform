@@ -184,10 +184,23 @@ export default function MissionPage() {
     setMissionCompleted(v => Math.min(missionTarget, v + 1));
     setTotalXp(v => v + earnedXp);
     setSaving(false);
+
+    // The Mission page owns question progression. Do not depend on DOM text
+    // or a button rendered outside the question popup. Show the answer
+    // feedback briefly, then advance from React state directly.
+    window.setTimeout(() => {
+      if (current >= questions.length - 1) {
+        setFinished(true);
+        return;
+      }
+      setCurrent(v => v + 1);
+      setSelected(null);
+      setShowHint(false);
+    }, 1100);
   }
 
   function next() {
-    if (selected === null) return;
+    if (selected === null || saving) return;
     if (current >= questions.length - 1) {
       setFinished(true);
       return;
