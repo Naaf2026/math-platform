@@ -16,9 +16,6 @@ export default function AIGenerationReviewCard({ question, onRefresh }: { questi
     try {
       const supabase = createClient();
       if (!supabase) throw new Error("Supabase is not configured.");
-      const { data, error } = await supabase.functions.invoke("noop", { body: {} });
-      void data;
-      if (error && !error.message.includes("404")) throw error;
       const { data: result, error: rpcError } = await supabase.rpc("publish_ai_question_to_question_bank", { p_question_id: question.id, p_topic_id: null });
       if (rpcError) throw rpcError;
       const row = Array.isArray(result) ? result[0] : result;
