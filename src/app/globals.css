@@ -24,4 +24,26 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .coin-drop { animation: coin-drop .32s cubic-bezier(.22,1,.36,1) both; }
 .slice-pop { animation: slice-pop .3s cubic-bezier(.22,1,.36,1) both; }
 .block-pop { animation: block-pop .3s cubic-bezier(.22,1,.36,1) both; }
+
+/* Compact KooBits-style Daily Challenge question view. */
+@media (min-width: 768px) {
+  body:has(main[class*="bg-[#d8eef2]"]) > main > header { height: 56px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > header > div { height: 56px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > div { min-height: 0 !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > div > aside { width: 220px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > div > section { padding: 10px 18px 16px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="max-w-[980px]"] { max-width: 900px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="min-h-[590px]"] { min-height: 0 !important; height: calc(100vh - 92px) !important; max-height: 680px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="min-h-[330px]"] { min-height: 250px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:px-10"] { padding-left: 30px !important; padding-right: 30px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:px-12"] { padding-left: 34px !important; padding-right: 34px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:py-10"] { padding-top: 24px !important; padding-bottom: 24px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:text-[27px]"] { font-size: 24px !important; }
+}
+
+@media (max-height: 820px) and (min-width: 768px) {
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="min-h-[590px]"] { height: calc(100vh - 82px) !important; max-height: 620px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="min-h-[330px]"] { min-height: 205px !important; }
+}
+
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; } }
