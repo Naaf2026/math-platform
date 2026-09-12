@@ -2,14 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Flame, Lightbulb, Sparkles, Star, Target, Trophy, XCircle } from "lucide-react";
+import { ArrowLeft, Lightbulb, Sparkles, Star, Target } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import InteractiveQuestionEngine from "@/components/interactive-question-engine";
 
 type Question = {
   id: string;
   topic_id?: string;
-  topic: string;
+  topic?: string;
   prompt: string;
   options: string[];
   answer: string;
@@ -97,6 +97,8 @@ export default function MissionPage() {
     ]);
 
     if (missionError) {
+      setQuestions([]);
+      setFinished(false);
       setError(missionError.message || "Today's mission could not be loaded.");
       setLoading(false);
       return;
@@ -106,19 +108,23 @@ export default function MissionPage() {
     const rows = (data || []) as MissionRow[];
     if (!rows.length) {
       setQuestions([]);
-      setError("Your Daily Mission has no available questions yet. Publish some approved questions and try again.");
+      setMissionId(null);
+      setFinished(false);
+      setError("No mission question was returned. Please refresh to rebuild today's mission.");
       setLoading(false);
       return;
     }
 
     const first = rows[0];
     setMissionId(first.mission_id);
-    setMissionTarget(first.target_questions || rows.length || 10);
+    setMissionTarget(first.target_questions || 10);
     setMissionCompleted(first.completed_questions || 0);
     setMissionCorrect(first.correct_questions || 0);
     setMissionXp(first.xp_earned || 0);
     setQuestions(rows.sort((a, b) => a.question_position - b.question_position).map(row => ({
       ...row,
+      topic: row.topic || row.topic_id || "Math",
+      prompt: row.prompt || "Question unavailable",
       options: Array.isArray(row.options) ? row.options : [],
     })));
     setTotalXp(profile?.xp ?? 0);
@@ -143,8 +149,6 @@ export default function MissionPage() {
       return;
     }
 
-    // Keep the existing answer pipeline so topic mastery, attempts and XP continue
-    // to feed the adaptive engine, then record the same result in today's mission.
     const { data: answerData, error: answerError } = await supabase.rpc("submit_learning_answer", {
       p_question_id: q.id,
       p_selected_answer: answer,
@@ -210,7 +214,9 @@ export default function MissionPage() {
 
   if (loading) return <main className="min-h-screen bg-[#eef4ff] p-5"><div className="mx-auto flex min-h-[85vh] max-w-lg items-center justify-center"><div className="w-full rounded-[2.5rem] bg-white p-10 text-center shadow-2xl"><div className="mx-auto flex h-24 w-24 animate-bounce items-center justify-center rounded-[2rem] bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-400 text-5xl shadow-xl">🚀</div><h1 className="mt-7 text-2xl font-black text-[#15233f]">Launching your Math Adventure!</h1><p className="mt-2 font-bold text-slate-500">Building today's mission from your adaptive question bank…</p></div></div></main>;
 
-  if (!q || finished) return <FinishScreen score={score || missionXp} correct={correct || missionCorrect} total={questions.length} target={missionTarget} level={level} streak={streak} bestStreak={bestStreak} error={error} onRestart={restart} />;
+  if (!q && !finished) return <MissionUnavailable message={error || "No mission question is available right now."} onRetry={loadMission} />;
+
+  if (finished) return <FinishScreen score={score || missionXp} correct={correct || missionCorrect} completed={missionCompleted} target={missionTarget} level={level} streak={streak} bestStreak={bestStreak} error={error} onRestart={restart} />;
 
   const difficulty = q.difficulty === "easy" ? "STARTER" : q.difficulty === "hard" ? "BOSS" : "CORE";
 
@@ -232,7 +238,10 @@ export default function MissionPage() {
 function StatPill({ icon, value }: { icon: string; value: string }) { return <div className="rounded-2xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-700">{icon} {value}</div>; }
 function StatRow({ label, value }: { label: string; value: string }) { return <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3"><span className="text-xs font-bold text-slate-500">{label}</span><span className="text-sm font-black text-slate-800">{value}</span></div>; }
 
-function FinishScreen({ score, correct, total, target, level, streak, bestStreak, error, onRestart }: { score: number; correct: number; total: number; target: number; level: number; streak: number; bestStreak: number; error: string; onRestart: () => void }) {
-  const completed = Math.min(target, total || target);
+function MissionUnavailable({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return <main className="min-h-screen bg-[#eef4ff] p-5"><div className="mx-auto flex min-h-[85vh] max-w-lg items-center justify-center"><div className="w-full rounded-[2.5rem] bg-white p-8 text-center shadow-2xl sm:p-10"><div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[2rem] bg-violet-100 text-5xl">🧩</div><p className="mt-6 text-xs font-black uppercase tracking-[.2em] text-orange-500">Daily Mission</p><h1 className="mt-2 text-3xl font-black text-[#15233f]">Question not loaded</h1><p className="mt-3 font-bold leading-6 text-slate-500">{message}</p><button onClick={onRetry} className="mt-7 w-full rounded-2xl bg-violet-600 px-6 py-4 font-black text-white">Try Again</button><Link href="/dashboard" className="mt-3 block rounded-2xl bg-slate-100 px-6 py-4 font-black text-slate-700">Back to Dashboard</Link></div></div></main>;
+}
+
+function FinishScreen({ score, correct, completed, target, level, streak, bestStreak, error, onRestart }: { score: number; correct: number; completed: number; target: number; level: number; streak: number; bestStreak: number; error: string; onRestart: () => void }) {
   return <main className="min-h-screen bg-[#eef4ff] p-5"><div className="mx-auto flex min-h-[85vh] max-w-lg items-center justify-center"><div className="w-full rounded-[2.5rem] bg-white p-8 text-center shadow-2xl sm:p-10"><div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[2rem] bg-gradient-to-br from-yellow-300 to-orange-400 text-5xl shadow-xl">🏆</div><p className="mt-6 text-xs font-black uppercase tracking-[.2em] text-orange-500">Mission Complete</p><h1 className="mt-2 text-3xl font-black text-[#15233f]">Amazing work! 🎉</h1><p className="mt-2 font-bold text-slate-500">You completed {completed} of {target} mission challenges.</p><div className="mt-7 grid grid-cols-2 gap-3"><div className="rounded-2xl bg-violet-50 p-4"><p className="text-2xl font-black text-violet-700">{correct}</p><p className="text-[10px] font-black uppercase text-violet-500">Correct</p></div><div className="rounded-2xl bg-yellow-50 p-4"><p className="text-2xl font-black text-orange-600">{score}</p><p className="text-[10px] font-black uppercase text-orange-500">XP</p></div></div><div className="mt-4 flex justify-center gap-3 text-xs font-black text-slate-500"><span>🔥 Streak {streak}</span><span>⭐ Level {level}</span><span>🏅 Best {bestStreak}</span></div>{error && <p className="mt-4 rounded-2xl bg-amber-50 p-3 text-xs font-bold text-amber-700">{error}</p>}<div className="mt-7 grid gap-3"><button onClick={onRestart} className="rounded-2xl bg-violet-600 px-6 py-4 font-black text-white">Practice Again</button><Link href="/dashboard" className="rounded-2xl bg-slate-100 px-6 py-4 font-black text-slate-700">Back to Dashboard</Link></div></div></div></main>;
 }
