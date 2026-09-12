@@ -27,23 +27,29 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 /* Compact KooBits-style Daily Challenge question view. */
 @media (min-width: 768px) {
-  body:has(main[class*="bg-[#d8eef2]"]) > main > header { height: 56px !important; }
-  body:has(main[class*="bg-[#d8eef2]"]) > main > header > div { height: 56px !important; }
-  body:has(main[class*="bg-[#d8eef2]"]) > main > div { min-height: 0 !important; }
-  body:has(main[class*="bg-[#d8eef2]"]) > main > div > aside { width: 220px !important; }
-  body:has(main[class*="bg-[#d8eef2]"]) > main > div > section { padding: 10px 18px 16px !important; }
-  body:has(main[class*="bg-[#d8eef2]"]) [class*="max-w-[980px]"] { max-width: 900px !important; }
-  body:has(main[class*="bg-[#d8eef2]"]) [class*="min-h-[590px]"] { min-height: 0 !important; height: calc(100vh - 92px) !important; max-height: 680px !important; }
-  body:has(main[class*="bg-[#d8eef2]"]) [class*="min-h-[330px]"] { min-height: 250px !important; }
-  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:px-10"] { padding-left: 30px !important; padding-right: 30px !important; }
-  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:px-12"] { padding-left: 34px !important; padding-right: 34px !important; }
-  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:py-10"] { padding-top: 24px !important; padding-bottom: 24px !important; }
-  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:text-[27px]"] { font-size: 24px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) { overflow: hidden; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > header { height: 54px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > header > div { height: 54px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > div { min-height: 0 !important; height: calc(100dvh - 54px) !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > div > aside { width: 220px !important; height: calc(100dvh - 54px) !important; overflow-y: auto; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > div > section { padding: 6px 18px 10px !important; height: calc(100dvh - 54px) !important; overflow: hidden; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="max-w-[980px]"] { max-width: 900px !important; height: 100%; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="min-h-[590px]"] { min-height: 0 !important; height: calc(100dvh - 150px) !important; max-height: none !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="min-h-[330px]"] { min-height: 0 !important; height: auto !important; max-height: none !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:px-10"] { padding-left: 26px !important; padding-right: 26px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:px-12"] { padding-left: 30px !important; padding-right: 30px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:py-10"] { padding-top: 18px !important; padding-bottom: 18px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:text-[27px]"] { font-size: 23px !important; }
 }
 
 @media (max-height: 820px) and (min-width: 768px) {
-  body:has(main[class*="bg-[#d8eef2]"]) [class*="min-h-[590px]"] { height: calc(100vh - 82px) !important; max-height: 620px !important; }
-  body:has(main[class*="bg-[#d8eef2]"]) [class*="min-h-[330px]"] { min-height: 205px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > header { height: 50px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > header > div { height: 50px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > div { height: calc(100dvh - 50px) !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > div > aside { height: calc(100dvh - 50px) !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) > main > div > section { height: calc(100dvh - 50px) !important; padding: 4px 14px 6px !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="min-h-[590px]"] { height: calc(100dvh - 118px) !important; }
+  body:has(main[class*="bg-[#d8eef2]"]) [class*="sm:py-10"] { padding-top: 12px !important; padding-bottom: 12px !important; }
 }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; } }
