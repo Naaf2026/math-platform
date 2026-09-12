@@ -1,10 +1,26 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Bell, LayoutDashboard, Target, Users } from "lucide-react";
 import ParentLearningAlerts from "@/components/parent-learning-alerts";
 import ParentIntelligenceDashboard from "@/components/parent-intelligence-dashboard";
 import ParentIntelligenceActionCenter from "@/components/parent-intelligence-action-center";
+import { createClient } from "@/lib/supabase/server";
+import { getUserRole } from "@/app/auth/role-router";
 
-export default function ParentLayout({ children }: { children: React.ReactNode }) {
+export default async function ParentLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const { data: accountStatus, error: statusError } = await supabase.rpc("get_my_account_status");
+  if (statusError || accountStatus !== "active") redirect("/login?error=account_not_active");
+
+  const role = await getUserRole(supabase, user.id);
+  if (role !== "parent" && role !== "guardian") {
+    redirect(role === "admin" ? "/admin" : role === "teacher" ? "/teacher" : "/dashboard");
+  }
+
   return (
     <>
       <nav className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 px-4 py-3 shadow-sm backdrop-blur sm:px-6">
