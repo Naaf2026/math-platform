@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Flame, Home, Target, Trophy } from "lucide-react";
+import { BookOpen, Flame, Home, Target, Trophy, GraduationCap } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { StudentProfilePill } from "@/components/student-profile";
 
@@ -9,6 +9,7 @@ const items = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/mission", label: "Mission", icon: Target },
   { href: "/challenge", label: "Challenge", icon: Flame },
+  { href: "/training", label: "Training", icon: GraduationCap },
   { href: "/progress", label: "Progress", icon: BookOpen },
   { href: "/rewards", label: "Rewards", icon: Trophy },
 ];
@@ -24,19 +25,12 @@ export default function StudentNavigation() {
   return (
     <>
       <nav className="fixed inset-x-0 bottom-0 z-50 hidden border-t border-slate-200/80 bg-slate-50/95 px-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.10)] backdrop-blur-xl md:block lg:hidden" aria-label="Student navigation">
-        <div className="mx-auto max-w-lg">
-          <div className="mb-2">
-            <StudentProfilePill mobile />
-          </div>
-          <div className="grid grid-cols-5 gap-1">
+        <div className="mx-auto max-w-2xl">
+          <div className="mb-2"><StudentProfilePill mobile /></div>
+          <div className="grid grid-cols-6 gap-1">
             {items.map(({ href, label, icon: Icon }) => {
               const active = isActive(pathname, href);
-              return (
-                <Link key={href} href={href} aria-current={active ? "page" : undefined} className={`flex min-h-14 flex-col items-center justify-center rounded-2xl text-[11px] font-black transition ${active ? "bg-violet-100 text-violet-700" : "text-slate-500 hover:bg-white hover:text-violet-600"}`}>
-                  <Icon size={20} strokeWidth={active ? 2.7 : 2.2} />
-                  <span className="mt-1">{label}</span>
-                </Link>
-              );
+              return <Link key={href} href={href} aria-current={active ? "page" : undefined} className={`flex min-h-14 flex-col items-center justify-center rounded-2xl text-[11px] font-black transition ${active ? "bg-violet-100 text-violet-700" : "text-slate-500 hover:bg-white hover:text-violet-600"}`}><Icon size={20} strokeWidth={active ? 2.7 : 2.2} /><span className="mt-1">{label}</span></Link>;
             })}
           </div>
         </div>
@@ -48,12 +42,7 @@ export default function StudentNavigation() {
         <div className="mt-5 flex flex-1 flex-col gap-3">
           {items.map(({ href, label, icon: Icon }) => {
             const active = isActive(pathname, href);
-            return (
-              <Link key={href} href={href} aria-current={active ? "page" : undefined} title={label} className={`group relative flex h-12 w-12 items-center justify-center rounded-2xl transition ${active ? "bg-violet-100 text-violet-700 shadow-sm" : "text-slate-400 hover:bg-slate-100 hover:text-violet-600"}`}>
-                <Icon size={21} strokeWidth={active ? 2.7 : 2.1} />
-                <span className="pointer-events-none absolute left-14 rounded-lg bg-slate-900 px-2 py-1 text-xs font-bold text-white opacity-0 shadow-lg transition group-hover:opacity-100">{label}</span>
-              </Link>
-            );
+            return <Link key={href} href={href} aria-current={active ? "page" : undefined} title={label} className={`group relative flex h-12 w-12 items-center justify-center rounded-2xl transition ${active ? "bg-violet-100 text-violet-700 shadow-sm" : "text-slate-400 hover:bg-slate-100 hover:text-violet-600"}`}><Icon size={21} strokeWidth={active ? 2.7 : 2.1} /><span className="pointer-events-none absolute left-14 rounded-lg bg-slate-900 px-2 py-1 text-xs font-bold text-white opacity-0 shadow-lg transition group-hover:opacity-100">{label}</span></Link>;
           })}
         </div>
       </nav>
