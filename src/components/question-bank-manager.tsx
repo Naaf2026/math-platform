@@ -13,6 +13,7 @@ import {
   type QuestionDifficulty, type QuestionBankItem, type QuestionBankStatus,
 } from "@/lib/question-bank-management";
 import { validateQuestionForPublishing } from "@/lib/ai-question-validation";
+import { loadPersistentQuestionBank } from "@/lib/persistent-question-bank";
 
 const STORAGE_KEY = "fv:question-bank:v1";
 const seed = createQuestionBankItem({ prompt: "What is 7 + 5?", answer: "12", options: ["10", "11", "12", "13"], interaction_type: "multiple_choice", explanation: "7 + 5 = 12." });
@@ -26,7 +27,29 @@ export default function QuestionBankManager() {
   const [preview, setPreview] = useState(false);
   const [message, setMessage] = useState("");
 
-  useEffect(() => { try { const raw = localStorage.getItem(STORAGE_KEY); setItems(raw ? JSON.parse(raw) : [seed]); } catch { setItems([seed]); } }, []);
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const localItems: QuestionBankItem[] = raw ? JSON.parse(raw) : [];
+        const persistent = await loadPersistentQuestionBank();
+        if (cancelled) return;
+        const persistentIds = new Set(persistent.map((item) => item.id));
+        const merged = [...persistent, ...localItems.filter((item) => !persistentIds.has(item.id))];
+        setItems(merged.length ? merged : [seed]);
+        if (persistent.length) setMessage(`${persistent.length} persistent question${persistent.length === 1 ? "" : "s"} loaded from Supabase.`);
+      } catch (error) {
+        if (!cancelled) {
+          try { const raw = localStorage.getItem(STORAGE_KEY); setItems(raw ? JSON.parse(raw) : [seed]); }
+          catch { setItems([seed]); }
+          setMessage(error instanceof Error ? `Persistent bank unavailable: ${error.message}` : "Persistent bank unavailable; using local drafts.");
+        }
+      }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, []);
   useEffect(() => { if (items.length) localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }, [items]);
 
   const selected = items.find((item) => item.id === selectedId) ?? null;
