@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { interactiveMotionCss } from "@/lib/interactive-motion";
 
-/** Presents the Mission's existing question engine as a focused game window. */
+/** Visual presentation layer for the Mission question. The Mission page owns all answer/progression state. */
 export default function MissionQuestionPopup() {
   const [active, setActive] = useState(true);
 
@@ -16,11 +16,16 @@ export default function MissionQuestionPopup() {
     };
     const clearWindow = () => {
       document.querySelectorAll<HTMLElement>(".question-enter").forEach((el) => {
-        el.classList.remove("mission-question-window", "fv-motion-idle");
+        el.classList.remove("mission-question-window", "fv-motion-idle", "fv-motion-correct", "fv-motion-incorrect");
       });
     };
 
     let lastFeedback = "";
+    let advanceTimer = 0;
+
+    // Keep the popup animation purely visual. Progression is handled by
+    // MissionPage's React state, so this layer must never click buttons or
+    // attempt to infer the answer from DOM text.
     const inspectFeedback = () => {
       const panel = document.querySelector<HTMLElement>(".mission-question-window");
       if (!panel) return;
@@ -32,13 +37,12 @@ export default function MissionQuestionPopup() {
       const signature = `${result}::${text.slice(-500)}`;
       if (signature === lastFeedback) return;
       lastFeedback = signature;
-      document.querySelectorAll<HTMLElement>(".mission-question-window").forEach((el) => {
-        el.classList.remove("fv-motion-idle", "fv-motion-correct", "fv-motion-incorrect");
-        el.classList.add(result === "correct" ? "fv-motion-correct" : "fv-motion-incorrect");
-      });
+      panel.classList.remove("fv-motion-idle", "fv-motion-correct", "fv-motion-incorrect");
+      panel.classList.add(result === "correct" ? "fv-motion-correct" : "fv-motion-incorrect");
     };
 
     const onComplete = () => {
+      window.clearTimeout(advanceTimer);
       setActive(false);
       clearWindow();
     };
@@ -64,6 +68,7 @@ export default function MissionQuestionPopup() {
     window.addEventListener("fv:retry-question", onRetry);
 
     return () => {
+      window.clearTimeout(advanceTimer);
       observer.disconnect();
       clearWindow();
       window.removeEventListener("fv:mission-complete", onComplete);
@@ -76,22 +81,28 @@ export default function MissionQuestionPopup() {
     <>
       <style jsx global>{`
         ${interactiveMotionCss}
+
+        /* The backdrop is deliberately non-interactive. */
         .mission-question-backdrop {
           position: fixed;
           inset: 0;
-          z-index: 55;
-          pointer-events: none;
+          z-index: 9990;
+          pointer-events: none !important;
           background: rgba(15, 23, 42, 0.34);
           backdrop-filter: blur(2px);
           -webkit-backdrop-filter: blur(2px);
           opacity: ${active ? 1 : 0};
           transition: opacity 220ms ease;
         }
+
+        /* Put the real question component above every Mission overlay and
+           explicitly restore pointer events. This fixes answer clicks being
+           swallowed by another fixed/stacking-context element. */
         .mission-question-window {
           position: fixed !important;
           left: 50% !important;
           top: 50% !important;
-          z-index: 60 !important;
+          z-index: 10000 !important;
           width: min(920px, calc(100vw - 28px)) !important;
           max-height: min(86vh, 820px) !important;
           overflow-y: auto !important;
@@ -103,13 +114,30 @@ export default function MissionQuestionPopup() {
           box-shadow: 0 30px 90px rgba(15, 23, 42, 0.32), 0 8px 30px rgba(99, 102, 241, 0.18);
           animation: mission-question-pop 360ms cubic-bezier(.2,.8,.2,1) both;
           overscroll-behavior: contain;
+          pointer-events: auto !important;
+          isolation: isolate;
+          touch-action: manipulation;
         }
+
+        .mission-question-window * {
+          pointer-events: auto;
+        }
+
+        .mission-question-window button,
+        .mission-question-window input,
+        .mission-question-window [role="button"] {
+          position: relative;
+          z-index: 1;
+          pointer-events: auto !important;
+        }
+
         .mission-question-window > div:first-child { border-radius: 32px; }
+
         .mission-exit-button {
           position: fixed;
           top: 18px;
           right: 18px;
-          z-index: 75;
+          z-index: 10010;
           display: inline-flex;
           align-items: center;
           gap: 7px;
@@ -121,10 +149,12 @@ export default function MissionQuestionPopup() {
           font-weight: 900;
           box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
           border: 1px solid rgba(226, 232, 240, 0.95);
-          transition: transform 160ms ease, background 160ms ease, color 160ms ease;
+          pointer-events: auto !important;
+          touch-action: manipulation;
         }
         .mission-exit-button:hover { transform: translateY(-1px); background: white; color: #dc2626; }
         .mission-exit-button:focus-visible { outline: 3px solid rgba(139, 92, 246, 0.35); outline-offset: 2px; }
+
         @keyframes mission-question-pop {
           0% { opacity: 0; transform: translate(-50%, -46%) scale(.94); }
           60% { opacity: 1; transform: translate(-50%, -50%) scale(1.015); }
