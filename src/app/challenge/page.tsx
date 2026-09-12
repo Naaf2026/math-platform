@@ -30,6 +30,14 @@ type Q = {
   difficulty: string;
   skill: string;
   points: number;
+  question_type?: string;
+  interaction_config?: {
+    each?: number;
+    groups?: number;
+    target?: number;
+    mode?: string;
+    [key: string]: unknown;
+  };
 };
 type P = { xp: number; current_streak: number; best_streak: number };
 
@@ -54,8 +62,13 @@ export default function Challenge() {
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [builtGroups, setBuiltGroups] = useState(0);
 
   const cur = q[i];
+  const isManipulative = cur?.question_type === "manipulatives";
+  const groupSize = Number(cur?.interaction_config?.each ?? 0);
+  const targetGroups = Number(cur?.interaction_config?.groups ?? 0);
+  const targetObjects = Number(cur?.interaction_config?.target ?? cur?.answer ?? 0);
   const progress = q.length ? ((i + (pick ? 1 : 0)) / q.length) * 100 : 0;
   const accuracy = q.length ? Math.round((correct / q.length) * 100) : 0;
 
@@ -148,12 +161,29 @@ export default function Challenge() {
     setSaving(false);
   }
 
+  function buildGroup() {
+    if (!isManipulative || pick || saving || !groupSize || !targetGroups) return;
+
+    const nextCount = Math.min(targetGroups, builtGroups + 1);
+    setBuiltGroups(nextCount);
+
+    if (nextCount === targetGroups) {
+      void choose(String(targetObjects));
+    }
+  }
+
+  function removeGroup() {
+    if (pick || saving) return;
+    setBuiltGroups((v) => Math.max(0, v - 1));
+  }
+
   function next() {
     if (!pick) return;
     if (i === q.length - 1) setDone(true);
     else {
       setI((v) => v + 1);
       setPick(null);
+      setBuiltGroups(0);
     }
   }
 
@@ -161,6 +191,7 @@ export default function Challenge() {
     setQ([]);
     setI(0);
     setPick(null);
+    setBuiltGroups(0);
     setCorrect(0);
     setEarned(0);
     setDone(false);
@@ -324,26 +355,69 @@ export default function Challenge() {
               </div>
             </div>
 
-            <div className="mt-7 grid gap-3 sm:grid-cols-2">
-              {cur?.options.map((o, n) => {
-                const ok = !!pick && o === cur.answer;
-                const wrong = pick === o && o !== cur.answer;
-                const selected = pick === o;
-                return (
-                  <button
-                    key={o}
-                    onClick={() => choose(o)}
-                    disabled={!!pick || saving}
-                    className={`group min-h-[76px] rounded-[1.5rem] border-2 p-4 text-left font-black transition-all duration-200 ${ok ? "border-emerald-400 bg-emerald-50 text-emerald-800 shadow-lg shadow-emerald-100" : wrong ? "border-rose-400 bg-rose-50 text-rose-800" : selected ? "border-violet-400 bg-violet-50" : "border-slate-100 bg-slate-50 hover:-translate-y-0.5 hover:border-violet-300 hover:bg-violet-50 hover:shadow-lg"}`}
-                  >
-                    <span className={`mr-3 inline-grid h-10 w-10 place-items-center rounded-xl text-sm shadow-sm ${ok ? "bg-emerald-500 text-white" : wrong ? "bg-rose-500 text-white" : "bg-white text-slate-600 group-hover:bg-violet-100 group-hover:text-violet-700"}`}>{String.fromCharCode(65 + n)}</span>
-                    {o}
-                    {ok && <CheckCircle2 className="float-right mt-2" size={21} />}
-                    {wrong && <XCircle className="float-right mt-2" size={21} />}
-                  </button>
-                );
-              })}
-            </div>
+            {isManipulative && groupSize > 0 && targetGroups > 0 ? (
+              <div className="mt-7 rounded-[2rem] bg-gradient-to-br from-violet-50 via-fuchsia-50 to-yellow-50 p-5 sm:p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-black text-violet-700">Build your groups</div>
+                    <p className="mt-1 text-xs font-semibold text-slate-500">Make {targetGroups} groups with {groupSize} objects in each group.</p>
+                  </div>
+                  <div className="rounded-full bg-white px-4 py-2 text-sm font-black text-violet-700 shadow-sm">{builtGroups} / {targetGroups} groups</div>
+                </div>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {Array.from({ length: targetGroups }).map((_, groupIndex) => {
+                    const built = groupIndex < builtGroups;
+                    return (
+                      <div key={groupIndex} className={`rounded-[1.5rem] border-2 p-4 transition-all ${built ? "border-violet-300 bg-white shadow-md" : "border-dashed border-slate-200 bg-white/60"}`}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-black uppercase tracking-wider text-slate-500">Group {groupIndex + 1}</span>
+                          {built && <CheckCircle2 size={18} className="text-emerald-500" />}
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {Array.from({ length: groupSize }).map((_, objectIndex) => (
+                            <span key={objectIndex} className={`grid h-9 w-9 place-items-center rounded-xl text-lg shadow-sm ${built ? "bg-violet-500 text-white" : "bg-slate-100 text-slate-300"}`}>●</span>
+                          ))}
+                        </div>
+                        <div className="mt-2 text-xs font-bold text-slate-400">{built ? `${groupSize} objects` : "Empty group"}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {!pick && (
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                    <button onClick={removeGroup} disabled={builtGroups === 0 || saving} className="rounded-2xl bg-white px-5 py-3 font-black text-slate-600 shadow-sm disabled:cursor-not-allowed disabled:opacity-40">Remove group</button>
+                    <button onClick={buildGroup} disabled={builtGroups >= targetGroups || saving} className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 font-black text-white shadow-lg shadow-violet-200 disabled:cursor-not-allowed disabled:opacity-40"><Sparkles size={18} />Build group</button>
+                  </div>
+                )}
+
+                <div className="mt-4 text-center text-xs font-bold text-slate-500">
+                  {pick ? `You built ${targetGroups} groups × ${groupSize} objects = ${targetObjects} objects.` : `Objects altogether: ${builtGroups * groupSize}`}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                {cur?.options.map((o, n) => {
+                  const ok = !!pick && o === cur.answer;
+                  const wrong = pick === o && o !== cur.answer;
+                  const selected = pick === o;
+                  return (
+                    <button
+                      key={o}
+                      onClick={() => choose(o)}
+                      disabled={!!pick || saving}
+                      className={`group min-h-[76px] rounded-[1.5rem] border-2 p-4 text-left font-black transition-all duration-200 ${ok ? "border-emerald-400 bg-emerald-50 text-emerald-800 shadow-lg shadow-emerald-100" : wrong ? "border-rose-400 bg-rose-50 text-rose-800" : selected ? "border-violet-400 bg-violet-50" : "border-slate-100 bg-slate-50 hover:-translate-y-0.5 hover:border-violet-300 hover:bg-violet-50 hover:shadow-lg"}`}
+                    >
+                      <span className={`mr-3 inline-grid h-10 w-10 place-items-center rounded-xl text-sm shadow-sm ${ok ? "bg-emerald-500 text-white" : wrong ? "bg-rose-500 text-white" : "bg-white text-slate-600 group-hover:bg-violet-100 group-hover:text-violet-700"}`}>{String.fromCharCode(65 + n)}</span>
+                      {o}
+                      {ok && <CheckCircle2 className="float-right mt-2" size={21} />}
+                      {wrong && <XCircle className="float-right mt-2" size={21} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {pick && (
               <div className={`mt-6 rounded-[1.7rem] p-5 ${pick === cur.answer ? "bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-900" : "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-900"}`}>
@@ -354,7 +428,7 @@ export default function Challenge() {
             {error && pick === null && <div className="mt-4 rounded-2xl bg-rose-50 p-4 text-sm font-bold text-rose-700">{error}</div>}
 
             <div className="mt-7 flex items-center justify-between gap-4">
-              <div className="text-xs font-bold text-slate-400">{saving ? "Saving your answer..." : pick ? "Nice! Ready for the next one?" : "Choose an answer to continue"}</div>
+              <div className="text-xs font-bold text-slate-400">{saving ? "Saving your answer..." : pick ? "Nice! Ready for the next one?" : isManipulative ? "Build all the groups to answer" : "Choose an answer to continue"}</div>
               <button onClick={next} disabled={!pick || saving} className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3.5 font-black text-white shadow-lg shadow-violet-200 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40">{i === q.length - 1 ? "Finish Challenge" : "Next Question"}<ArrowRight size={18} /></button>
             </div>
           </section>
