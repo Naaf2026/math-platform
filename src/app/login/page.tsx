@@ -41,6 +41,17 @@ export default function LoginPage() {
       }
     }
 
+    const roleMatchesMode = mode === "learner"
+      ? role === "student"
+      : role === "parent" || role === "guardian";
+
+    if (!role || !roleMatchesMode) {
+      await supabase.auth.signOut();
+      throw new Error(mode === "learner"
+        ? "This account is not a learner account. Please use the parent login for this account."
+        : "This account is not a parent account. Please use the learner login if you are signing in as a learner.");
+    }
+
     window.location.href = roleHome(role);
   }
 
