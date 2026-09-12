@@ -1,23 +1,41 @@
 "use client";
+
 import { FormEvent, useState } from "react";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-const roles = [
-  { value: "student", label: "Student", note: "Learn, practise and complete missions." },
-  { value: "teacher", label: "Teacher", note: "Manage assigned classes and monitor learners." },
-  { value: "parent", label: "Parent / Guardian", note: "Follow a linked learner's progress." },
-] as const;
-
 export default function RegisterPage() {
-  const [role, setRole] = useState<(typeof roles)[number]["value"]>("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
 
-  async function submit(e: FormEvent) {
+  async function continueWithGoogle() {
+    setStatus("");
+    const supabase = createClient();
+    if (!supabase) {
+      setStatus("Supabase is not configured yet.");
+      return;
+    }
+
+    setGoogleBusy(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?signup=parent`,
+      },
+    });
+
+    if (error) {
+      setGoogleBusy(false);
+      setStatus(error.message);
+    }
+  }
+
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true);
     setStatus("");
@@ -32,7 +50,7 @@ export default function RegisterPage() {
       email: email.trim(),
       password,
       options: {
-        data: { display_name: name.trim(), full_name: name.trim(), requested_role: role },
+        data: { display_name: name.trim(), full_name: name.trim(), requested_role: "parent" },
       },
     });
 
@@ -42,23 +60,53 @@ export default function RegisterPage() {
       return;
     }
 
-    // When email confirmation is disabled, persist the selected role now.
-    // When confirmation is required, login will safely persist requested_role
-    // after authentication using the authenticated register_user_role RPC.
     if (data.session && data.user) {
-      const { error: roleError } = await supabase.rpc("register_user_role", { p_role: role });
+      const { error: roleError } = await supabase.rpc("register_user_role", { p_role: "parent" });
       if (roleError) {
-        setStatus(`Account created, but role setup needs attention: ${roleError.message}`);
+        setStatus(`Account created, but parent role setup needs attention: ${roleError.message}`);
         setBusy(false);
         return;
       }
-      location.href = role === "teacher" ? "/teacher" : role === "parent" ? "/parent" : "/dashboard";
+      window.location.href = "/parent";
       return;
     }
 
-    setStatus("Account created. Check your email to confirm your account, then sign in.");
+    setStatus("Parent account created. Check your email to confirm your account, then sign in.");
     setBusy(false);
   }
 
-  return <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50 p-5 sm:p-8"><div className="mx-auto flex min-h-[90vh] max-w-lg items-center"><section className="w-full rounded-[2rem] bg-white p-7 shadow-2xl ring-1 ring-slate-100 sm:p-9"><div className="text-center"><div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 text-2xl font-black text-white">FV</div><h1 className="mt-5 text-3xl font-black text-[#071b3a]">Create your account</h1><p className="mt-2 text-sm text-slate-500">Join the FAHI VISSNUN Math Learning Platform.</p></div><div className="mt-7 grid gap-2">{roles.map(r => <button key={r.value} type="button" onClick={() => setRole(r.value)} className={`rounded-2xl border p-4 text-left transition ${role===r.value?"border-violet-500 bg-violet-50 ring-2 ring-violet-100":"border-slate-200 bg-white hover:bg-slate-50"}`}><div className="font-black text-[#071b3a]">{r.label}</div><div className="mt-1 text-xs text-slate-500">{r.note}</div></button>)}</div><form onSubmit={submit} className="mt-6 space-y-4"><label className="block"><span className="text-sm font-bold text-slate-700">Name</span><input required value={name} onChange={e=>setName(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500" /></label><label className="block"><span className="text-sm font-bold text-slate-700">Email</span><input required type="email" value={email} onChange={e=>setEmail(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500" /></label><label className="block"><span className="text-sm font-bold text-slate-700">Password</span><input required minLength={6} type="password" value={password} onChange={e=>setPassword(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500" /></label>{status && <div className="rounded-xl bg-slate-50 p-3 text-sm leading-5 text-slate-600">{status}</div>}<button disabled={busy} className="w-full rounded-2xl bg-violet-600 px-5 py-3.5 font-black text-white shadow-lg shadow-violet-200 disabled:opacity-60">{busy?"Creating account…":"Create account"}</button></form><p className="mt-6 text-center text-sm text-slate-500">Already have an account? <Link href="/login" className="font-black text-violet-600">Sign in</Link></p><p className="mt-4 text-center text-xs text-slate-400">Admin accounts are assigned by an existing administrator and cannot be created from public registration.</p></section></div></main>;
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-[#f7f9fc] via-white to-[#eef8f7] px-5 py-8 sm:px-6">
+      <div className="mx-auto flex min-h-[92vh] max-w-md items-center">
+        <section className="w-full rounded-[2rem] border border-slate-200 bg-white p-7 shadow-2xl sm:p-9">
+          <Link href="/login" className="text-sm font-semibold text-slate-500 hover:text-[#071b3a]">← Back to sign in</Link>
+          <div className="mt-7 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#071b3a] text-xl font-black text-white">FV</div>
+            <p className="mt-5 text-xs font-black uppercase tracking-[0.18em] text-[#0d666b]">PARENT ACCOUNT</p>
+            <h1 className="mt-2 text-3xl font-black text-[#071b3a]">Create your account</h1>
+            <p className="mt-2 text-sm leading-6 text-slate-500">Parents create the family account and manage learner access.</p>
+          </div>
+
+          <button type="button" onClick={continueWithGoogle} disabled={googleBusy} className="mt-7 flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60">
+            {googleBusy ? <Loader2 className="animate-spin" size={18} /> : <span className="text-lg font-black">G</span>}
+            {googleBusy ? "Connecting…" : "Continue with Google"}
+          </button>
+
+          <div className="my-5 flex items-center gap-3"><div className="h-px flex-1 bg-slate-200" /><span className="text-xs font-bold uppercase tracking-wider text-slate-400">or use email</span><div className="h-px flex-1 bg-slate-200" /></div>
+
+          <form onSubmit={submit} className="space-y-4">
+            <label className="block"><span className="text-sm font-bold text-slate-700">Parent / guardian name</span><input required value={name} onChange={e => setName(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-[#0d666b] focus:ring-2 focus:ring-[#0d666b]/10" placeholder="Your full name" /></label>
+            <label className="block"><span className="text-sm font-bold text-slate-700">Email address</span><input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-[#0d666b] focus:ring-2 focus:ring-[#0d666b]/10" placeholder="parent@example.com" /></label>
+            <label className="block"><span className="text-sm font-bold text-slate-700">Password</span><input required minLength={6} type="password" value={password} onChange={e => setPassword(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-[#0d666b] focus:ring-2 focus:ring-[#0d666b]/10" placeholder="At least 6 characters" /></label>
+            {status && <div role="alert" className="rounded-xl bg-slate-50 p-3 text-sm leading-5 text-slate-600">{status}</div>}
+            <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3.5 font-black text-white shadow-lg transition hover:bg-[#0d2a52] disabled:opacity-60">{busy && <Loader2 className="animate-spin" size={18} />}{busy ? "Creating account…" : "Create parent account"}</button>
+          </form>
+
+          <div className="mt-6 rounded-2xl bg-[#f7f9fc] p-4 text-xs leading-5 text-slate-500">After you create your parent account, you will be able to add your children and give each learner their own username and password.</div>
+          <p className="mt-6 text-center text-sm text-slate-500">Already have an account? <Link href="/login" className="font-black text-[#0d666b]">Sign in</Link></p>
+          <p className="mt-4 text-center text-xs text-slate-400">Teacher and admin accounts are created by an administrator.</p>
+        </section>
+      </div>
+    </main>
+  );
 }
