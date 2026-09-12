@@ -41,17 +41,17 @@ export default function LoginPage() {
       }
     }
 
-    // Admins use the email login form, but the database-backed admin role
-    // sends them to the protected admin area. Learner mode stays student-only.
+    // Email login is used by staff and parent/guardian accounts.
+    // Learner mode remains restricted to student accounts.
     const roleMatchesMode = mode === "learner"
       ? role === "student"
-      : role === "admin" || role === "parent" || role === "guardian";
+      : role === "admin" || role === "teacher" || role === "parent" || role === "guardian";
 
     if (!role || !roleMatchesMode) {
       await supabase.auth.signOut();
       throw new Error(mode === "learner"
         ? "This account is not a learner account. Please use the parent login for this account."
-        : "This account is not an admin or parent account. Please use the learner login if you are signing in as a learner.");
+        : "This account is not an admin, teacher, or parent account. Please use the learner login if you are signing in as a learner.");
     }
 
     window.location.href = roleHome(role);
@@ -128,7 +128,7 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-7 grid grid-cols-2 rounded-2xl bg-slate-100 p-1">
-            <button type="button" onClick={() => { setMode("parent"); setIdentifier(""); setMessage(""); }} className={`rounded-xl px-3 py-2.5 text-sm font-black transition ${mode === "parent" ? "bg-white text-[#071b3a] shadow-sm" : "text-slate-500"}`}>Parent</button>
+            <button type="button" onClick={() => { setMode("parent"); setIdentifier(""); setMessage(""); }} className={`rounded-xl px-3 py-2.5 text-sm font-black transition ${mode === "parent" ? "bg-white text-[#071b3a] shadow-sm" : "text-slate-500"}`}>Parent / Staff</button>
             <button type="button" onClick={() => { setMode("learner"); setIdentifier(""); setMessage(""); }} className={`rounded-xl px-3 py-2.5 text-sm font-black transition ${mode === "learner" ? "bg-white text-[#071b3a] shadow-sm" : "text-slate-500"}`}>Learner</button>
           </div>
 
@@ -136,7 +136,7 @@ export default function LoginPage() {
           {mode === "parent" && <div className="my-5 flex items-center gap-3"><div className="h-px flex-1 bg-slate-200" /><span className="text-xs font-bold uppercase tracking-wider text-slate-400">or continue with email</span><div className="h-px flex-1 bg-slate-200" /></div>}
 
           <form onSubmit={submit} className="space-y-4">
-            <label className="block"><span className="mb-2 block text-sm font-semibold text-slate-700">{mode === "parent" ? "Email address" : "Learner username"}</span><div className="relative"><UserRound className="absolute left-3 top-3 text-slate-400" size={18} /><input type={mode === "parent" ? "email" : "text"} value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className="w-full rounded-xl border border-slate-200 py-3 pl-10 pr-3 outline-none focus:border-[#0d666b] focus:ring-2 focus:ring-[#0d666b]/10" placeholder={mode === "parent" ? "parent@example.com" : "Your learner username"} /></div></label>
+            <label className="block"><span className="mb-2 block text-sm font-semibold text-slate-700">{mode === "parent" ? "Email address" : "Learner username"}</span><div className="relative"><UserRound className="absolute left-3 top-3 text-slate-400" size={18} /><input type={mode === "parent" ? "email" : "text"} value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className="w-full rounded-xl border border-slate-200 py-3 pl-10 pr-3 outline-none focus:border-[#0d666b] focus:ring-2 focus:ring-[#0d666b]/10" placeholder={mode === "parent" ? "staff@example.com or parent@example.com" : "Your learner username"} /></div></label>
             <label className="block"><span className="mb-2 block text-sm font-semibold text-slate-700">Password</span><div className="relative"><LockKeyhole className="absolute left-3 top-3 text-slate-400" size={18} /><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="w-full rounded-xl border border-slate-200 py-3 pl-10 pr-3 outline-none focus:border-[#0d666b] focus:ring-2 focus:ring-[#0d666b]/10" placeholder="Your password" /></div></label>
             {mode === "parent" && <div className="text-right"><Link href="/forgot-password" className="text-sm font-bold text-[#0d666b] hover:underline">Forgot password?</Link></div>}
             {message && <p role="alert" className="rounded-xl bg-amber-50 p-3 text-sm leading-5 text-amber-800">{message}</p>}
