@@ -55,16 +55,18 @@ export async function getPathQuestion(questionId: string) {
   if (!supabase) throw new Error("Supabase is not configured.");
   const { data, error } = await supabase
     .from("learning_questions")
-    .select("id,prompt,options,answer,explanation,hint,question_type,interaction_type,interaction_config")
+    .select("id,prompt,options,answer,explanation,hint,question_type,interaction_config")
     .eq("id", questionId)
     .eq("status", "published")
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
+  const config = (data.interaction_config || null) as Record<string, unknown> | null;
   return {
     ...data,
     options: Array.isArray(data.options) ? data.options.map(String) : [],
-    points: Number((data.interaction_config as Record<string, unknown> | null)?.points ?? 1),
+    interaction_type: typeof config?.interaction_type === "string" ? config.interaction_type : null,
+    points: Number(config?.points ?? 1),
   } as PathQuestion;
 }
 
