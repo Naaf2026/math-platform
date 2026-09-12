@@ -5,7 +5,6 @@ import { getUserRole, roleHome } from "@/app/auth/role-router";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const signup = url.searchParams.get("signup");
 
   if (!code) {
     return NextResponse.redirect(new URL("/login?error=missing_auth_code", url.origin));
@@ -25,16 +24,22 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=no_user_session", url.origin));
   }
 
+  const { data: accountStatus, error: statusError } = await supabase.rpc("get_my_account_status");
+  if (statusError || accountStatus !== "active") {
+    await supabase.auth.signOut();
+    return NextResponse.redirect(new URL("/login?error=account_not_active", url.origin));
+  }
+
   let role = await getUserRole(supabase, user.id);
 
-  // Public registration is parent-only. A first-time Google account therefore
-  // receives the parent role here; existing teacher/admin/learner roles are preserved.
-  if (!role && signup === "parent") {
+  // Public Google registration is parent-only. Existing roles are never overwritten.
+  if (!role) {
     const { error: roleError } = await supabase.rpc("register_user_role", { p_role: "parent" });
     if (!roleError) role = await getUserRole(supabase, user.id);
   }
 
   if (!role) {
+    await supabase.auth.signOut();
     return NextResponse.redirect(new URL("/login?error=account_role_missing", url.origin));
   }
 
