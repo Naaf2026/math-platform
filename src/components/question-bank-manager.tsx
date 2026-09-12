@@ -11,6 +11,7 @@ import {
   questionAccuracy, recordQuestionUsage, updateQuestionBankItem, validateQuestionBankItem,
   type QuestionDifficulty, type QuestionBankItem, type QuestionBankStatus,
 } from "@/lib/question-bank-management";
+import { validateQuestionForPublishing } from "@/lib/ai-question-validation";
 
 const STORAGE_KEY = "fv:question-bank:v1";
 const seed = createQuestionBankItem({ prompt: "What is 7 + 5?", answer: "12", options: ["10", "11", "12", "13"], interaction_type: "multiple_choice", explanation: "7 + 5 = 12." });
@@ -40,7 +41,19 @@ export default function QuestionBankManager() {
 
   const create = () => { const item = createQuestionBankItem({ prompt: "", answer: "", options: ["Option 1", "Option 2"], interaction_type: "multiple_choice" }); setItems((c) => [item, ...c]); setSelectedId(item.id); setPreview(false); };
   const duplicate = () => { if (!selected) return; const item = duplicateQuestionBankItem(selected); setItems((c) => [item, ...c]); setSelectedId(item.id); setPreview(false); setMessage("Question duplicated as a draft."); };
-  const publish = () => { if (!selected || selected.status === "archived") return; try { updateSelected(publishQuestionBankItem(selected)); setMessage(selected.status === "published" ? "Republished successfully. The latest version is ready for mission assignment." : "Published. This version is ready for mission assignment."); } catch (error) { setMessage(error instanceof Error ? error.message : "Validation failed."); } };
+  const publish = () => {
+    if (!selected || selected.status === "archived") return;
+    try {
+      const report = validateQuestionForPublishing(selected, items);
+      if (!report.publishable) {
+        const blocking = report.checks.filter((check) => check.severity === "error").map((check) => check.message);
+        setMessage(`Publishing blocked: ${blocking.join(" ")}`);
+        return;
+      }
+      updateSelected(publishQuestionBankItem(selected));
+      setMessage(selected.status === "published" ? "Republished successfully. The latest validated version is ready for mission assignment." : "Published successfully. This validated version is ready for mission assignment.");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Validation failed."); }
+  };
   const archive = () => { if (selected) { updateSelected(archiveQuestionBankItem(selected)); setMessage("Question archived."); } };
   const remove = () => { if (!selected) return; if (selected.status === "published") { setMessage("Published questions cannot be deleted. Archive them instead."); return; } setItems((c) => c.filter((item) => item.id !== selected.id)); setSelectedId(null); setMessage("Draft removed."); };
   const save = () => { if (!selected) return; const errors = validateQuestionBankItem(selected); setMessage(errors.length ? `Saved as draft. ${errors.join(" ")}` : `Saved version ${selected.version}.`); };
