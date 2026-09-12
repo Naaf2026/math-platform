@@ -8,6 +8,7 @@
     "build": "next build",
     "dev:vinext": "vinext dev",
     "build:vinext": "vinext build",
+    "build:vinext_": "vinext build",
     "start:vinext": "vinext start",
     "start": "next start",
     "lint": "eslint .",
@@ -23,8 +24,8 @@
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "react-server-dom-webpack": "19.2.6",
-    "vinext": "latest",
-    "lucide-react": "0.468.0"
+    "lucide-react": "0.468.0",
+    "vinext": "latest"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "latest",
