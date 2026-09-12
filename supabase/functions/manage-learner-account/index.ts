@@ -32,6 +32,10 @@ Deno.serve(async (req) => {
       const accountStatus = action === 'enable' ? 'active' : 'disabled';
       const { error } = await admin.from('profiles').update({ account_status: accountStatus, updated_at: new Date().toISOString() }).eq('id', learnerId);
       if (error) return json({ error: error.message }, 500);
+      if (action === 'disable') {
+        const { error: signOutError } = await admin.auth.admin.signOut(learnerId, 'global');
+        if (signOutError) return json({ error: signOutError.message }, 500);
+      }
       return json({ success: true, action, account_status: accountStatus });
     }
     if (newPassword.length < 6) return json({ error: 'Password must be at least 6 characters' }, 400);
