@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getUserRole, roleHome, type AppRole } from "@/app/auth/role-router";
 
 const requestedRoles: AppRole[] = ["student", "teacher", "parent", "guardian"];
+const learnerAuthDomain = "learner.fahi-vissnun.local";
 type LoginMode = "parent" | "learner";
 
 export default function LoginPage() {
@@ -33,7 +34,7 @@ export default function LoginPage() {
     let role = await getUserRole(supabase, userId);
 
     if (!role) {
-      const requestedRole = supabase.auth.getUser ? (await supabase.auth.getUser()).data.user?.user_metadata?.requested_role : null;
+      const requestedRole = (await supabase.auth.getUser()).data.user?.user_metadata?.requested_role;
       if (typeof requestedRole === "string" && requestedRoles.includes(requestedRole as AppRole)) {
         const { error: roleError } = await supabase.rpc("register_user_role", { p_role: requestedRole });
         if (!roleError) role = await getUserRole(supabase, userId);
@@ -53,13 +54,16 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    const email = identifier.trim();
+    const rawIdentifier = identifier.trim();
+    const email = mode === "learner" && !rawIdentifier.includes("@")
+      ? `${rawIdentifier.toLowerCase()}@${learnerAuthDomain}`
+      : rawIdentifier;
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setLoading(false);
       setMessage(mode === "learner"
-        ? "We could not sign you in. Please check the learner email/username and password provided by your parent."
+        ? "We could not sign you in. Please check the learner username and password provided by your parent."
         : error.message);
       return;
     }
@@ -89,9 +93,7 @@ export default function LoginPage() {
     setGoogleLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
 
     if (error) {
@@ -105,7 +107,6 @@ export default function LoginPage() {
       <div className="mx-auto flex min-h-[92vh] max-w-md items-center">
         <section className="w-full rounded-[2rem] border border-slate-200 bg-white p-7 shadow-2xl sm:p-9">
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-[#071b3a]"><ArrowLeft size={16} /> Back to home</Link>
-
           <div className="mt-7 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#071b3a] text-xl font-black text-white">FV</div>
             <p className="mt-5 text-xs font-black uppercase tracking-[0.18em] text-[#0d666b]">FAHI VISSNUN</p>
@@ -118,35 +119,18 @@ export default function LoginPage() {
             <button type="button" onClick={() => { setMode("learner"); setIdentifier(""); setMessage(""); }} className={`rounded-xl px-3 py-2.5 text-sm font-black transition ${mode === "learner" ? "bg-white text-[#071b3a] shadow-sm" : "text-slate-500"}`}>Learner</button>
           </div>
 
-          {mode === "parent" && (
-            <button type="button" onClick={continueWithGoogle} disabled={googleLoading} className="mt-5 flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60">
-              {googleLoading ? <Loader2 className="animate-spin" size={18} /> : <span className="text-lg font-black">G</span>}
-              {googleLoading ? "Connecting…" : "Continue with Google"}
-            </button>
-          )}
-
+          {mode === "parent" && <button type="button" onClick={continueWithGoogle} disabled={googleLoading} className="mt-5 flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60">{googleLoading ? <Loader2 className="animate-spin" size={18} /> : <span className="text-lg font-black">G</span>}{googleLoading ? "Connecting…" : "Continue with Google"}</button>}
           {mode === "parent" && <div className="my-5 flex items-center gap-3"><div className="h-px flex-1 bg-slate-200" /><span className="text-xs font-bold uppercase tracking-wider text-slate-400">or continue with email</span><div className="h-px flex-1 bg-slate-200" /></div>}
 
           <form onSubmit={submit} className="space-y-4">
-            <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">{mode === "parent" ? "Email address" : "Learner username or email"}</span>
-              <div className="relative"><UserRound className="absolute left-3 top-3 text-slate-400" size={18} /><input type={mode === "parent" ? "email" : "text"} value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className="w-full rounded-xl border border-slate-200 py-3 pl-10 pr-3 outline-none focus:border-[#0d666b] focus:ring-2 focus:ring-[#0d666b]/10" placeholder={mode === "parent" ? "parent@example.com" : "Username or email"} /></div>
-            </label>
-            <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">Password</span>
-              <div className="relative"><LockKeyhole className="absolute left-3 top-3 text-slate-400" size={18} /><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="w-full rounded-xl border border-slate-200 py-3 pl-10 pr-3 outline-none focus:border-[#0d666b] focus:ring-2 focus:ring-[#0d666b]/10" placeholder="Your password" /></div>
-            </label>
+            <label className="block"><span className="mb-2 block text-sm font-semibold text-slate-700">{mode === "parent" ? "Email address" : "Learner username"}</span><div className="relative"><UserRound className="absolute left-3 top-3 text-slate-400" size={18} /><input type={mode === "parent" ? "email" : "text"} value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className="w-full rounded-xl border border-slate-200 py-3 pl-10 pr-3 outline-none focus:border-[#0d666b] focus:ring-2 focus:ring-[#0d666b]/10" placeholder={mode === "parent" ? "parent@example.com" : "Your learner username"} /></div></label>
+            <label className="block"><span className="mb-2 block text-sm font-semibold text-slate-700">Password</span><div className="relative"><LockKeyhole className="absolute left-3 top-3 text-slate-400" size={18} /><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="w-full rounded-xl border border-slate-200 py-3 pl-10 pr-3 outline-none focus:border-[#0d666b] focus:ring-2 focus:ring-[#0d666b]/10" placeholder="Your password" /></div></label>
             {mode === "parent" && <div className="text-right"><Link href="/forgot-password" className="text-sm font-bold text-[#0d666b] hover:underline">Forgot password?</Link></div>}
             {message && <p role="alert" className="rounded-xl bg-amber-50 p-3 text-sm leading-5 text-amber-800">{message}</p>}
             <button disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#071b3a] px-4 py-3.5 font-black text-white transition hover:bg-[#0d2a52] disabled:opacity-60">{loading && <Loader2 className="animate-spin" size={18} />}{loading ? "Signing in…" : "Sign in"}</button>
           </form>
 
-          {mode === "parent" ? (
-            <p className="mt-6 text-center text-sm text-slate-500">New parent? <Link href="/register" className="font-black text-[#0d666b]">Create a parent account</Link></p>
-          ) : (
-            <p className="mt-6 text-center text-xs leading-5 text-slate-400">Learner accounts are created and managed by a parent. Your parent will provide your username and password.</p>
-          )}
-
+          {mode === "parent" ? <p className="mt-6 text-center text-sm text-slate-500">New parent? <Link href="/register" className="font-black text-[#0d666b]">Create a parent account</Link></p> : <p className="mt-6 text-center text-xs leading-5 text-slate-400">Learner accounts are created and managed by a parent. Your parent will provide your username and password.</p>}
           <div className="mt-7 flex items-center justify-center gap-2 text-xs text-slate-400"><Mail size={14} /> Secure account access powered by Supabase</div>
         </section>
       </div>
