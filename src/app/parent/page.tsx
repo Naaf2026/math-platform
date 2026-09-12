@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, Flame, GraduationCap, History, Plus, ShieldCheck, Trophy } from "lucide-react";
+import { ArrowLeft, Bell, CalendarDays, Flame, GraduationCap, History, Plus, ShieldCheck, Target, Trophy } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { getMyLearners, type LearnerAccount } from "@/lib/parent-learners";
 
 export default function ParentPage() {
+  const searchParams = useSearchParams();
+  const requestedLearnerId = searchParams.get("learner");
   const [learners, setLearners] = useState<LearnerAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -24,6 +27,8 @@ export default function ParentPage() {
 
   useEffect(() => { void load(); }, []);
 
+  const selectedLearner = learners.find((learner) => learner.learner_id === requestedLearnerId) ?? learners[0] ?? null;
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-5 pb-28 sm:p-8">
       <div className="mx-auto max-w-6xl">
@@ -35,7 +40,7 @@ export default function ParentPage() {
             <Link href="/parent/learners" className="inline-flex items-center gap-2 rounded-full bg-[#071b3a] px-4 py-2.5 text-sm font-black text-white shadow-sm hover:bg-[#0d2a52]">
               <Plus size={16} /> Manage learners
             </Link>
-            <Link href="/parent/history" className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-black text-violet-700 shadow-sm ring-1 ring-violet-100 hover:bg-violet-50">
+            <Link href={`/parent/history${selectedLearner ? `?learner=${encodeURIComponent(selectedLearner.learner_id)}` : ""}`} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-black text-violet-700 shadow-sm ring-1 ring-violet-100 hover:bg-violet-50">
               <History size={16} /> Learning history
             </Link>
           </div>
@@ -47,7 +52,7 @@ export default function ParentPage() {
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-100">Parent dashboard</p>
               <h1 className="mt-2 text-4xl font-black tracking-tight sm:text-5xl">Your learners</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-indigo-100">Choose a learner to review their learning history, progress and recent practice.</p>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-indigo-100">Select a learner to see their individual learning activity, goals and alerts. Each learner keeps their own progress and history.</p>
             </div>
           </div>
         </section>
@@ -66,47 +71,82 @@ export default function ParentPage() {
             </Link>
           </section>
         ) : (
-          <section className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {learners.map((learner) => {
-              const active = learner.account_status === "active";
-              return (
-                <article key={learner.learner_id} className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-violet-100 transition hover:-translate-y-0.5 hover:shadow-lg">
+          <>
+            <section className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {learners.map((learner) => {
+                const active = learner.account_status === "active";
+                const selected = selectedLearner?.learner_id === learner.learner_id;
+                return (
+                  <article key={learner.learner_id} className={`rounded-3xl bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg ${selected ? "ring-2 ring-violet-500" : "ring-1 ring-violet-100"}`}>
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-4xl">{learner.avatar_emoji || "🧑‍🎓"}</div>
+                      <div className="min-w-0">
+                        <h2 className="truncate text-xl font-black text-[#071b3a]">{learner.display_name}</h2>
+                        <p className="mt-1 text-sm font-bold text-violet-600">{learner.grade || "Grade not set"}</p>
+                        <span className={`mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-black ${active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                          {active ? "Active" : "Disabled"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 grid grid-cols-3 gap-2">
+                      <div className="rounded-2xl bg-violet-50 p-3 text-center">
+                        <Trophy className="mx-auto text-violet-600" size={18} />
+                        <p className="mt-1 text-lg font-black text-[#071b3a]">{learner.xp}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">XP</p>
+                      </div>
+                      <div className="rounded-2xl bg-amber-50 p-3 text-center">
+                        <Flame className="mx-auto text-amber-600" size={18} />
+                        <p className="mt-1 text-lg font-black text-[#071b3a]">{learner.current_streak}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Streak</p>
+                      </div>
+                      <div className="rounded-2xl bg-cyan-50 p-3 text-center">
+                        <CalendarDays className="mx-auto text-cyan-600" size={18} />
+                        <p className="mt-1 text-lg font-black text-[#071b3a]">{learner.best_streak}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Best</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex gap-2">
+                      <Link href={`/parent?learner=${encodeURIComponent(learner.learner_id)}`} className={`inline-flex flex-1 items-center justify-center rounded-2xl px-4 py-3 text-sm font-black ${selected ? "bg-violet-600 text-white" : "bg-violet-50 text-violet-700 hover:bg-violet-100"}`}>
+                        {selected ? "Selected learner" : `Select ${learner.display_name}`}
+                      </Link>
+                      <Link href={`/parent/history?learner=${encodeURIComponent(learner.learner_id)}`} className="inline-flex items-center justify-center rounded-2xl bg-slate-100 px-4 py-3 text-slate-700 hover:bg-slate-200" aria-label={`View ${learner.display_name}'s history`}>
+                        <History size={18} />
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
+            </section>
+
+            {selectedLearner && (
+              <section className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-violet-100 sm:p-8">
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-4xl">{learner.avatar_emoji || "🧑‍🎓"}</div>
-                    <div className="min-w-0">
-                      <h2 className="truncate text-xl font-black text-[#071b3a]">{learner.display_name}</h2>
-                      <p className="mt-1 text-sm font-bold text-violet-600">{learner.grade || "Grade not set"}</p>
-                      <span className={`mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-black ${active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
-                        {active ? "Active" : "Disabled"}
-                      </span>
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-4xl">{selectedLearner.avatar_emoji || "🧑‍🎓"}</div>
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.16em] text-violet-600">Selected learner</p>
+                      <h2 className="mt-1 text-2xl font-black text-[#071b3a]">{selectedLearner.display_name}</h2>
+                      <p className="mt-1 text-sm font-semibold text-slate-500">{selectedLearner.grade || "Grade not set"} · {selectedLearner.account_status === "active" ? "Active account" : "Account disabled"}</p>
                     </div>
                   </div>
 
-                  <div className="mt-6 grid grid-cols-3 gap-2">
-                    <div className="rounded-2xl bg-violet-50 p-3 text-center">
-                      <Trophy className="mx-auto text-violet-600" size={18} />
-                      <p className="mt-1 text-lg font-black text-[#071b3a]">{learner.xp}</p>
-                      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">XP</p>
-                    </div>
-                    <div className="rounded-2xl bg-amber-50 p-3 text-center">
-                      <Flame className="mx-auto text-amber-600" size={18} />
-                      <p className="mt-1 text-lg font-black text-[#071b3a]">{learner.current_streak}</p>
-                      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Streak</p>
-                    </div>
-                    <div className="rounded-2xl bg-cyan-50 p-3 text-center">
-                      <CalendarDays className="mx-auto text-cyan-600" size={18} />
-                      <p className="mt-1 text-lg font-black text-[#071b3a]">{learner.best_streak}</p>
-                      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Best</p>
-                    </div>
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    <div className="rounded-2xl bg-violet-50 px-4 py-3 text-center"><p className="text-lg font-black text-[#071b3a]">{selectedLearner.xp}</p><p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">XP</p></div>
+                    <div className="rounded-2xl bg-amber-50 px-4 py-3 text-center"><p className="text-lg font-black text-[#071b3a]">{selectedLearner.current_streak}</p><p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Streak</p></div>
+                    <div className="rounded-2xl bg-cyan-50 px-4 py-3 text-center"><p className="text-lg font-black text-[#071b3a]">{selectedLearner.best_streak}</p><p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Best</p></div>
                   </div>
+                </div>
 
-                  <Link href={`/parent/history?learner=${encodeURIComponent(learner.learner_id)}`} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-3.5 font-black text-white shadow-sm transition hover:bg-violet-700">
-                    <History size={18} /> View {learner.display_name}&apos;s history
-                  </Link>
-                </article>
-              );
-            })}
-          </section>
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                  <Link href={`/parent/history?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-3.5 font-black text-white hover:bg-violet-700"><History size={18} /> Learning History</Link>
+                  <Link href={`/parent/goals?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-50 px-5 py-3.5 font-black text-emerald-700 hover:bg-emerald-100"><Target size={18} /> Goals</Link>
+                  <Link href={`/parent/notifications?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-50 px-5 py-3.5 font-black text-amber-700 hover:bg-amber-100"><Bell size={18} /> Alerts</Link>
+                </div>
+              </section>
+            )}
+          </>
         )}
 
         <section className="mt-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100 sm:p-7">
