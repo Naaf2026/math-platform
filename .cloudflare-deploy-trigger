@@ -2,4 +2,4 @@ Deployment trigger for Cloudflare Workers Builds.
 
 This file intentionally contains no application logic. It exists to create a new commit on main after reconnecting the Cloudflare GitHub integration and trigger the connected Cloudflare deployment pipeline.
 
-Fix Daily Challenge full-screen navigation overlap: 2026-09-12T19:10Z
+Compact Daily Challenge question card to fit full screen: 2026-09-12T19:12Z
