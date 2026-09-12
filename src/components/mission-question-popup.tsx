@@ -20,43 +20,7 @@ export default function MissionQuestionPopup() {
       });
     };
 
-    let advanceTimer = 0;
     let lastFeedback = "";
-    const scheduleAdvance = () => {
-      window.clearTimeout(advanceTimer);
-      let attempts = 0;
-
-      const tryAdvance = () => {
-        const panel = document.querySelector<HTMLElement>(".mission-question-window");
-        if (!panel) return;
-
-        // The Mission page renders the real Next Challenge / Finish Mission
-        // button outside the popup panel. Search the containing section first,
-        // then fall back to the document so the game window can drive the
-        // existing page navigation instead of getting stuck after feedback.
-        const scope = panel.closest("section") || document;
-        const buttons = Array.from(scope.querySelectorAll<HTMLButtonElement>("button"));
-        const nextButton = buttons.find((button) => {
-          const label = (button.innerText || button.getAttribute("aria-label") || "").trim().toLowerCase();
-          return /^(next|next question|continue|continue adventure|next challenge|finish|finish mission)$/i.test(label);
-        });
-
-        if (nextButton && !nextButton.disabled) {
-          nextButton.click();
-          return;
-        }
-
-        // Answer persistence can take a moment. Keep looking briefly rather
-        // than giving up while the Next Challenge button is disabled.
-        attempts += 1;
-        if (attempts < 15) {
-          advanceTimer = window.setTimeout(tryAdvance, 400);
-        }
-      };
-
-      advanceTimer = window.setTimeout(tryAdvance, 1100);
-    };
-
     const inspectFeedback = () => {
       const panel = document.querySelector<HTMLElement>(".mission-question-window");
       if (!panel) return;
@@ -72,11 +36,9 @@ export default function MissionQuestionPopup() {
         el.classList.remove("fv-motion-idle", "fv-motion-correct", "fv-motion-incorrect");
         el.classList.add(result === "correct" ? "fv-motion-correct" : "fv-motion-incorrect");
       });
-      scheduleAdvance();
     };
 
     const onComplete = () => {
-      window.clearTimeout(advanceTimer);
       setActive(false);
       clearWindow();
     };
@@ -86,7 +48,6 @@ export default function MissionQuestionPopup() {
       window.setTimeout(applyWindow, 0);
     };
     const onRetry = () => {
-      window.clearTimeout(advanceTimer);
       lastFeedback = "";
       setActive(true);
       window.setTimeout(applyWindow, 0);
@@ -103,7 +64,6 @@ export default function MissionQuestionPopup() {
     window.addEventListener("fv:retry-question", onRetry);
 
     return () => {
-      window.clearTimeout(advanceTimer);
       observer.disconnect();
       clearWindow();
       window.removeEventListener("fv:mission-complete", onComplete);
