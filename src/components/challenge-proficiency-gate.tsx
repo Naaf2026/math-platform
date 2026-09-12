@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LockKeyhole, Sparkles } from "lucide-react";
+import { LockKeyhole, Sparkles, X } from "lucide-react";
 
 export type ChallengeStage = 0 | 1 | 2 | 3;
 
@@ -12,7 +12,7 @@ export const challengeStages = [
   { name: "Master", unlock: 100, icon: "👑", description: "The highest level of Daily Challenge difficulty.", hint: "For confident learners seeking a serious challenge." },
 ];
 
-export default function ChallengeProficiencyGate({ xp, onStart }: { xp: number; onStart: (stage: ChallengeStage) => void }) {
+export default function ChallengeProficiencyGate({ xp, onStart, onClose }: { xp: number; onStart: (stage: ChallengeStage) => void; onClose?: () => void }) {
   const [selected, setSelected] = useState<ChallengeStage>(0);
 
   useEffect(() => {
@@ -25,8 +25,17 @@ export default function ChallengeProficiencyGate({ xp, onStart }: { xp: number; 
   return (
     <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#d8eef2]">
       <div className="min-h-full px-4 py-5 sm:px-7 sm:py-8">
-        <div className="mx-auto max-w-4xl rounded-[2.2rem] border-4 border-yellow-400 bg-white p-5 shadow-2xl sm:p-8">
-          <div className="text-center">
+        <div className="relative mx-auto max-w-4xl rounded-[2.2rem] border-4 border-yellow-400 bg-white p-5 shadow-2xl sm:p-8">
+          <button
+            type="button"
+            onClick={onClose ?? (() => { window.location.href = "/dashboard"; })}
+            aria-label="Close challenge level selection"
+            className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-slate-100 hover:text-slate-800 sm:right-5 sm:top-5"
+          >
+            <X size={21} strokeWidth={2.5} />
+          </button>
+
+          <div className="pr-10 text-center">
             <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-cyan-100 text-2xl">🎯</div>
             <p className="mt-3 text-[11px] font-black uppercase tracking-[.2em] text-cyan-600">Before you start</p>
             <h1 className="mt-1 text-2xl font-black sm:text-3xl">Choose your challenge level</h1>
