@@ -24,7 +24,7 @@ function wordCount(value: string): number {
 function semanticWording(question: InteractiveQuestion): SemanticReviewCheck {
   const prompt = question.prompt?.trim() || "";
   if (!prompt) return review("semantic-wording", "Semantic clarity", "error", "The question has no usable prompt.");
-  if (/\b(???|tbd|lorem ipsum)\b/i.test(prompt)) return review("semantic-wording", "Semantic clarity", "error", "Placeholder or unfinished wording was detected.");
+  if (/\b(\?\?\?|tbd|lorem ipsum)\b/i.test(prompt)) return review("semantic-wording", "Semantic clarity", "error", "Placeholder or unfinished wording was detected.");
   if (wordCount(prompt) < 4) return review("semantic-wording", "Semantic clarity", "warning", "The prompt is very short; confirm that the learner has enough context.");
   if (/[A-Z]{5,}/.test(prompt)) return review("semantic-wording", "Semantic clarity", "warning", "Unusually capitalized text may make the question feel machine-generated or unclear.");
   return review("semantic-wording", "Semantic clarity", "pass", "The prompt is readable and contains enough wording for basic semantic review.");
