@@ -24,16 +24,37 @@ export default function MissionQuestionPopup() {
     let lastFeedback = "";
     const scheduleAdvance = () => {
       window.clearTimeout(advanceTimer);
-      advanceTimer = window.setTimeout(() => {
+      let attempts = 0;
+
+      const tryAdvance = () => {
         const panel = document.querySelector<HTMLElement>(".mission-question-window");
         if (!panel) return;
-        const buttons = Array.from(panel.querySelectorAll<HTMLButtonElement>("button"));
+
+        // The Mission page renders the real Next Challenge / Finish Mission
+        // button outside the popup panel. Search the containing section first,
+        // then fall back to the document so the game window can drive the
+        // existing page navigation instead of getting stuck after feedback.
+        const scope = panel.closest("section") || document;
+        const buttons = Array.from(scope.querySelectorAll<HTMLButtonElement>("button"));
         const nextButton = buttons.find((button) => {
           const label = (button.innerText || button.getAttribute("aria-label") || "").trim().toLowerCase();
-          return /^(next|next question|continue|continue adventure|next challenge|finish)$/i.test(label);
+          return /^(next|next question|continue|continue adventure|next challenge|finish|finish mission)$/i.test(label);
         });
-        if (nextButton && !nextButton.disabled) nextButton.click();
-      }, 1100);
+
+        if (nextButton && !nextButton.disabled) {
+          nextButton.click();
+          return;
+        }
+
+        // Answer persistence can take a moment. Keep looking briefly rather
+        // than giving up while the Next Challenge button is disabled.
+        attempts += 1;
+        if (attempts < 15) {
+          advanceTimer = window.setTimeout(tryAdvance, 400);
+        }
+      };
+
+      advanceTimer = window.setTimeout(tryAdvance, 1100);
     };
 
     const inspectFeedback = () => {
