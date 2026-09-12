@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bell, LayoutDashboard, Target, Users } from "lucide-react";
+import { Bell, History, Target, Users } from "lucide-react";
 import ParentLearningAlerts from "@/components/parent-learning-alerts";
 import ParentIntelligenceDashboard from "@/components/parent-intelligence-dashboard";
 import ParentIntelligenceActionCenter from "@/components/parent-intelligence-action-center";
@@ -29,8 +29,8 @@ export default async function ParentLayout({ children }: { children: React.React
           <Link href="/parent" className="font-black tracking-tight text-[#071b3a]">Family Learning Centre</Link>
           <div className="flex flex-wrap items-center gap-2 text-sm font-black">
             <ParentLearnerSwitcher />
-            <Link href="/parent" className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-[#071b3a]"><LayoutDashboard size={16} /> Overview</Link>
-            <Link href="/parent/learners" className="inline-flex items-center gap-2 rounded-full bg-violet-50 px-3 py-2 text-violet-700 transition hover:bg-violet-100"><Users size={16} /> Your Learners</Link>
+            <Link href="/parent" className="inline-flex items-center gap-2 rounded-full bg-violet-50 px-3 py-2 text-violet-700 transition hover:bg-violet-100"><Users size={16} /> Your Learners</Link>
+            <Link href="/parent/history" className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-[#071b3a]"><History size={16} /> Learning History</Link>
             <Link href="/parent/goals" className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-[#071b3a]"><Target size={16} /> Goals</Link>
             <Link href="/parent/notifications" className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-[#071b3a]"><Bell size={16} /> Alerts</Link>
           </div>
