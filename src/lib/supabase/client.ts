@@ -9,9 +9,9 @@ export function createClient() {
   const client = createBrowserClient(url, key);
   const originalRpc = client.rpc.bind(client);
 
-  // Keep the existing Mission page compatible while routing its legacy
-  // submission call through a dedicated, uniquely named RPC. This avoids
-  // PostgREST schema/function-resolution collisions with older functions.
+  // Keep Mission and Daily Challenge on the shared learning submission API.
+  // The database function now detects whether the question belongs to today's
+  // Mission and routes it to the correct atomic submission path.
   const proxiedClient = new Proxy(client, {
     get(target, property, receiver) {
       if (property === "rpc") {
@@ -19,12 +19,12 @@ export function createClient() {
           const [functionName, params, options] = rpcArgs;
 
           if (functionName === "submit_learning_answer") {
-            return originalRpc("submit_mission_answer_v2", params, options);
+            return originalRpc("submit_learning_answer", params, options);
           }
 
-          // submit_mission_answer_v2 already updates the Daily Mission
-          // atomically. The legacy page makes a second progress call, so
-          // intentionally treat that compatibility call as a no-op.
+          // Mission submission is atomic in submit_learning_answer. The legacy
+          // Mission page still makes this compatibility call, so don't attempt
+          // to update Mission progress a second time.
           if (functionName === "record_daily_mission_answer") {
             return Promise.resolve({ data: null, error: null });
           }
