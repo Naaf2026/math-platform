@@ -35,3 +35,16 @@ export async function createLearnerAccount(input: {
   if (!data?.success) throw new Error(data?.error || "Could not create learner account.");
   return data as { success: true; learner_id: string; username: string; display_name: string };
 }
+
+export async function manageLearnerAccount(input: {
+  learner_id: string;
+  action: "enable" | "disable" | "reset_password";
+  new_password?: string;
+}) {
+  const supabase = createClient();
+  if (!supabase) throw new Error("Supabase is not configured.");
+  const { data, error } = await supabase.functions.invoke("manage-learner-account", { body: input });
+  if (error) throw new Error(error.message);
+  if (!data?.success) throw new Error(data?.error || "Could not update learner account.");
+  return data as { success: true; action: string; account_status?: string };
+}
