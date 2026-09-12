@@ -41,15 +41,17 @@ export default function LoginPage() {
       }
     }
 
+    // Admins use the email login form, but the database-backed admin role
+    // sends them to the protected admin area. Learner mode stays student-only.
     const roleMatchesMode = mode === "learner"
       ? role === "student"
-      : role === "parent" || role === "guardian";
+      : role === "admin" || role === "parent" || role === "guardian";
 
     if (!role || !roleMatchesMode) {
       await supabase.auth.signOut();
       throw new Error(mode === "learner"
         ? "This account is not a learner account. Please use the parent login for this account."
-        : "This account is not a parent account. Please use the learner login if you are signing in as a learner.");
+        : "This account is not an admin or parent account. Please use the learner login if you are signing in as a learner.");
     }
 
     window.location.href = roleHome(role);
