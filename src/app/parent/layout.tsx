@@ -2,8 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Bell, History, Target, Users } from "lucide-react";
 import ParentLearningAlerts from "@/components/parent-learning-alerts";
-import ParentIntelligenceDashboard from "@/components/parent-intelligence-dashboard";
-import ParentIntelligenceActionCenter from "@/components/parent-intelligence-action-center";
 import ParentLearnerSwitcher from "@/components/parent-learner-switcher";
 import { createClient } from "@/lib/supabase/server";
 import { getUserRole } from "@/app/auth/role-router";
@@ -38,8 +36,6 @@ export default async function ParentLayout({ children }: { children: React.React
       </nav>
       {children}
       <div className="mx-auto max-w-6xl px-5 pt-5 sm:px-8"><ParentLearningAlerts /></div>
-      <ParentIntelligenceDashboard />
-      <ParentIntelligenceActionCenter />
     </>
   );
 }
