@@ -2,57 +2,258 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { BarChart3, BookOpen, CheckCircle2, Flame, Gift, Home, LogOut, Medal, Settings, Sparkles, Target, Trophy, Users, Zap } from "lucide-react";
+import { BookOpen, Flame, Home, Target, Trophy, Users, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-type Profile={full_name:string|null;grade:string|null;learning_level:string|null;xp:number;current_streak:number;best_streak:number};
-type Topic={id:string;title:string;description:string;level:string;lessons:number;sort_order:number};
-type TopicProgress={topic_id:string;questions_answered:number;correct_answers:number;completed_at:string|null};
-type Lesson={id:string;topic_id:string;title:string;lesson_number:number;sort_order:number};
-type LessonProgress={lesson_id:string;completed_at:string|null};
-type Achievement={id:string;title:string;description:string;icon:string};
+type Profile = {
+  full_name: string | null;
+  grade: string | null;
+  xp: number;
+  current_streak: number;
+};
+type Topic = { id: string; title: string; description: string };
+type TopicProgress = { topic_id: string; questions_answered: number; correct_answers: number };
 
-const topicIds=["place-value","fractions","addition-subtraction","multiplication"];
-const topicVisuals=[
-  {icon:"🔢",bg:"from-sky-50 to-cyan-50",bar:"from-cyan-400 to-blue-500"},
-  {icon:"🍕",bg:"from-violet-50 to-fuchsia-50",bar:"from-violet-500 to-fuchsia-500"},
-  {icon:"➕",bg:"from-emerald-50 to-teal-50",bar:"from-emerald-400 to-teal-500"},
-  {icon:"✖️",bg:"from-orange-50 to-amber-50",bar:"from-orange-400 to-rose-500"},
+const topicIds = ["place-value", "fractions", "addition-subtraction", "multiplication"];
+const topicVisuals = [
+  { icon: "🔢", bg: "from-sky-50 to-cyan-50", bar: "from-cyan-400 to-blue-500" },
+  { icon: "🍕", bg: "from-violet-50 to-fuchsia-50", bar: "from-violet-500 to-fuchsia-500" },
+  { icon: "➕", bg: "from-emerald-50 to-teal-50", bar: "from-emerald-400 to-teal-500" },
+  { icon: "✖️", bg: "from-orange-50 to-amber-50", bar: "from-orange-400 to-rose-500" },
 ];
 
-export default function DashboardPage(){
- const[profile,setProfile]=useState<Profile|null>(null),[status,setStatus]=useState("Loading your learning space…"),[topics,setTopics]=useState<Topic[]>([]),[topicProgress,setTopicProgress]=useState<TopicProgress[]>([]),[lessons,setLessons]=useState<Lesson[]>([]),[lessonProgress,setLessonProgress]=useState<LessonProgress[]>([]),[achievements,setAchievements]=useState<Achievement[]>([]);
- useEffect(()=>{const supabase=createClient();if(!supabase){setStatus("Supabase is not configured yet.");return;}supabase.auth.getUser().then(async({data,error})=>{if(error||!data.user){window.location.href="/login";return;}const[{data:row},{data:ts},{data:tp},{data:ls},{data:lp},{data:sa}]=await Promise.all([
-  supabase.from("profiles").select("full_name,grade,learning_level,xp,current_streak,best_streak").eq("id",data.user.id).maybeSingle(),
-  supabase.from("learning_topics").select("id,title,description,level,lessons,sort_order").order("sort_order"),
-  supabase.from("topic_progress").select("topic_id,questions_answered,correct_answers,completed_at").eq("user_id",data.user.id),
-  supabase.from("learning_lessons").select("id,topic_id,title,lesson_number,sort_order").order("sort_order"),
-  supabase.from("lesson_progress").select("lesson_id,completed_at").eq("user_id",data.user.id),
-  supabase.from("student_achievements").select("achievement_id,earned_at").eq("user_id",data.user.id)
- ]);setProfile(row??{full_name:data.user.user_metadata?.full_name??"Student",grade:null,learning_level:null,xp:0,current_streak:0,best_streak:0});setTopics((ts??[]) as Topic[]);setTopicProgress((tp??[]) as TopicProgress[]);setLessons((ls??[]) as Lesson[]);setLessonProgress((lp??[]) as LessonProgress[]);const ids=(sa??[]).map((a:{achievement_id:string})=>a.achievement_id);if(ids.length){const{data:ad}=await supabase.from("learning_achievements").select("id,title,description,icon").in("id",ids).order("sort_order");setAchievements((ad??[]) as Achievement[]);}setStatus("")})},[]);
- async function signOut(){const supabase=createClient();if(supabase)await supabase.auth.signOut();window.location.href="/"}
- const completedLessonIds=useMemo(()=>new Set(lessonProgress.filter(p=>p.completed_at).map(p=>p.lesson_id)),[lessonProgress]);
- const answered=topicProgress.reduce((n,p)=>n+p.questions_answered,0),correct=topicProgress.reduce((n,p)=>n+p.correct_answers,0),accuracy=answered?Math.round((correct/answered)*100):0;
- const nextLesson=lessons.filter(l=>!completedLessonIds.has(l.id)).sort((a,b)=>a.sort_order-b.sort_order)[0];
- const nextTopic=nextLesson?.topic_id||"place-value",firstName=(profile?.full_name||"Student").split(" ")[0];
- const level=Math.floor((profile?.xp??0)/100)+1,levelProgress=(profile?.xp??0)%100;
- const gradeLabel=(()=>{const raw=String(profile?.grade||"");const match=raw.match(/[1-7]/);return match?`Grade ${match[0]}`:"Grade 3";})();
- const displayTopics=topicIds.map((id,i)=>{const topic=topics.find(t=>t.id===id)||{id,title:id.replaceAll("-"," ").replace(/\b\w/g,c=>c.toUpperCase()),description:"Practice your skills",level:gradeLabel,lessons:0,sort_order:i};const p=topicProgress.find(x=>x.topic_id===id);const pct=p&&p.questions_answered?Math.min(100,Math.round((p.correct_answers/p.questions_answered)*100)):0;return{...topic,pct,visual:topicVisuals[i]};});
- if(status)return <main className="flex min-h-screen items-center justify-center bg-[#eef7ff] p-6"><div className="rounded-[2rem] bg-white p-8 text-center shadow-xl"><div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-blue-500 text-white"><Sparkles/></div><p className="mt-4 font-bold text-[#082b59]">{status}</p><Link href="/login" className="mt-4 inline-block text-sm font-black text-blue-600">Go to login</Link></div></main>;
- return <main className="min-h-screen overflow-x-hidden bg-gradient-to-b from-[#eaf7ff] via-[#f8fcff] to-[#dff6ff] text-[#092d5c] lg:pl-[190px]">
-  <aside className="fixed inset-y-0 left-0 z-40 hidden w-[190px] flex-col bg-[#073d78] text-white lg:flex"><div className="flex items-center gap-2 px-5 py-5"><div className="grid h-11 w-11 place-items-center rounded-xl bg-white text-lg font-black text-[#073d78]">FV</div><div><p className="text-sm font-black">FAHI VISSNUN</p><p className="text-[10px] text-blue-200">Math Learning Platform</p></div></div><div className="mx-4 mt-2 rounded-2xl bg-white/10 p-3 text-center"><div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 text-3xl shadow-lg">🧒</div><p className="mt-2 font-black">{firstName}</p><p className="text-xs text-blue-200">{gradeLabel}</p></div><nav className="mt-5 space-y-1 px-3 text-sm font-bold"><Link href="/dashboard" className="flex items-center gap-3 rounded-xl bg-white/15 px-4 py-3"><Home size={19}/>Home</Link><Link href="/training" className="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-white/10"><BookOpen size={19}/>Training</Link><Link href="/peer-challenge" className="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-white/10"><Users size={19}/>Peer Challenge</Link><Link href="/leaderboard" className="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-white/10"><Trophy size={19}/>Leaderboard</Link><Link href="/rewards" className="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-white/10"><Gift size={19}/>Rewards</Link><Link href="/progress" className="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-white/10"><BarChart3 size={19}/>Progress</Link></nav><div className="mt-auto p-4"><button onClick={signOut} className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-blue-100 hover:bg-white/10"><LogOut size={18}/>Sign out</button></div></aside>
-  <header className="sticky top-0 z-30 border-b border-white/70 bg-[#073d78] text-white shadow-sm"><div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 sm:px-6"><Link href="/" className="flex items-center gap-2 lg:hidden"><div className="grid h-9 w-9 place-items-center rounded-lg bg-white text-xs font-black text-[#073d78]">FV</div><div><p className="text-xs font-black">FAHI VISSNUN</p><p className="text-[9px] text-blue-200">Math</p></div></Link><div className="hidden items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-black sm:flex">⭐ {gradeLabel} <span className="text-blue-200">⌄</span></div><div className="ml-auto flex items-center gap-2 sm:gap-4"><div className="rounded-full bg-white/10 px-3 py-2 text-xs font-black sm:px-4 sm:text-sm">🔥 {profile?.current_streak??0} Day Streak</div><div className="rounded-full bg-white/10 px-3 py-2 text-xs font-black sm:px-4 sm:text-sm">⭐ {profile?.xp??0} XP</div><div className="hidden rounded-full bg-white/10 px-4 py-2 text-sm font-black md:block">🏅 {achievements.length} Badges</div><button className="grid h-9 w-9 place-items-center rounded-full bg-white/15"><Settings size={18}/></button></div></div></header>
-  <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-   <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#bceeff] via-[#dff8ff] to-white px-5 py-6 shadow-sm sm:px-8 sm:py-7"><div className="absolute -right-12 -top-20 h-56 w-56 rounded-full bg-blue-200/50 blur-3xl"/><div className="absolute -bottom-20 left-1/3 h-48 w-48 rounded-full bg-cyan-200/40 blur-3xl"/><div className="relative flex items-center gap-4 sm:gap-6"><div className="grid h-20 w-20 shrink-0 place-items-center rounded-full border-4 border-white bg-gradient-to-br from-yellow-300 to-orange-400 text-4xl shadow-lg sm:h-24 sm:w-24">🧒</div><div><p className="text-sm font-bold text-blue-600">{gradeLabel} • Ready to learn?</p><h1 className="mt-1 text-3xl font-black tracking-tight sm:text-5xl">Hi {firstName}! 👋</h1><p className="mt-1 text-sm font-semibold text-[#47708f] sm:text-base">What are you going to play today?</p></div></div></section>
-   <section className="mt-5 grid gap-4 lg:grid-cols-[1.25fr_.9fr_.9fr]">
-    <Link href="/challenge" className="group relative min-h-[265px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#ffd21c] via-[#ffb90f] to-[#ff8a00] p-6 text-[#4b2700] shadow-xl transition hover:-translate-y-1"><div className="absolute -right-8 -bottom-10 text-[130px] opacity-20">🏆</div><span className="rounded-full bg-white/30 px-4 py-1.5 text-xs font-black uppercase">Daily</span><h2 className="mt-6 max-w-xs text-4xl font-black leading-none sm:text-5xl">Daily<br/>Challenge</h2><p className="mt-3 font-bold">10 Questions • Earn XP ⭐</p><span className="absolute bottom-6 right-6 inline-flex items-center gap-2 rounded-full bg-[#19a95b] px-7 py-3 text-base font-black text-white shadow-lg">START <Zap size={18} fill="currentColor"/></span></Link>
-    <Link href="/training" className="group relative min-h-[265px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#22b7ef] to-[#1778dc] p-6 text-white shadow-xl transition hover:-translate-y-1"><div className="absolute right-4 top-2 text-[90px] opacity-20">📚</div><BookOpen size={38}/><h2 className="mt-14 text-4xl font-black">Training</h2><p className="mt-2 text-lg font-bold text-blue-50">Practice your skills</p><span className="absolute bottom-6 left-6 right-6 rounded-full border-2 border-white/80 bg-white/10 px-6 py-3 text-center font-black">PRACTICE →</span></Link>
-    <Link href="/peer-challenge" className="group relative min-h-[265px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#ff9b19] to-[#ff5f0f] p-6 text-white shadow-xl transition hover:-translate-y-1"><div className="absolute right-4 top-3 text-[85px] opacity-20">🤝</div><Users size={38}/><h2 className="mt-14 text-3xl font-black sm:text-4xl">Peer Challenge</h2><p className="mt-2 text-lg font-bold text-orange-50">Challenge a friend</p><span className="absolute bottom-6 left-6 right-6 rounded-full border-2 border-white/80 bg-white/10 px-6 py-3 text-center font-black">PLAY →</span></Link>
-   </section>
-   <section className="mt-6 rounded-[2rem] bg-white p-5 shadow-lg shadow-blue-100/50 sm:p-6"><div className="flex items-center justify-between"><div><div className="flex items-center gap-2"><Target className="text-red-500" size={25}/><h2 className="text-2xl font-black sm:text-3xl">Continue Learning</h2></div><p className="mt-1 text-sm font-semibold text-slate-400">Pick up where you left off</p></div><Link href="/training" className="text-sm font-black text-blue-600">View All →</Link></div><div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{displayTopics.map(t=><Link key={t.id} href={`/training?topic=${encodeURIComponent(t.id)}`} className={`rounded-2xl bg-gradient-to-br ${t.visual.bg} p-4 transition hover:-translate-y-0.5`}><div className="flex items-center gap-3"><span className="text-4xl">{t.visual.icon}</span><div className="min-w-0"><h3 className="truncate text-lg font-black">{t.title}</h3><p className="text-xs font-bold text-slate-500">{gradeLabel}</p></div></div><div className="mt-4 flex items-center gap-3"><div className="h-2 flex-1 overflow-hidden rounded-full bg-white/80"><div className={`h-full rounded-full bg-gradient-to-r ${t.visual.bar}`} style={{width:`${t.pct}%`}}/></div><span className="text-xs font-black">{t.pct}%</span></div><div className="mt-3 rounded-full border border-white/80 bg-white/60 py-2 text-center text-xs font-black">CONTINUE →</div></Link>)}</div></section>
-   <section className="mt-5 grid gap-4 lg:grid-cols-[1.2fr_.8fr]"><div className="rounded-[2rem] bg-white p-6 shadow-lg shadow-blue-100/40"><div className="flex items-center gap-3"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-yellow-100 text-2xl">⭐</div><div><p className="text-xs font-black uppercase tracking-wider text-blue-500">Your level</p><p className="text-2xl font-black">Level {level}</p></div><span className="ml-auto text-sm font-black text-slate-500">{profile?.xp??0} XP</span></div><div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-500" style={{width:`${levelProgress}%`}}/></div><p className="mt-2 text-xs font-bold text-slate-400">{100-levelProgress} XP to Level {level+1}</p><div className="mt-5 grid grid-cols-3 gap-3 text-center"><div className="rounded-2xl bg-orange-50 p-3"><Flame className="mx-auto text-orange-500" size={22}/><p className="mt-1 text-xl font-black">{profile?.current_streak??0}</p><p className="text-[10px] font-bold text-slate-400">Streak</p></div><div className="rounded-2xl bg-emerald-50 p-3"><CheckCircle2 className="mx-auto text-emerald-500" size={22}/><p className="mt-1 text-xl font-black">{accuracy}%</p><p className="text-[10px] font-bold text-slate-400">Accuracy</p></div><div className="rounded-2xl bg-violet-50 p-3"><Medal className="mx-auto text-violet-500" size={22}/><p className="mt-1 text-xl font-black">{achievements.length}</p><p className="text-[10px] font-bold text-slate-400">Badges</p></div></div></div><div className="rounded-[2rem] bg-gradient-to-br from-[#dff8ff] to-[#efffff] p-6 shadow-lg shadow-cyan-100/40"><p className="text-xs font-black uppercase tracking-wider text-cyan-600">Next up</p><h2 className="mt-2 text-2xl font-black">Keep going! 🚀</h2><p className="mt-2 text-sm font-semibold leading-6 text-slate-500">Your next learning area is <span className="font-black text-[#092d5c]">{topics.find(t=>t.id===nextTopic)?.title||"Place Value"}</span>.</p><Link href="/training" className="mt-5 inline-flex rounded-full bg-[#0c82d8] px-6 py-3 text-sm font-black text-white shadow-md">KEEP LEARNING →</Link></div></section>
-   <section className="mt-5 grid grid-cols-3 overflow-hidden rounded-[2rem] bg-white shadow-lg"><Link href="/leaderboard" className="flex items-center justify-center gap-2 border-r border-slate-100 p-5 font-black hover:bg-blue-50"><Trophy className="text-yellow-500"/> <span className="hidden sm:inline">Leaderboard</span></Link><Link href="/rewards" className="flex items-center justify-center gap-2 border-r border-slate-100 p-5 font-black hover:bg-yellow-50"><Gift className="text-pink-500"/> <span className="hidden sm:inline">Rewards</span></Link><Link href="/progress" className="flex items-center justify-center gap-2 p-5 font-black hover:bg-cyan-50"><BarChart3 className="text-cyan-500"/> <span className="hidden sm:inline">Progress</span></Link></section>
-  </div>
-  <nav className="sticky bottom-0 z-30 grid grid-cols-5 border-t border-slate-200 bg-white/95 p-2 backdrop-blur lg:hidden"><Link href="/dashboard" className="grid place-items-center gap-1 rounded-xl bg-blue-50 py-2 text-[10px] font-black text-blue-600"><Home size={19}/>Home</Link><Link href="/training" className="grid place-items-center gap-1 py-2 text-[10px] font-black text-slate-500"><BookOpen size={19}/>Training</Link><Link href="/challenge" className="grid place-items-center gap-1 py-2 text-[10px] font-black text-slate-500"><Zap size={19}/>Challenge</Link><Link href="/leaderboard" className="grid place-items-center gap-1 py-2 text-[10px] font-black text-slate-500"><Trophy size={19}/>Ranks</Link><Link href="/progress" className="grid place-items-center gap-1 py-2 text-[10px] font-black text-slate-500"><BarChart3 size={19}/>Progress</Link></nav>
- </main>;
+function gradeLabel(value: string | null | undefined) {
+  const match = String(value || "").match(/[1-7]/);
+  return match ? `Grade ${match[0]}` : "Grade 3";
+}
+
+export default function DashboardPage() {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [topicProgress, setTopicProgress] = useState<TopicProgress[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      const supabase = createClient();
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const [{ data: row }, { data: ts }, { data: tp }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("full_name,grade,xp,current_streak")
+          .eq("id", auth.user.id)
+          .maybeSingle(),
+        supabase.from("learning_topics").select("id,title,description").order("sort_order"),
+        supabase
+          .from("topic_progress")
+          .select("topic_id,questions_answered,correct_answers")
+          .eq("user_id", auth.user.id),
+      ]);
+
+      setProfile(
+        row ?? {
+          full_name: auth.user.user_metadata?.full_name ?? "Student",
+          grade: null,
+          xp: 0,
+          current_streak: 0,
+        },
+      );
+      setTopics((ts ?? []) as Topic[]);
+      setTopicProgress((tp ?? []) as TopicProgress[]);
+      setLoading(false);
+    }
+
+    void load();
+  }, []);
+
+  const firstName = (profile?.full_name || "Student").split(" ")[0];
+  const grade = gradeLabel(profile?.grade);
+  const displayTopics = useMemo(
+    () =>
+      topicIds.map((id, index) => {
+        const topic = topics.find((item) => item.id === id);
+        const progress = topicProgress.find((item) => item.topic_id === id);
+        const percent =
+          progress && progress.questions_answered > 0
+            ? Math.min(100, Math.round((progress.correct_answers / progress.questions_answered) * 100))
+            : 0;
+        return {
+          id,
+          title:
+            topic?.title ||
+            id.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
+          percent,
+          visual: topicVisuals[index],
+        };
+      }),
+    [topics, topicProgress],
+  );
+
+  if (loading) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-[#eef8ff] p-6">
+        <div className="rounded-3xl bg-white px-8 py-6 font-black text-[#073d78] shadow-xl">
+          Loading…
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen overflow-x-hidden bg-[#eef9ff] text-[#083d78]">
+      {/* Simple child-first header */}
+      <header className="sticky top-0 z-40 h-[68px] bg-[#073d78] text-white shadow-md">
+        <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-4 sm:px-8">
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-white text-sm font-black text-[#073d78] shadow-sm">
+              FV
+            </div>
+            <div>
+              <p className="text-sm font-black tracking-wide sm:text-base">FAHI VISSNUN</p>
+              <p className="text-[10px] font-semibold text-blue-200 sm:text-xs">Math Learning Platform</p>
+            </div>
+          </Link>
+          <div className="flex items-center gap-2 text-sm font-black sm:gap-6">
+            <Link href="/dashboard" className="flex items-center gap-2 rounded-full bg-white/15 px-4 py-2">
+              <Home size={17} /> <span className="hidden sm:inline">Home</span>
+            </Link>
+            <div className="rounded-full bg-white/10 px-3 py-2 text-xs sm:px-4 sm:text-sm">{grade}</div>
+          </div>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-[1280px] px-4 py-5 sm:px-7 lg:py-7">
+        {/* Compact learner identity strip */}
+        <section className="rounded-[2rem] bg-gradient-to-r from-[#c9f0ff] via-[#e8faff] to-white px-5 py-5 shadow-sm sm:px-8 sm:py-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 sm:gap-6">
+              <div className="grid h-[74px] w-[74px] shrink-0 place-items-center rounded-full border-4 border-white bg-gradient-to-br from-yellow-300 to-orange-400 text-4xl shadow-md sm:h-[88px] sm:w-[88px]">
+                🧒
+              </div>
+              <div>
+                <p className="text-xs font-bold text-blue-600 sm:text-sm">{grade}</p>
+                <h1 className="mt-0.5 text-2xl font-black tracking-tight sm:text-4xl">Hi {firstName}! 👋</h1>
+                <p className="mt-1 text-xs font-semibold text-[#55758f] sm:text-sm">Ready for today’s math adventure?</p>
+              </div>
+            </div>
+            <div className="hidden items-center gap-3 sm:flex">
+              <div className="rounded-2xl bg-white px-4 py-3 text-center shadow-sm">
+                <Flame className="mx-auto text-orange-500" size={20} />
+                <p className="mt-1 text-sm font-black">{profile?.current_streak ?? 0}</p>
+                <p className="text-[10px] font-bold text-slate-400">Day Streak</p>
+              </div>
+              <div className="rounded-2xl bg-white px-4 py-3 text-center shadow-sm">
+                <span className="text-xl">⭐</span>
+                <p className="mt-1 text-sm font-black">{profile?.xp ?? 0}</p>
+                <p className="text-[10px] font-bold text-slate-400">XP</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Only the three requested activities */}
+        <section className="mt-5 grid gap-5 lg:grid-cols-3">
+          <Link
+            href="/challenge"
+            className="group relative min-h-[285px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#ffd91f] via-[#ffc20d] to-[#ff8b00] p-6 text-[#4b2700] shadow-lg transition hover:-translate-y-1 hover:shadow-xl sm:min-h-[310px] sm:p-8"
+          >
+            <div className="absolute -right-4 -top-5 text-[120px] opacity-20 transition group-hover:scale-105">🏆</div>
+            <span className="relative rounded-full bg-white/30 px-4 py-1.5 text-xs font-black uppercase">Daily</span>
+            <h2 className="relative mt-10 text-4xl font-black leading-[0.95] sm:text-5xl">Daily<br />Challenge</h2>
+            <p className="relative mt-4 font-bold">10 Questions • Earn XP ⭐</p>
+            <span className="absolute bottom-7 left-6 right-6 inline-flex items-center justify-center gap-2 rounded-full bg-[#19a95b] px-6 py-3.5 text-base font-black text-white shadow-md sm:left-8 sm:right-8">
+              START <Zap size={18} fill="currentColor" />
+            </span>
+          </Link>
+
+          <Link
+            href="/training"
+            className="group relative min-h-[285px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#2bc2f4] to-[#197bdc] p-6 text-white shadow-lg transition hover:-translate-y-1 hover:shadow-xl sm:min-h-[310px] sm:p-8"
+          >
+            <div className="absolute -right-3 -top-4 text-[115px] opacity-20 transition group-hover:scale-105">📚</div>
+            <BookOpen size={42} />
+            <h2 className="relative mt-14 text-4xl font-black sm:text-5xl">Training</h2>
+            <p className="relative mt-2 text-lg font-bold text-blue-50">Practice your skills</p>
+            <span className="absolute bottom-7 left-6 right-6 rounded-full bg-white/15 px-6 py-3.5 text-center font-black ring-2 ring-white/80 sm:left-8 sm:right-8">
+              PRACTICE →
+            </span>
+          </Link>
+
+          <Link
+            href="/peer-challenge"
+            className="group relative min-h-[285px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#ff9f22] to-[#ff5d10] p-6 text-white shadow-lg transition hover:-translate-y-1 hover:shadow-xl sm:min-h-[310px] sm:p-8"
+          >
+            <div className="absolute -right-2 -top-3 text-[105px] opacity-20 transition group-hover:scale-105">🤝</div>
+            <Users size={42} />
+            <h2 className="relative mt-14 text-3xl font-black sm:text-4xl">Peer Challenge</h2>
+            <p className="relative mt-2 text-lg font-bold text-orange-50">Challenge a friend</p>
+            <span className="absolute bottom-7 left-6 right-6 rounded-full bg-white/15 px-6 py-3.5 text-center font-black ring-2 ring-white/80 sm:left-8 sm:right-8">
+              PLAY →
+            </span>
+          </Link>
+        </section>
+
+        {/* Simple continuation area — no extra dashboard modules */}
+        <section className="mt-6 rounded-[2rem] bg-white p-5 shadow-lg shadow-blue-100/50 sm:p-7">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Target className="text-red-500" size={27} />
+              <h2 className="text-2xl font-black sm:text-3xl">Continue Learning</h2>
+            </div>
+            <Link href="/training" className="text-sm font-black text-blue-600">View All →</Link>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {displayTopics.map((topic) => (
+              <Link
+                key={topic.id}
+                href={`/training?topic=${encodeURIComponent(topic.id)}`}
+                className={`rounded-2xl bg-gradient-to-br ${topic.visual.bg} p-4 transition hover:-translate-y-0.5 hover:shadow-md`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">{topic.visual.icon}</span>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-base font-black sm:text-lg">{topic.title}</h3>
+                    <p className="text-xs font-bold text-slate-500">{grade}</p>
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/80">
+                    <div className={`h-full rounded-full bg-gradient-to-r ${topic.visual.bar}`} style={{ width: `${topic.percent}%` }} />
+                  </div>
+                  <span className="text-xs font-black">{topic.percent}%</span>
+                </div>
+                <div className="mt-3 rounded-full border border-white/90 bg-white/65 py-2 text-center text-xs font-black">
+                  CONTINUE →
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {/* Mobile navigation intentionally stays minimal */}
+      <nav className="sticky bottom-0 z-30 grid grid-cols-3 border-t border-slate-200 bg-white/95 p-2 backdrop-blur lg:hidden">
+        <Link href="/dashboard" className="grid place-items-center gap-1 rounded-xl bg-blue-50 py-2 text-[10px] font-black text-blue-600">
+          <Home size={19} /> Home
+        </Link>
+        <Link href="/training" className="grid place-items-center gap-1 py-2 text-[10px] font-black text-slate-500">
+          <BookOpen size={19} /> Training
+        </Link>
+        <Link href="/peer-challenge" className="grid place-items-center gap-1 py-2 text-[10px] font-black text-slate-500">
+          <Users size={19} /> Peer
+        </Link>
+      </nav>
+    </main>
+  );
 }
