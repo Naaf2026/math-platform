@@ -113,36 +113,36 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-3 lg:gap-7">
-              <Link href="/challenge" className="group relative min-h-[570px] overflow-hidden rounded-[32px] border-2 border-[#ffbd28] bg-[#fff3cc] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
-                <div className="absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-[30px] bg-[#ffd45c]">
+              <Link href="/challenge" className="group relative h-auto min-h-[500px] overflow-hidden rounded-[32px] border-2 border-[#ffbd28] bg-[#fff3cc] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[500px] md:min-h-0">
+                <div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-[#ffd45c]">
                   <img src="/dashboard-assets/dashboard-daily.svg" alt="Daily Challenge" className="block h-full w-full object-cover" />
                 </div>
-                <div className="absolute left-8 right-8 top-[282px] bottom-0 rounded-t-[70px] bg-[#fffaf0] px-2 pt-9 sm:pt-10">
-                  <h2 className="text-[38px] font-black leading-[0.95] sm:text-[42px]">Daily<br />Challenge</h2>
-                  <p className="mt-5 text-[18px] font-bold text-[#55708b]">📋 &nbsp;10 Questions • Earn XP</p>
-                  <div className="absolute bottom-7 left-2 right-2 rounded-full bg-[#ffad16] px-6 py-4 text-center text-[23px] font-black text-white shadow-md">Start →</div>
+                <div className="absolute left-8 right-8 top-[232px] bottom-0 rounded-t-[70px] bg-[#fffaf0] px-2 pt-7 sm:pt-8">
+                  <h2 className="text-[34px] font-black leading-[0.95] sm:text-[38px]">Daily<br />Challenge</h2>
+                  <p className="mt-4 text-[17px] font-bold text-[#55708b]">📋 &nbsp;10 Questions • Earn XP</p>
+                  <div className="absolute bottom-5 left-2 right-2 rounded-full bg-[#ffad16] px-6 py-3.5 text-center text-[21px] font-black text-white shadow-md">Start →</div>
                 </div>
               </Link>
 
-              <Link href="/training" className="group relative min-h-[570px] overflow-hidden rounded-[32px] border-2 border-[#43bdf4] bg-[#e4f6ff] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
-                <div className="absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-[30px] bg-[#219eea]">
+              <Link href="/training" className="group relative h-auto min-h-[500px] overflow-hidden rounded-[32px] border-2 border-[#43bdf4] bg-[#e4f6ff] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[500px] md:min-h-0">
+                <div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-[#219eea]">
                   <img src="/dashboard-assets/dashboard-training.svg" alt="Math Training" className="block h-full w-full object-contain px-2 py-1" />
                 </div>
-                <div className="absolute left-8 right-8 top-[282px] bottom-0 rounded-t-[70px] bg-[#e8f7ff] px-2 pt-9 sm:pt-10">
-                  <h2 className="text-[42px] font-black leading-none">Training</h2>
-                  <p className="mt-5 text-[20px] font-bold text-[#55708b]">Practice your skills</p>
-                  <div className="absolute bottom-7 left-2 right-2 rounded-full bg-[#197fe9] px-6 py-4 text-center text-[23px] font-black text-white shadow-md">Practice →</div>
+                <div className="absolute left-8 right-8 top-[232px] bottom-0 rounded-t-[70px] bg-[#e8f7ff] px-2 pt-7 sm:pt-8">
+                  <h2 className="text-[38px] font-black leading-none">Training</h2>
+                  <p className="mt-4 text-[18px] font-bold text-[#55708b]">Practice your skills</p>
+                  <div className="absolute bottom-5 left-2 right-2 rounded-full bg-[#197fe9] px-6 py-3.5 text-center text-[21px] font-black text-white shadow-md">Practice →</div>
                 </div>
               </Link>
 
-              <Link href="/peer-challenge" className="group relative min-h-[570px] overflow-hidden rounded-[32px] border-2 border-[#ffab8d] bg-[#fff0e9] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
-                <div className="absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-[30px] bg-[#ff855f]">
+              <Link href="/peer-challenge" className="group relative h-auto min-h-[500px] overflow-hidden rounded-[32px] border-2 border-[#ffab8d] bg-[#fff0e9] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[500px] md:min-h-0">
+                <div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-[#ff855f]">
                   <img src="/dashboard-assets/dashboard-peer.svg" alt="Peer Challenge" className="block h-full w-full object-cover" />
                 </div>
-                <div className="absolute left-8 right-8 top-[282px] bottom-0 rounded-t-[70px] bg-[#fff3ef] px-2 pt-9 sm:pt-10">
-                  <h2 className="text-[37px] font-black leading-none sm:text-[40px]">Peer Challenge</h2>
-                  <p className="mt-5 text-[20px] font-bold text-[#55708b]">Challenge a friend</p>
-                  <div className="absolute bottom-7 left-2 right-2 rounded-full bg-[#ff6035] px-6 py-4 text-center text-[23px] font-black text-white shadow-md">Play →</div>
+                <div className="absolute left-8 right-8 top-[232px] bottom-0 rounded-t-[70px] bg-[#fff3ef] px-2 pt-7 sm:pt-8">
+                  <h2 className="text-[34px] font-black leading-none sm:text-[36px]">Peer Challenge</h2>
+                  <p className="mt-4 text-[18px] font-bold text-[#55708b]">Challenge a friend</p>
+                  <div className="absolute bottom-5 left-2 right-2 rounded-full bg-[#ff6035] px-6 py-3.5 text-center text-[21px] font-black text-white shadow-md">Play →</div>
                 </div>
               </Link>
             </div>
