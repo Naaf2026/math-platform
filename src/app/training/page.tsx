@@ -69,15 +69,13 @@ export default function TrainingPage() {
     if (!supabase) return;
     setQuestionsLoading(true);
     void (async () => {
-      const { data, error } = await supabase.rpc("get_training_questions", { p_grade_level: grade, p_topic_id: null, p_skill: null, p_limit: 500 });
+      const { data, error } = await supabase.rpc("get_training_questions_by_grade", { p_grade_level: grade, p_topic_id: null, p_skill: null, p_limit: 500 });
       if (!error) setQuestions((data ?? []) as Question[]);
       else setQuestions([]);
       setQuestionsLoading(false);
     })();
   }, [grade]);
 
-  // A curriculum topic may not yet have a learning_topics.grade_level value.
-  // In that case, published Grade-specific questions are the source of truth.
   const topics = useMemo(() => {
     const configured = allTopics.filter(t => !t.grade_level || t.grade_level === grade);
     const questionTopicIds = Array.from(new Set(questions.map(q => q.topic_id).filter(Boolean) as string[]));
