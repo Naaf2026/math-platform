@@ -57,7 +57,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#edf8ff]">
+      <main className="grid min-h-screen place-items-center bg-[#eef9ff]">
         <div className="rounded-3xl bg-white px-8 py-6 font-black text-[#083d78] shadow-xl">Loading…</div>
       </main>
     );
@@ -75,10 +75,7 @@ export default function DashboardPage() {
           </Link>
 
           <nav className="hidden items-center gap-8 lg:flex">
-            <Link href="/dashboard" className="relative flex items-center gap-3 px-4 py-7 text-lg font-black">
-              <Home size={25} /> Home
-              <span className="absolute bottom-0 left-4 right-4 h-1 rounded-full bg-yellow-400" />
-            </Link>
+            <Link href="/dashboard" className="relative flex items-center gap-3 px-4 py-7 text-lg font-black"><Home size={25} /> Home<span className="absolute bottom-0 left-4 right-4 h-1 rounded-full bg-yellow-400" /></Link>
             <Link href="/leaderboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Trophy size={25} /> Leaderboard</Link>
             <Link href="/rewards" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Gift size={25} /> Rewards</Link>
             <Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><BarChart3 size={25} /> Progress</Link>
@@ -117,8 +114,8 @@ export default function DashboardPage() {
 
             <div className="grid gap-6 md:grid-cols-3 lg:gap-7">
               <Link href="/challenge" className="group relative min-h-[570px] overflow-hidden rounded-[32px] border-2 border-[#ffbd28] bg-[#fff3cc] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
-                <div className="absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-[30px]">
-                  <img src="/dashboard-assets/dashboard-daily.svg" alt="Daily Challenge" className="h-full w-full object-cover" />
+                <div className="absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-[30px] bg-[#ffd45c]">
+                  <img src="/dashboard-assets/dashboard-daily.svg" alt="Daily Challenge" className="block h-full w-full object-cover" />
                 </div>
                 <div className="absolute left-8 right-8 top-[282px] bottom-0 rounded-t-[70px] bg-[#fffaf0] px-2 pt-9 sm:pt-10">
                   <h2 className="text-[38px] font-black leading-[0.95] sm:text-[42px]">Daily<br />Challenge</h2>
@@ -128,8 +125,8 @@ export default function DashboardPage() {
               </Link>
 
               <Link href="/training" className="group relative min-h-[570px] overflow-hidden rounded-[32px] border-2 border-[#43bdf4] bg-[#e4f6ff] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
-                <div className="absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-[30px]">
-                  <img src="/dashboard-assets/dashboard-training.svg" alt="Training" className="h-full w-full object-cover" />
+                <div className="absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-[30px] bg-[#219eea]">
+                  <img src="/dashboard-assets/dashboard-training.svg" alt="Training" className="block h-full w-full object-cover" />
                 </div>
                 <div className="absolute left-8 right-8 top-[282px] bottom-0 rounded-t-[70px] bg-[#e8f7ff] px-2 pt-9 sm:pt-10">
                   <h2 className="text-[42px] font-black leading-none">Training</h2>
@@ -139,8 +136,8 @@ export default function DashboardPage() {
               </Link>
 
               <Link href="/peer-challenge" className="group relative min-h-[570px] overflow-hidden rounded-[32px] border-2 border-[#ffab8d] bg-[#fff0e9] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
-                <div className="absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-[30px]">
-                  <img src="/dashboard-assets/dashboard-peer.svg" alt="Peer Challenge" className="h-full w-full object-cover" />
+                <div className="absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-[30px] bg-[#ff855f]">
+                  <img src="/dashboard-assets/dashboard-peer.svg" alt="Peer Challenge" className="block h-full w-full object-cover" />
                 </div>
                 <div className="absolute left-8 right-8 top-[282px] bottom-0 rounded-t-[70px] bg-[#fff3ef] px-2 pt-9 sm:pt-10">
                   <h2 className="text-[37px] font-black leading-none sm:text-[40px]">Peer Challenge</h2>
