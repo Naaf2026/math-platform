@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { BarChart3, ChevronDown, HelpCircle, Home, Play, Star, Trophy, Award } from "lucide-react";
+import { BarChart3, HelpCircle, Home, Play, Star, Trophy, Award } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Topic = { id: string; title: string; description: string; level: string; lessons: number; sort_order: number };
@@ -10,14 +10,14 @@ type Question = { id: string; topic_id?: string; topic?: string; skill?: string;
 type Progress = { topic_id: string; questions_answered: number; correct_answers: number };
 
 const fallbackTopics: Topic[] = [
-  { id: "place-value", title: "Numbers to 10000", description: "Read, compare and build numbers.", level: "Primary 3", lessons: 9, sort_order: 1 },
-  { id: "addition-subtraction", title: "Addition & Subtraction", description: "Calculate accurately and solve problems.", level: "Primary 3", lessons: 9, sort_order: 2 },
-  { id: "multiplication", title: "Multiplication & Division", description: "Build fluency with multiplication and division facts.", level: "Primary 3", lessons: 9, sort_order: 3 },
-  { id: "fractions", title: "Fractions", description: "Understand parts, equivalence and comparison.", level: "Primary 3", lessons: 9, sort_order: 4 },
+  { id: "place-value", title: "Numbers to 10000", description: "Read, compare and build numbers.", level: "Grade 3", lessons: 9, sort_order: 1 },
+  { id: "addition-subtraction", title: "Addition & Subtraction", description: "Calculate accurately and solve problems.", level: "Grade 3", lessons: 9, sort_order: 2 },
+  { id: "multiplication", title: "Multiplication & Division", description: "Build fluency with multiplication and division facts.", level: "Grade 3", lessons: 9, sort_order: 3 },
+  { id: "fractions", title: "Fractions", description: "Understand parts, equivalence and comparison.", level: "Grade 3", lessons: 9, sort_order: 4 },
 ];
 
-const primaryLevels = ["Primary 1", "Primary 2", "Primary 3", "Primary 4", "Primary 5", "Primary 6", "10000 (High Ability)"];
-const curriculumGroups = ["Money", "Money (High Ability)", "Multiplication Tables of 6, 7, 8 and 9", "Multiplication & Division", "Multiplication & Division (High Ability)", "Bar Graphs", "Bar Graphs (High Ability)", "Angles", "Perpendicular And Parallel Lines"];
+const gradeLevels = ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7"];
+const curriculumGroups = ["Money", "Money (Advanced)", "Multiplication Tables", "Multiplication & Division", "Multiplication & Division (Advanced)", "Bar Graphs", "Bar Graphs (Advanced)", "Angles", "Perpendicular And Parallel Lines"];
 
 function difficultyBars(value: string) {
   const x = value.toLowerCase();
@@ -30,7 +30,7 @@ export default function TrainingPage() {
   const [topics, setTopics] = useState<Topic[]>(fallbackTopics);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [progress, setProgress] = useState<Progress[]>([]);
-  const [grade, setGrade] = useState("Primary 3");
+  const [grade, setGrade] = useState("Grade 3");
   const [selectedTopic, setSelectedTopic] = useState("place-value");
   const [levelOpen, setLevelOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -51,7 +51,11 @@ export default function TrainingPage() {
     if (ts?.length) setTopics(ts as Topic[]);
     setQuestions((qs ?? []) as Question[]);
     setProgress((ps ?? []) as Progress[]);
-    if (profile?.grade) setGrade(String(profile.grade).toLowerCase().includes("primary") ? String(profile.grade) : `Primary ${profile.grade}`);
+    if (profile?.grade) {
+      const raw = String(profile.grade);
+      const match = raw.match(/[1-7]/);
+      if (match) setGrade(`Grade ${match[0]}`);
+    }
     setLoading(false);
   }
 
@@ -87,7 +91,7 @@ export default function TrainingPage() {
       <div className="mx-auto flex max-w-[1120px] gap-0 bg-white shadow-sm">
         <aside className="hidden w-[205px] shrink-0 border-r border-[#d4d4d4] bg-[#f1f2f2] md:block">
           <div className="relative flex items-center justify-between border-b border-[#ccc] bg-[#e3e6e6] p-3"><div><p className="text-xs font-bold">{grade}</p></div><button onClick={() => setLevelOpen(v => !v)} className="rounded-md border border-blue-200 bg-[#edf4ff] px-3 py-2 text-xs font-semibold text-blue-800">Change Level</button></div>
-          {levelOpen && <div className="absolute z-20 ml-[1px] w-[204px] border border-[#ccc] bg-white shadow-lg">{primaryLevels.map(level => <button key={level} onClick={() => { setGrade(level); setLevelOpen(false); }} className={`block w-full px-5 py-2 text-left text-sm ${grade === level ? "bg-[#cfd0d0] font-bold" : "hover:bg-slate-100"}`}>{level}</button>)}</div>}
+          {levelOpen && <div className="absolute z-20 ml-[1px] w-[204px] border border-[#ccc] bg-white shadow-lg">{gradeLevels.map(level => <button key={level} onClick={() => { setGrade(level); setLevelOpen(false); }} className={`block w-full px-5 py-2 text-left text-sm ${grade === level ? "bg-[#cfd0d0] font-bold" : "hover:bg-slate-100"}`}>{level}</button>)}</div>}
           <div className="max-h-[560px] overflow-y-auto p-3">{curriculumGroups.map(item => <button key={item} className="block w-full py-2 text-left text-[12px] font-bold leading-4 hover:text-blue-700">{item}</button>)}</div>
         </aside>
 
@@ -95,7 +99,7 @@ export default function TrainingPage() {
           <div className="flex items-center justify-between px-5 pt-4"><div className="font-bold text-[#222]">⭐ 0 <span className="text-slate-400">/ {rows.length + 30}</span></div><div className="flex overflow-hidden rounded-full border border-slate-200 text-xs font-bold"><span className="px-4 py-2 text-slate-400">Proficiency %</span><span className="bg-[#3579c9] px-4 py-2 text-white">High Score ★★★</span></div></div>
           <div className="px-5 pb-5 pt-1"><h1 className="text-center text-2xl font-black">{selected?.title ?? "Numbers to 10000"}</h1><div className="mt-5 overflow-hidden rounded-2xl border border-[#e4e7e8]">
             <div className="grid grid-cols-[54px_92px_1fr_80px_150px] items-center border-b bg-[#fafafa] px-3 py-2 text-[10px] font-semibold text-slate-400"><span></span><span>High Score</span><span>Skill Name</span><span>Difficulty</span><span>Tutorial</span></div>
-            {rows.map((q, index) => { const bars = difficultyBars(q.difficulty); const skill = q.skill ?? selected?.title ?? "Core skill"; return <div key={q.id + index} className="grid min-h-[55px] grid-cols-[54px_92px_1fr_80px_150px] items-center border-b border-[#eceeee] px-3 last:border-b-0 hover:bg-[#fbfdff]"><div className="text-center text-xl font-black text-[#82c8ed]">{index + 1}</div><div className="flex gap-0.5">{[0,1,2].map(s => <Star key={s} className={s < score ? "fill-yellow-400 text-yellow-400" : "fill-slate-200 text-slate-200"} size={17}/>)}</div><div className="pr-3 text-[13px] font-semibold leading-4">{skill}</div><div className="flex gap-0.5">{[0,1,2,3,4].map(b => <span key={b} className={`h-4 w-2 rounded-sm ${b < bars ? "bg-orange-500" : "bg-slate-200"}`}/>)}</div><div className="flex items-center gap-2"><Link href={`/training/practice?topic=${encodeURIComponent(selected?.id ?? "")}&skill=${encodeURIComponent(skill)}`} aria-label={`Practice ${skill}`} className="grid h-8 w-8 place-items-center rounded-md bg-[#f59b00] text-white shadow-sm"><Play size={16} fill="currentColor"/></Link><Link href={`/training/practice?topic=${encodeURIComponent(selected?.id ?? "")}&skill=${encodeURIComponent(skill)}`} className="rounded-full border-2 border-[#edcf86] bg-white px-4 py-1.5 text-xs font-black text-[#d88900] hover:bg-[#fff8e7]">{completed > 0 ? "Continue" : "Practice"}</Link></div></div>; })}
+            {rows.map((q, index) => { const bars = difficultyBars(q.difficulty); const skill = q.skill ?? selected?.title ?? "Core skill"; return <div key={q.id + index} className="grid min-h-[55px] grid-cols-[54px_92px_1fr_80px_150px] items-center border-b border-[#eceeee] px-3 last:border-b-0 hover:bg-[#fbfdff]"><div className="text-center text-xl font-black text-[#82c8ed]">{index + 1}</div><div className="flex gap-0.5">{[0,1,2].map(s => <Star key={s} className={s < score ? "fill-yellow-400 text-yellow-400" : "fill-slate-200 text-slate-200"} size={17}/>)}</div><div className="pr-3 text-[13px] font-semibold leading-4">{skill}</div><div className="flex gap-0.5">{[0,1,2,3,4].map(b => <span key={b} className={`h-4 w-2 rounded-sm ${b < bars ? "bg-orange-500" : "bg-slate-200"}/>)}</div><div className="flex items-center gap-2"><Link href={`/training/practice?topic=${encodeURIComponent(selected?.id ?? "")}&skill=${encodeURIComponent(skill)}`} aria-label={`Practice ${skill}`} className="grid h-8 w-8 place-items-center rounded-md bg-[#f59b00] text-white shadow-sm"><Play size={16} fill="currentColor"/></Link><Link href={`/training/practice?topic=${encodeURIComponent(selected?.id ?? "")}&skill=${encodeURIComponent(skill)}`} className="rounded-full border-2 border-[#edcf86] bg-white px-4 py-1.5 text-xs font-black text-[#d88900] hover:bg-[#fff8e7]">{completed > 0 ? "Continue" : "Practice"}</Link></div></div>; })}
           </div></div>
         </section>
       </div>
