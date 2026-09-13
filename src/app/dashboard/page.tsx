@@ -78,7 +78,12 @@ export default function DashboardPage() {
         </section>
       </div>
 
-      <nav className="sticky bottom-0 z-40 grid grid-cols-3 border-t border-[#d8e8f2] bg-white/95 p-2 backdrop-blur lg:hidden"><Link href="/dashboard" className="grid place-items-center gap-1 rounded-xl bg-blue-50 py-2 text-xs font-black text-blue-700"><Home size={20} />Home</Link><Link href="/training" className="grid place-items-center gap-1 py-2 text-xs font-black text-slate-500"><BookOpen size={20} />Training</Link><Link href="/peer-challenge" className="grid place-items-center gap-1 py-2 text-xs font-black text-slate-500"><Users size={20} />Peer</Link></nav>
+      <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-4 border-t border-[#d8e8f2] bg-white/98 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(7,59,115,0.10)] backdrop-blur lg:hidden">
+        <Link href="/dashboard" className="grid place-items-center gap-1 rounded-xl bg-blue-50 py-2 text-xs font-black text-blue-700"><Home size={20} />Home</Link>
+        <Link href="/leaderboard" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Trophy size={20} />Leaderboard</Link>
+        <Link href="/rewards" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Gift size={20} />Rewards</Link>
+        <Link href="/progress" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><BarChart3 size={20} />Progress</Link>
+      </nav>
     </main>
   );
 }
