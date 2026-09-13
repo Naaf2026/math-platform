@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, FileCheck2, Home, Sparkles, Users, LibraryBig } from "lucide-react";
+import { BarChart3, FileCheck2, Home, Sparkles, Users, LibraryBig, BookOpen } from "lucide-react";
 import { usePathname } from "next/navigation";
 import LogoutButton from "@/components/logout-button";
 
@@ -10,6 +10,7 @@ const items = [
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/classes", label: "Classes", icon: BarChart3 },
   { href: "/admin/books", label: "Book Library", icon: LibraryBig },
+  { href: "/admin/question-bank", label: "Question Bank", icon: BookOpen },
   { href: "/admin/ai-question-builder", label: "AI Question Builder", icon: Sparkles },
   { href: "/admin/ai-question-validation", label: "AI Question Validation", icon: FileCheck2 },
 ];
