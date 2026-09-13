@@ -17,6 +17,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .student-dashboard-font h3,
 .student-dashboard-font .dashboard-display { font-family: 'Baloo 2', 'Nunito', Arial, Helvetica, sans-serif; }
 
+/* The student dashboard uses the approved light-blue page background. */
+main[class*="bg-[#eef9ff]"] { font-family: 'Nunito', Arial, Helvetica, sans-serif; }
+main[class*="bg-[#eef9ff]"] h1,
+main[class*="bg-[#eef9ff]"] h2,
+main[class*="bg-[#eef9ff]"] h3 { font-family: 'Baloo 2', 'Nunito', Arial, Helvetica, sans-serif; }
+
 @keyframes question-enter { 0% { opacity: 0; transform: translateY(18px) scale(.98); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes answer-pop { 0% { transform: scale(.82); opacity: .4; } 55% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes correct-burst { 0% { opacity: 0; transform: scale(.7); } 70% { opacity: 1; transform: scale(1.15); } 100% { opacity: 1; transform: scale(1); } }
