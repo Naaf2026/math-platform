@@ -126,7 +126,7 @@ export default function DashboardPage() {
 
               <Link href="/training" className="group relative min-h-[570px] overflow-hidden rounded-[32px] border-2 border-[#43bdf4] bg-[#e4f6ff] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
                 <div className="absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-[30px] bg-[#219eea]">
-                  <img src="/dashboard-assets/dashboard-training-v2.webp" alt="Math Training" className="block h-full w-full object-contain px-2 py-1" />
+                  <img src="https://raw.githubusercontent.com/Naaf2026/math-platform/main/public/dashboard-assets/dashboard-training-v2.webp" alt="Math Training" className="block h-full w-full object-contain px-2 py-1" />
                 </div>
                 <div className="absolute left-8 right-8 top-[282px] bottom-0 rounded-t-[70px] bg-[#e8f7ff] px-2 pt-9 sm:pt-10">
                   <h2 className="text-[42px] font-black leading-none">Training</h2>
