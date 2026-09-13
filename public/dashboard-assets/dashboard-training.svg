@@ -1,1 +1,79 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 417 285"><image href="/dashboard-assets/dashboard-training.webp" width="417" height="285" preserveAspectRatio="xMidYMid slice"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 417 285" role="img" aria-labelledby="title desc">
+  <title id="title">Math training illustration</title>
+  <desc id="desc">A student practicing mathematics with a laptop, equations and lesson progress.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#dff4ff"/>
+      <stop offset="1" stop-color="#bfe6ff"/>
+    </linearGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#174ea6"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0b4b78" flood-opacity=".16"/>
+    </filter>
+  </defs>
+
+  <path d="M46 245c-20-34-16-89 14-131C91 67 140 45 201 42c70-3 130 20 156 62 24 39 10 97-26 126-43 35-112 32-169 28-53-4-96-5-116-13Z" fill="url(#bg)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="27" y="42" width="126" height="63" rx="14" fill="#fff"/>
+    <text x="43" y="68" font-family="Arial, sans-serif" font-size="17" font-weight="800" fill="#214a78">2x + 5 = 13</text>
+    <text x="62" y="91" font-family="Arial, sans-serif" font-size="16" font-weight="800" fill="#2563eb">x = 4</text>
+    <circle cx="132" cy="86" r="10" fill="#2fbe83"/>
+    <path d="m127 86 4 4 7-8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="278" y="37" width="111" height="52" rx="14" fill="#fff"/>
+    <text x="292" y="59" font-family="Arial, sans-serif" font-size="12" font-weight="800" fill="#42658a">LESSON PROGRESS</text>
+    <rect x="292" y="68" width="78" height="8" rx="4" fill="#dcecf7"/>
+    <rect x="292" y="68" width="47" height="8" rx="4" fill="#2fbe83"/>
+    <text x="374" y="76" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#42658a">3/5</text>
+  </g>
+
+  <text x="38" y="143" font-family="Georgia, serif" font-size="31" font-weight="700" fill="#4169df">π</text>
+  <path d="M79 137 98 119l18 24H79Z" fill="none" stroke="#4d78e8" stroke-width="2.5"/>
+  <text x="84" y="157" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#4d78e8">a</text>
+  <text x="101" y="134" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#4d78e8">c</text>
+  <text x="98" y="151" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#4d78e8">b</text>
+
+  <text x="278" y="126" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#5174bd">x = −b ± √(b²−4ac)</text>
+  <path d="M311 131h68" stroke="#5174bd" stroke-width="1.5"/>
+  <text x="338" y="145" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#5174bd">2a</text>
+
+  <g filter="url(#shadow)">
+    <ellipse cx="214" cy="256" rx="126" ry="12" fill="#7cb8dc" opacity=".28"/>
+    <path d="M150 158c2-24 18-43 42-45 27-3 47 14 53 39l10 49H141Z" fill="url(#shirt)"/>
+    <path d="M185 120c-5-10 1-25 12-30 18-8 38 1 43 18 5 17-4 34-19 40-16 6-31-2-36-15Z" fill="#f6a36f"/>
+    <path d="M184 117c2-20 15-29 30-29 14 0 27 8 31 24-9-5-18-8-28-8-12 0-22 4-33 13Z" fill="#172b52"/>
+    <circle cx="207" cy="123" r="2.2" fill="#173154"/>
+    <circle cx="225" cy="123" r="2.2" fill="#173154"/>
+    <path d="M210 135c4 3 8 3 12 0" fill="none" stroke="#c96f57" stroke-width="2" stroke-linecap="round"/>
+    <path d="M174 166c-8 14-10 27-8 42" fill="none" stroke="#174ea6" stroke-width="12" stroke-linecap="round"/>
+    <path d="M236 164c10 14 14 29 14 44" fill="none" stroke="#174ea6" stroke-width="12" stroke-linecap="round"/>
+
+    <path d="M166 196h84v48h-84z" fill="#fff" stroke="#b9d5e9" stroke-width="2"/>
+    <path d="M176 207h58M176 218h48M176 229h35" stroke="#c3d9e8" stroke-width="2" stroke-linecap="round"/>
+    <path d="m232 218 6 6 9-11" fill="none" stroke="#2fbe83" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <path d="M241 187h112l-9 58H230Z" fill="#1d3968"/>
+    <path d="M247 191h100l-8 48h-99Z" fill="#315788"/>
+    <path d="M226 246h132l-12 7H236Z" fill="#173154"/>
+    <circle cx="297" cy="215" r="11" fill="#6c8cc0" opacity=".8"/>
+    <path d="M292 215h10M297 210v10" stroke="#e7f5ff" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <g>
+    <circle cx="358" cy="190" r="20" fill="#2fbe83"/>
+    <path d="m348 190 7 7 13-15" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="363" y="222" width="7" height="22" rx="3.5" fill="#91bdf0"/>
+    <rect x="374" y="214" width="7" height="30" rx="3.5" fill="#6fa8ea"/>
+    <rect x="385" y="205" width="7" height="39" rx="3.5" fill="#4f8de0"/>
+  </g>
+
+  <g opacity=".8">
+    <circle cx="55" cy="204" r="4" fill="#2fbe83"/>
+    <circle cx="70" cy="194" r="3" fill="#4d78e8"/>
+    <path d="M49 225c12-7 21-7 30 0" fill="none" stroke="#72b8df" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>
