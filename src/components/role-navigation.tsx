@@ -9,9 +9,8 @@ import AdminNavigation from "@/components/admin-navigation";
 export default function RoleNavigation() {
   const pathname = usePathname();
 
-  // Daily Challenge has its own full-screen KooBits-style navigation and
-  // question list. Do not render the persistent app rail on top of it.
-  if (pathname.startsWith("/challenge")) return null;
+  // Dashboard and Daily Challenge provide their own full-screen navigation.
+  if (pathname === "/dashboard" || pathname.startsWith("/challenge")) return null;
 
   if (pathname.startsWith("/teacher")) return <TeacherNavigation />;
   if (pathname.startsWith("/parent")) return <ParentNavigation />;
