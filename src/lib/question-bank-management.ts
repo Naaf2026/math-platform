@@ -8,6 +8,7 @@ export type QuestionBankItem = InteractiveQuestion & {
   id: string;
   title: string;
   subject: string;
+  gradeLevel: string;
   topic: string;
   difficulty: QuestionDifficulty;
   status: QuestionBankStatus;
@@ -31,6 +32,7 @@ export function createQuestionBankItem(question: InteractiveQuestion = {}): Ques
     id,
     title: question.prompt?.slice(0, 72) || "Untitled question",
     subject: "Mathematics",
+    gradeLevel: "Grade 3",
     topic: "General",
     difficulty: "developing",
     status: "draft",
