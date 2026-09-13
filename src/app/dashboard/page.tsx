@@ -68,7 +68,6 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#eef9ff] text-[#083d78]">
-      {/* Blueprint header: dark blue, simple and spacious */}
       <header className="sticky top-0 z-40 h-[90px] border-b border-white/10 bg-[#073b73] text-white shadow-sm">
         <div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-6 lg:px-12">
           <Link href="/dashboard" className="flex items-center gap-4">
@@ -97,18 +96,19 @@ export default function DashboardPage() {
       </header>
 
       <div className="mx-auto flex min-h-[calc(100vh-90px)] max-w-[1680px]">
-        {/* Blueprint learner profile rail */}
         <aside className="hidden w-[245px] shrink-0 border-r border-[#dcecf6] bg-[#f5fbff] px-7 py-9 lg:block">
           <div className="flex flex-col items-center text-center">
-            <div className="grid h-[148px] w-[148px] place-items-center overflow-hidden rounded-full border-4 border-white bg-gradient-to-br from-[#bdf1ff] via-[#fff1bd] to-[#c8f7d4] text-[82px] shadow-lg">🧒</div>
+            <div className="h-[148px] w-[148px] overflow-hidden rounded-full border-4 border-white bg-[#dff7ff] shadow-lg">
+              <img src="/dashboard-assets/dashboard-avatar.svg" alt="Student avatar" className="h-full w-full object-cover" />
+            </div>
             <h2 className="mt-5 text-[34px] font-black tracking-tight">{firstName}</h2>
             <div className="mt-1 flex items-center gap-2 text-[19px] font-bold"><GraduationCap size={22} /> {grade}</div>
           </div>
 
           <div className="mt-9 border-t border-[#dcecf6] pt-8">
-            <div className="flex items-center gap-4 py-4"><span className="text-4xl">🔥</span><div><p className="text-[22px] font-black">{profile?.current_streak ?? 0} Day Streak</p></div></div>
-            <div className="flex items-center gap-4 py-4"><span className="text-4xl">⭐</span><div><p className="text-[22px] font-black">{profile?.xp ?? 0} XP</p></div></div>
-            <div className="flex items-center gap-4 py-4"><span className="text-4xl">🏅</span><div><p className="text-[22px] font-black">12 Badges</p></div></div>
+            <div className="flex items-center gap-4 py-4"><span className="text-4xl">🔥</span><p className="text-[22px] font-black">{profile?.current_streak ?? 0} Day Streak</p></div>
+            <div className="flex items-center gap-4 py-4"><span className="text-4xl">⭐</span><p className="text-[22px] font-black">{profile?.xp ?? 0} XP</p></div>
+            <div className="flex items-center gap-4 py-4"><span className="text-4xl">🏅</span><p className="text-[22px] font-black">12 Badges</p></div>
           </div>
         </aside>
 
@@ -119,12 +119,9 @@ export default function DashboardPage() {
               <p className="mt-3 text-[20px] font-semibold text-[#6685a4] sm:text-[25px]">Ready for today’s math adventure?</p>
             </div>
 
-            {/* Exactly three primary activities from the approved blueprint */}
             <div className="grid gap-6 md:grid-cols-3 lg:gap-7">
-              <Link href="/challenge" className="group relative min-h-[520px] overflow-hidden rounded-[32px] border-2 border-[#ffbd28] bg-gradient-to-b from-[#ffd53a] via-[#ffbf19] to-[#fff3cc] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
-                <div className="absolute inset-x-0 top-0 h-[310px] bg-gradient-to-br from-[#ffdf63] via-[#ffc219] to-[#ff9e0b]" />
-                <div className="absolute right-8 top-8 text-[130px] opacity-90 transition group-hover:scale-105">🏆</div>
-                <div className="absolute left-8 top-[62px] text-[105px] transition group-hover:scale-105">🧒</div>
+              <Link href="/challenge" className="group relative min-h-[520px] overflow-hidden rounded-[32px] border-2 border-[#ffbd28] bg-[#fff3cc] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
+                <div className="absolute inset-x-0 top-0 h-[310px] overflow-hidden rounded-t-[30px]"><img src="/dashboard-assets/dashboard-daily.svg" alt="Daily Challenge" className="h-full w-full object-cover" /></div>
                 <div className="absolute left-8 right-8 top-[292px] rounded-t-[70px] bg-[#fffaf0] px-2 pt-9 sm:pt-10">
                   <h2 className="text-[38px] font-black leading-[0.95] sm:text-[42px]">Daily<br />Challenge</h2>
                   <p className="mt-5 text-[18px] font-bold text-[#55708b]">📋 &nbsp;10 Questions • Earn XP</p>
@@ -132,11 +129,8 @@ export default function DashboardPage() {
                 </div>
               </Link>
 
-              <Link href="/training" className="group relative min-h-[520px] overflow-hidden rounded-[32px] border-2 border-[#43bdf4] bg-gradient-to-b from-[#2bb8f0] via-[#1e91e4] to-[#e4f6ff] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
-                <div className="absolute inset-x-0 top-0 h-[310px] bg-gradient-to-br from-[#35c5f6] via-[#179ce9] to-[#187ad8]" />
-                <div className="absolute right-7 top-8 text-[100px] opacity-80">➕</div>
-                <div className="absolute right-16 top-[120px] text-[82px] opacity-85">➗</div>
-                <div className="absolute left-8 top-[78px] text-[110px]">👧🏻</div>
+              <Link href="/training" className="group relative min-h-[520px] overflow-hidden rounded-[32px] border-2 border-[#43bdf4] bg-[#e4f6ff] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
+                <div className="absolute inset-x-0 top-0 h-[310px] overflow-hidden rounded-t-[30px]"><img src="/dashboard-assets/dashboard-training.svg" alt="Training" className="h-full w-full object-cover" /></div>
                 <div className="absolute left-8 right-8 top-[292px] rounded-t-[70px] bg-[#e8f7ff] px-2 pt-9 sm:pt-10">
                   <h2 className="text-[42px] font-black leading-none">Training</h2>
                   <p className="mt-5 text-[20px] font-bold text-[#55708b]">Practice your skills</p>
@@ -144,11 +138,10 @@ export default function DashboardPage() {
                 </div>
               </Link>
 
-              <Link href="/peer-challenge" className="group relative min-h-[520px] overflow-hidden rounded-[32px] border-2 border-[#ffab8d] bg-gradient-to-b from-[#ff9362] via-[#ff7043] to-[#fff0e9] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
-                <div className="absolute inset-x-0 top-0 h-[310px] bg-gradient-to-br from-[#ff9863] via-[#ff7042] to-[#ff6042]" />
-                <div className="absolute right-7 top-7 text-[88px] opacity-80">🛡️</div>
-                <div className="absolute left-6 top-[92px] text-[92px]">🧒🏻</div>
-                <div className="absolute right-8 top-[112px] text-[92px]">👧🏻</div>
+              <Link href="/peer-challenge" className="group relative min-h-[520px] overflow-hidden rounded-[32px] border-2 border-[#ffab8d] bg-[#fff0e9] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
+                <div className="absolute inset-x-0 top-0 h-[310px] overflow-hidden rounded-t-[30px] bg-gradient-to-br from-[#ff9863] via-[#ff7042] to-[#ff6042]">
+                  <div className="flex h-full items-center justify-center gap-6 pt-3 text-[92px]"><span>🧒🏻</span><span className="text-[58px]">🛡️</span><span>👧🏻</span></div>
+                </div>
                 <div className="absolute left-8 right-8 top-[292px] rounded-t-[70px] bg-[#fff3ef] px-2 pt-9 sm:pt-10">
                   <h2 className="text-[37px] font-black leading-none sm:text-[40px]">Peer Challenge</h2>
                   <p className="mt-5 text-[20px] font-bold text-[#55708b]">Challenge a friend</p>
@@ -156,8 +149,6 @@ export default function DashboardPage() {
                 </div>
               </Link>
             </div>
-
-            {/* Keep the homepage intentionally empty below the three cards, matching the requested uncluttered board. */}
           </div>
         </section>
       </div>
