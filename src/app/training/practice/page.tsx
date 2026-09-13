@@ -38,7 +38,7 @@ export default function TrainingPracticePage() {
     const { data: auth } = await supabase.auth.getUser();
     if (!auth.user) { window.location.href = "/login"; return; }
     const [{ data: qs, error: qError }, { data: profile }] = await Promise.all([
-      supabase.rpc("get_training_questions", {
+      supabase.rpc("get_training_questions_by_grade", {
         p_grade_level: requestedGrade,
         p_topic_id: topicId || null,
         p_skill: requestedSkill || null,
