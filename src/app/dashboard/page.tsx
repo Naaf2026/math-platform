@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, Flame, Home, Target, Trophy, Users, Zap } from "lucide-react";
+import { Bell, BarChart3, BookOpen, GraduationCap, Home, Settings, Trophy, Gift, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = {
@@ -11,16 +11,6 @@ type Profile = {
   xp: number;
   current_streak: number;
 };
-type Topic = { id: string; title: string; description: string };
-type TopicProgress = { topic_id: string; questions_answered: number; correct_answers: number };
-
-const topicIds = ["place-value", "fractions", "addition-subtraction", "multiplication"];
-const topicVisuals = [
-  { icon: "🔢", bg: "from-sky-50 to-cyan-50", bar: "from-cyan-400 to-blue-500" },
-  { icon: "🍕", bg: "from-violet-50 to-fuchsia-50", bar: "from-violet-500 to-fuchsia-500" },
-  { icon: "➕", bg: "from-emerald-50 to-teal-50", bar: "from-emerald-400 to-teal-500" },
-  { icon: "✖️", bg: "from-orange-50 to-amber-50", bar: "from-orange-400 to-rose-500" },
-];
 
 function gradeLabel(value: string | null | undefined) {
   const match = String(value || "").match(/[1-7]/);
@@ -29,8 +19,6 @@ function gradeLabel(value: string | null | undefined) {
 
 export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [topicProgress, setTopicProgress] = useState<TopicProgress[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,212 +35,137 @@ export default function DashboardPage() {
         return;
       }
 
-      const [{ data: row }, { data: ts }, { data: tp }] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("full_name,grade,xp,current_streak")
-          .eq("id", auth.user.id)
-          .maybeSingle(),
-        supabase.from("learning_topics").select("id,title,description").order("sort_order"),
-        supabase
-          .from("topic_progress")
-          .select("topic_id,questions_answered,correct_answers")
-          .eq("user_id", auth.user.id),
-      ]);
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name,grade,xp,current_streak")
+        .eq("id", auth.user.id)
+        .maybeSingle();
 
       setProfile(
-        row ?? {
+        data ?? {
           full_name: auth.user.user_metadata?.full_name ?? "Student",
           grade: null,
           xp: 0,
           current_streak: 0,
         },
       );
-      setTopics((ts ?? []) as Topic[]);
-      setTopicProgress((tp ?? []) as TopicProgress[]);
       setLoading(false);
     }
 
     void load();
   }, []);
 
-  const firstName = (profile?.full_name || "Student").split(" ")[0];
-  const grade = gradeLabel(profile?.grade);
-  const displayTopics = useMemo(
-    () =>
-      topicIds.map((id, index) => {
-        const topic = topics.find((item) => item.id === id);
-        const progress = topicProgress.find((item) => item.topic_id === id);
-        const percent =
-          progress && progress.questions_answered > 0
-            ? Math.min(100, Math.round((progress.correct_answers / progress.questions_answered) * 100))
-            : 0;
-        return {
-          id,
-          title:
-            topic?.title ||
-            id.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
-          percent,
-          visual: topicVisuals[index],
-        };
-      }),
-    [topics, topicProgress],
-  );
-
   if (loading) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#eef8ff] p-6">
-        <div className="rounded-3xl bg-white px-8 py-6 font-black text-[#073d78] shadow-xl">
-          Loading…
-        </div>
+      <main className="grid min-h-screen place-items-center bg-[#edf8ff]">
+        <div className="rounded-3xl bg-white px-8 py-6 font-black text-[#083d78] shadow-xl">Loading…</div>
       </main>
     );
   }
 
+  const firstName = (profile?.full_name || "Student").split(" ")[0];
+  const grade = gradeLabel(profile?.grade);
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#eef9ff] text-[#083d78]">
-      {/* Simple child-first header */}
-      <header className="sticky top-0 z-40 h-[68px] bg-[#073d78] text-white shadow-md">
-        <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-4 sm:px-8">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-white text-sm font-black text-[#073d78] shadow-sm">
-              FV
-            </div>
-            <div>
-              <p className="text-sm font-black tracking-wide sm:text-base">FAHI VISSNUN</p>
-              <p className="text-[10px] font-semibold text-blue-200 sm:text-xs">Math Learning Platform</p>
+      {/* Blueprint header: dark blue, simple and spacious */}
+      <header className="sticky top-0 z-40 h-[90px] border-b border-white/10 bg-[#073b73] text-white shadow-sm">
+        <div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-6 lg:px-12">
+          <Link href="/dashboard" className="flex items-center gap-4">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white text-2xl shadow-sm">📖</div>
+            <div className="leading-tight">
+              <div className="text-[24px] font-black tracking-tight">FAHI VISSNUN</div>
+              <div className="text-[15px] font-semibold text-blue-100">Math Learning Platform</div>
             </div>
           </Link>
-          <div className="flex items-center gap-2 text-sm font-black sm:gap-6">
-            <Link href="/dashboard" className="flex items-center gap-2 rounded-full bg-white/15 px-4 py-2">
-              <Home size={17} /> <span className="hidden sm:inline">Home</span>
+
+          <nav className="hidden items-center gap-8 lg:flex">
+            <Link href="/dashboard" className="relative flex items-center gap-3 px-4 py-7 text-lg font-black">
+              <Home size={25} /> Home
+              <span className="absolute bottom-0 left-4 right-4 h-1 rounded-full bg-yellow-400" />
             </Link>
-            <div className="rounded-full bg-white/10 px-3 py-2 text-xs sm:px-4 sm:text-sm">{grade}</div>
+            <Link href="/leaderboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Trophy size={25} /> Leaderboard</Link>
+            <Link href="/rewards" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Gift size={25} /> Rewards</Link>
+            <Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><BarChart3 size={25} /> Progress</Link>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <button aria-label="Notifications" className="relative grid h-12 w-12 place-items-center rounded-full hover:bg-white/10"><Bell size={26} /><span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-red-400" /></button>
+            <button aria-label="Settings" className="grid h-12 w-12 place-items-center rounded-full bg-[#197bdc] shadow-sm"><Settings size={25} /></button>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-[1280px] px-4 py-5 sm:px-7 lg:py-7">
-        {/* Compact learner identity strip */}
-        <section className="rounded-[2rem] bg-gradient-to-r from-[#c9f0ff] via-[#e8faff] to-white px-5 py-5 shadow-sm sm:px-8 sm:py-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 sm:gap-6">
-              <div className="grid h-[74px] w-[74px] shrink-0 place-items-center rounded-full border-4 border-white bg-gradient-to-br from-yellow-300 to-orange-400 text-4xl shadow-md sm:h-[88px] sm:w-[88px]">
-                🧒
-              </div>
-              <div>
-                <p className="text-xs font-bold text-blue-600 sm:text-sm">{grade}</p>
-                <h1 className="mt-0.5 text-2xl font-black tracking-tight sm:text-4xl">Hi {firstName}! 👋</h1>
-                <p className="mt-1 text-xs font-semibold text-[#55758f] sm:text-sm">Ready for today’s math adventure?</p>
-              </div>
-            </div>
-            <div className="hidden items-center gap-3 sm:flex">
-              <div className="rounded-2xl bg-white px-4 py-3 text-center shadow-sm">
-                <Flame className="mx-auto text-orange-500" size={20} />
-                <p className="mt-1 text-sm font-black">{profile?.current_streak ?? 0}</p>
-                <p className="text-[10px] font-bold text-slate-400">Day Streak</p>
-              </div>
-              <div className="rounded-2xl bg-white px-4 py-3 text-center shadow-sm">
-                <span className="text-xl">⭐</span>
-                <p className="mt-1 text-sm font-black">{profile?.xp ?? 0}</p>
-                <p className="text-[10px] font-bold text-slate-400">XP</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Only the three requested activities */}
-        <section className="mt-5 grid gap-5 lg:grid-cols-3">
-          <Link
-            href="/challenge"
-            className="group relative min-h-[285px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#ffd91f] via-[#ffc20d] to-[#ff8b00] p-6 text-[#4b2700] shadow-lg transition hover:-translate-y-1 hover:shadow-xl sm:min-h-[310px] sm:p-8"
-          >
-            <div className="absolute -right-4 -top-5 text-[120px] opacity-20 transition group-hover:scale-105">🏆</div>
-            <span className="relative rounded-full bg-white/30 px-4 py-1.5 text-xs font-black uppercase">Daily</span>
-            <h2 className="relative mt-10 text-4xl font-black leading-[0.95] sm:text-5xl">Daily<br />Challenge</h2>
-            <p className="relative mt-4 font-bold">10 Questions • Earn XP ⭐</p>
-            <span className="absolute bottom-7 left-6 right-6 inline-flex items-center justify-center gap-2 rounded-full bg-[#19a95b] px-6 py-3.5 text-base font-black text-white shadow-md sm:left-8 sm:right-8">
-              START <Zap size={18} fill="currentColor" />
-            </span>
-          </Link>
-
-          <Link
-            href="/training"
-            className="group relative min-h-[285px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#2bc2f4] to-[#197bdc] p-6 text-white shadow-lg transition hover:-translate-y-1 hover:shadow-xl sm:min-h-[310px] sm:p-8"
-          >
-            <div className="absolute -right-3 -top-4 text-[115px] opacity-20 transition group-hover:scale-105">📚</div>
-            <BookOpen size={42} />
-            <h2 className="relative mt-14 text-4xl font-black sm:text-5xl">Training</h2>
-            <p className="relative mt-2 text-lg font-bold text-blue-50">Practice your skills</p>
-            <span className="absolute bottom-7 left-6 right-6 rounded-full bg-white/15 px-6 py-3.5 text-center font-black ring-2 ring-white/80 sm:left-8 sm:right-8">
-              PRACTICE →
-            </span>
-          </Link>
-
-          <Link
-            href="/peer-challenge"
-            className="group relative min-h-[285px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#ff9f22] to-[#ff5d10] p-6 text-white shadow-lg transition hover:-translate-y-1 hover:shadow-xl sm:min-h-[310px] sm:p-8"
-          >
-            <div className="absolute -right-2 -top-3 text-[105px] opacity-20 transition group-hover:scale-105">🤝</div>
-            <Users size={42} />
-            <h2 className="relative mt-14 text-3xl font-black sm:text-4xl">Peer Challenge</h2>
-            <p className="relative mt-2 text-lg font-bold text-orange-50">Challenge a friend</p>
-            <span className="absolute bottom-7 left-6 right-6 rounded-full bg-white/15 px-6 py-3.5 text-center font-black ring-2 ring-white/80 sm:left-8 sm:right-8">
-              PLAY →
-            </span>
-          </Link>
-        </section>
-
-        {/* Simple continuation area — no extra dashboard modules */}
-        <section className="mt-6 rounded-[2rem] bg-white p-5 shadow-lg shadow-blue-100/50 sm:p-7">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <Target className="text-red-500" size={27} />
-              <h2 className="text-2xl font-black sm:text-3xl">Continue Learning</h2>
-            </div>
-            <Link href="/training" className="text-sm font-black text-blue-600">View All →</Link>
+      <div className="mx-auto flex min-h-[calc(100vh-90px)] max-w-[1680px]">
+        {/* Blueprint learner profile rail */}
+        <aside className="hidden w-[245px] shrink-0 border-r border-[#dcecf6] bg-[#f5fbff] px-7 py-9 lg:block">
+          <div className="flex flex-col items-center text-center">
+            <div className="grid h-[148px] w-[148px] place-items-center overflow-hidden rounded-full border-4 border-white bg-gradient-to-br from-[#bdf1ff] via-[#fff1bd] to-[#c8f7d4] text-[82px] shadow-lg">🧒</div>
+            <h2 className="mt-5 text-[34px] font-black tracking-tight">{firstName}</h2>
+            <div className="mt-1 flex items-center gap-2 text-[19px] font-bold"><GraduationCap size={22} /> {grade}</div>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {displayTopics.map((topic) => (
-              <Link
-                key={topic.id}
-                href={`/training?topic=${encodeURIComponent(topic.id)}`}
-                className={`rounded-2xl bg-gradient-to-br ${topic.visual.bg} p-4 transition hover:-translate-y-0.5 hover:shadow-md`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">{topic.visual.icon}</span>
-                  <div className="min-w-0">
-                    <h3 className="truncate text-base font-black sm:text-lg">{topic.title}</h3>
-                    <p className="text-xs font-bold text-slate-500">{grade}</p>
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center gap-3">
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/80">
-                    <div className={`h-full rounded-full bg-gradient-to-r ${topic.visual.bar}`} style={{ width: `${topic.percent}%` }} />
-                  </div>
-                  <span className="text-xs font-black">{topic.percent}%</span>
-                </div>
-                <div className="mt-3 rounded-full border border-white/90 bg-white/65 py-2 text-center text-xs font-black">
-                  CONTINUE →
+          <div className="mt-9 border-t border-[#dcecf6] pt-8">
+            <div className="flex items-center gap-4 py-4"><span className="text-4xl">🔥</span><div><p className="text-[22px] font-black">{profile?.current_streak ?? 0} Day Streak</p></div></div>
+            <div className="flex items-center gap-4 py-4"><span className="text-4xl">⭐</span><div><p className="text-[22px] font-black">{profile?.xp ?? 0} XP</p></div></div>
+            <div className="flex items-center gap-4 py-4"><span className="text-4xl">🏅</span><div><p className="text-[22px] font-black">12 Badges</p></div></div>
+          </div>
+        </aside>
+
+        <section className="min-w-0 flex-1 px-5 py-8 sm:px-8 lg:px-12 xl:px-16">
+          <div className="mx-auto max-w-[1320px]">
+            <div className="mb-7 pl-1 sm:mb-8 sm:pl-5">
+              <h1 className="text-[42px] font-black leading-none tracking-tight sm:text-[54px]">Hi {firstName}! <span className="inline-block">👋</span></h1>
+              <p className="mt-3 text-[20px] font-semibold text-[#6685a4] sm:text-[25px]">Ready for today’s math adventure?</p>
+            </div>
+
+            {/* Exactly three primary activities from the approved blueprint */}
+            <div className="grid gap-6 md:grid-cols-3 lg:gap-7">
+              <Link href="/challenge" className="group relative min-h-[520px] overflow-hidden rounded-[32px] border-2 border-[#ffbd28] bg-gradient-to-b from-[#ffd53a] via-[#ffbf19] to-[#fff3cc] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
+                <div className="absolute inset-x-0 top-0 h-[310px] bg-gradient-to-br from-[#ffdf63] via-[#ffc219] to-[#ff9e0b]" />
+                <div className="absolute right-8 top-8 text-[130px] opacity-90 transition group-hover:scale-105">🏆</div>
+                <div className="absolute left-8 top-[62px] text-[105px] transition group-hover:scale-105">🧒</div>
+                <div className="absolute left-8 right-8 top-[292px] rounded-t-[70px] bg-[#fffaf0] px-2 pt-9 sm:pt-10">
+                  <h2 className="text-[38px] font-black leading-[0.95] sm:text-[42px]">Daily<br />Challenge</h2>
+                  <p className="mt-5 text-[18px] font-bold text-[#55708b]">📋 &nbsp;10 Questions • Earn XP</p>
+                  <div className="mt-8 rounded-full bg-[#ffad16] px-6 py-4 text-center text-[23px] font-black text-white shadow-md">Start →</div>
                 </div>
               </Link>
-            ))}
+
+              <Link href="/training" className="group relative min-h-[520px] overflow-hidden rounded-[32px] border-2 border-[#43bdf4] bg-gradient-to-b from-[#2bb8f0] via-[#1e91e4] to-[#e4f6ff] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
+                <div className="absolute inset-x-0 top-0 h-[310px] bg-gradient-to-br from-[#35c5f6] via-[#179ce9] to-[#187ad8]" />
+                <div className="absolute right-7 top-8 text-[100px] opacity-80">➕</div>
+                <div className="absolute right-16 top-[120px] text-[82px] opacity-85">➗</div>
+                <div className="absolute left-8 top-[78px] text-[110px]">👧🏻</div>
+                <div className="absolute left-8 right-8 top-[292px] rounded-t-[70px] bg-[#e8f7ff] px-2 pt-9 sm:pt-10">
+                  <h2 className="text-[42px] font-black leading-none">Training</h2>
+                  <p className="mt-5 text-[20px] font-bold text-[#55708b]">Practice your skills</p>
+                  <div className="mt-10 rounded-full bg-[#197fe9] px-6 py-4 text-center text-[23px] font-black text-white shadow-md">Practice →</div>
+                </div>
+              </Link>
+
+              <Link href="/peer-challenge" className="group relative min-h-[520px] overflow-hidden rounded-[32px] border-2 border-[#ffab8d] bg-gradient-to-b from-[#ff9362] via-[#ff7043] to-[#fff0e9] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
+                <div className="absolute inset-x-0 top-0 h-[310px] bg-gradient-to-br from-[#ff9863] via-[#ff7042] to-[#ff6042]" />
+                <div className="absolute right-7 top-7 text-[88px] opacity-80">🛡️</div>
+                <div className="absolute left-6 top-[92px] text-[92px]">🧒🏻</div>
+                <div className="absolute right-8 top-[112px] text-[92px]">👧🏻</div>
+                <div className="absolute left-8 right-8 top-[292px] rounded-t-[70px] bg-[#fff3ef] px-2 pt-9 sm:pt-10">
+                  <h2 className="text-[37px] font-black leading-none sm:text-[40px]">Peer Challenge</h2>
+                  <p className="mt-5 text-[20px] font-bold text-[#55708b]">Challenge a friend</p>
+                  <div className="mt-10 rounded-full bg-[#ff6035] px-6 py-4 text-center text-[23px] font-black text-white shadow-md">Play →</div>
+                </div>
+              </Link>
+            </div>
+
+            {/* Keep the homepage intentionally empty below the three cards, matching the requested uncluttered board. */}
           </div>
         </section>
       </div>
 
-      {/* Mobile navigation intentionally stays minimal */}
-      <nav className="sticky bottom-0 z-30 grid grid-cols-3 border-t border-slate-200 bg-white/95 p-2 backdrop-blur lg:hidden">
-        <Link href="/dashboard" className="grid place-items-center gap-1 rounded-xl bg-blue-50 py-2 text-[10px] font-black text-blue-600">
-          <Home size={19} /> Home
-        </Link>
-        <Link href="/training" className="grid place-items-center gap-1 py-2 text-[10px] font-black text-slate-500">
-          <BookOpen size={19} /> Training
-        </Link>
-        <Link href="/peer-challenge" className="grid place-items-center gap-1 py-2 text-[10px] font-black text-slate-500">
-          <Users size={19} /> Peer
-        </Link>
+      <nav className="sticky bottom-0 z-40 grid grid-cols-3 border-t border-[#d8e8f2] bg-white/95 p-2 backdrop-blur lg:hidden">
+        <Link href="/dashboard" className="grid place-items-center gap-1 rounded-xl bg-blue-50 py-2 text-xs font-black text-blue-700"><Home size={20} />Home</Link>
+        <Link href="/training" className="grid place-items-center gap-1 py-2 text-xs font-black text-slate-500"><BookOpen size={20} />Training</Link>
+        <Link href="/peer-challenge" className="grid place-items-center gap-1 py-2 text-xs font-black text-slate-500"><Users size={20} />Peer</Link>
       </nav>
     </main>
   );
