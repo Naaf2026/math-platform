@@ -7,7 +7,7 @@ export async function loadPersistentQuestionBank(): Promise<QuestionBankItem[]> 
 
   const { data, error } = await supabase
     .from("learning_questions")
-    .select("id,topic_id,prompt,options,answer,explanation,skill,difficulty,question_type,interaction_config,hint,title,subject,status,version,tags,mission_ids,usage_count,correct_count,created_at,updated_at,published_at")
+    .select("id,topic_id,prompt,options,answer,explanation,skill,difficulty,question_type,interaction_config,hint,title,subject,status,version,tags,mission_ids,usage_count,correct_count,created_at,updated_at,published_at,grade_level")
     .order("updated_at", { ascending: false });
 
   if (error) throw error;
@@ -16,6 +16,7 @@ export async function loadPersistentQuestionBank(): Promise<QuestionBankItem[]> 
     id: row.id,
     title: row.title || row.prompt?.slice(0, 72) || "Untitled question",
     subject: row.subject || "Mathematics",
+    gradeLevel: row.grade_level || "Grade 3",
     topic: row.topic_id || "General",
     difficulty: toBankDifficulty(row.difficulty),
     status: toBankStatus(row.status),
@@ -40,7 +41,8 @@ export async function loadPersistentQuestionBank(): Promise<QuestionBankItem[]> 
 function toBankDifficulty(value: string): QuestionDifficulty {
   if (value === "easy") return "foundation";
   if (value === "medium") return "developing";
-  return "challenge";
+  if (value === "hard") return "challenge";
+  return "proficient";
 }
 
 function toBankStatus(value: string): QuestionBankStatus {
