@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Flame, Home, Target, Trophy, GraduationCap } from "lucide-react";
+import { BookOpen, Flame, Home, Target, Trophy, GraduationCap, Medal, FileText } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { StudentProfilePill } from "@/components/student-profile";
 
@@ -12,6 +12,8 @@ const items = [
   { href: "/training", label: "Training", icon: GraduationCap },
   { href: "/progress", label: "Progress", icon: BookOpen },
   { href: "/rewards", label: "Rewards", icon: Trophy },
+  { href: "/exam-practice", label: "Exam Practice", icon: FileText, desktopOnly: true },
+  { href: "/leaderboard", label: "Leaderboard", icon: Medal, desktopOnly: true },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -21,6 +23,7 @@ function isActive(pathname: string, href: string) {
 
 export default function StudentNavigation() {
   const pathname = usePathname();
+  const mobileItems = items.filter(item => !item.desktopOnly);
 
   return (
     <>
@@ -28,7 +31,7 @@ export default function StudentNavigation() {
         <div className="mx-auto max-w-2xl">
           <div className="mb-2"><StudentProfilePill mobile /></div>
           <div className="grid grid-cols-6 gap-1">
-            {items.map(({ href, label, icon: Icon }) => {
+            {mobileItems.map(({ href, label, icon: Icon }) => {
               const active = isActive(pathname, href);
               return <Link key={href} href={href} aria-current={active ? "page" : undefined} className={`flex min-h-14 flex-col items-center justify-center rounded-2xl text-[11px] font-black transition ${active ? "bg-violet-100 text-violet-700" : "text-slate-500 hover:bg-white hover:text-violet-600"}`}><Icon size={20} strokeWidth={active ? 2.7 : 2.2} /><span className="mt-1">{label}</span></Link>;
             })}
