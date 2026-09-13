@@ -33,21 +33,38 @@ export default function AdminBooksPage(){
  useEffect(()=>{void load()},[]);
 
  function reset(){setTitle("");setSubject("Mathematics");setGrade("5");setMinAge("");setMaxAge("");setYear(String(new Date().getFullYear()));setPublisher("");setCurriculumId("");setNewCurriculum("");setDescription("");setFile(null);setShowForm(false);}
+ function describeError(err:unknown){
+  if(!err)return "Unknown error.";
+  if(typeof err==="string")return err;
+  const e=err as {message?:string;code?:string;details?:string;hint?:string;name?:string};
+  const parts=[e.message,e.code?`code ${e.code}`:null,e.details,e.hint].filter(Boolean);
+  return parts.join(" — ")||e.name||"Unknown error.";
+ }
  async function addBook(e:FormEvent){
   e.preventDefault();if(!supabase)return;
   if(!title.trim()){setNotice("Book title is required.");return;}if(!file){setNotice("Please select a PDF book.");return;}if(file.type!=="application/pdf"){setNotice("Only PDF files are supported.");return;}if(file.size>50*1024*1024){setNotice("Maximum PDF size is 50 MB.");return;}
   setBusy(true);setNotice("Uploading book…");
+  let uploadedPath:string|null=null;
   try{
    let cid=curriculumId||null;
    if(!cid&&newCurriculum.trim()){
-    const{data,error}=await supabase.from("curriculums").insert({name:newCurriculum.trim(),active:true}).select("id").single();if(error)throw error;cid=data.id;
+    setNotice("Creating curriculum…");
+    const{data,error}=await supabase.from("curriculums").insert({name:newCurriculum.trim(),active:true}).select("id").single();
+    if(error)throw new Error(`Curriculum creation failed: ${describeError(error)}`);cid=data.id;
    }
-   const safe=file.name.replace(/[^a-zA-Z0-9._-]+/g,"-");const path=`${grade}/${crypto.randomUUID()}-${safe}`;
-   const{error:ue}=await supabase.storage.from("curriculum-books").upload(path,file,{contentType:"application/pdf",upsert:false});if(ue)throw ue;
+   const safe=file.name.replace(/[^a-zA-Z0-9._-]+/g,"-");const path=`${grade}/${crypto.randomUUID()}-${safe}`;uploadedPath=path;
+   setNotice("Uploading PDF to secure book storage…");
+   const{error:ue}=await supabase.storage.from("curriculum-books").upload(path,file,{contentType:"application/pdf",upsert:false});
+   if(ue)throw new Error(`PDF upload failed: ${describeError(ue)}`);
+   setNotice("Saving book record…");
    const{error:be}=await supabase.from("books").insert({curriculum_id:cid,title:title.trim(),subject,grade:Number(grade),min_age:minAge?Number(minAge):null,max_age:maxAge?Number(maxAge):null,academic_year:year?Number(year):null,publisher:publisher.trim()||null,description:description.trim()||null,file_path:path,file_name:file.name,file_size:file.size,processing_status:"pending",is_active:true});
-   if(be){await supabase.storage.from("curriculum-books").remove([path]);throw be;}
+   if(be)throw new Error(`Book record creation failed: ${describeError(be)}`);
+   uploadedPath=null;
    setNotice("Book added successfully. It is ready for indexing.");reset();await load();
-  }catch(err){setNotice(err instanceof Error?err.message:"Unable to add book.");}finally{setBusy(false)}
+  }catch(err){
+   if(uploadedPath)await supabase.storage.from("curriculum-books").remove([uploadedPath]);
+   setNotice(describeError(err));
+  }finally{setBusy(false)}
  }
  async function processBook(book:Book){
   if(!supabase)return;
@@ -78,12 +95,13 @@ export default function AdminBooksPage(){
    <Field label="Description"><textarea className={input} value={description} onChange={e=>setDescription(e.target.value)} rows={4} placeholder="Book coverage and notes"/></Field><Field label="Book PDF"><label className="flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50 p-4"><Upload className="text-violet-600"/><span className="min-w-0 flex-1"><b className="block truncate">{file?.name||"Choose PDF"}</b><small className="text-slate-500">PDF only · maximum 50 MB</small></span><input type="file" accept="application/pdf,.pdf" className="hidden" onChange={e=>setFile(e.target.files?.[0]||null)}/></label></Field>
    <div className="md:col-span-2 flex justify-end gap-3 border-t pt-5"><button type="button" onClick={reset} className="rounded-2xl border px-5 py-3 font-bold">Cancel</button><button disabled={busy} className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-6 py-3 font-black text-white disabled:opacity-50"><Upload size={18}/>{busy?"Uploading…":"Add Book"}</button></div>
   </form></section>}
-  <section className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{filtered.length===0?<div className="sm:col-span-2 lg:col-span-3 rounded-3xl bg-white p-12 text-center shadow-sm ring-1 ring-slate-100"><FileText className="mx-auto text-slate-300" size={44}/><h3 className="mt-4 text-xl font-black text-[#071b3a]">No books yet</h3><p className="mt-2 text-sm text-slate-500">Add your first curriculum PDF to create the AI source library.</p></div>:filtered.map(b=><article key={b.id} className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100"><div className="flex items-start justify-between"><div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-700"><BookOpen/></div><span className={`rounded-full px-3 py-1 text-xs font-black capitalize ${b.processing_status==='indexed'?"bg-emerald-50 text-emerald-700":b.processing_status==='failed'?"bg-red-50 text-red-700":"bg-amber-50 text-amber-800"}`}>{b.processing_status}</span></div><h3 className="mt-5 text-xl font-black text-[#071b3a]">{b.title}</h3><p className="mt-1 text-sm font-semibold text-slate-500">{b.subject} · Grade {b.grade}</p><div className="mt-4 grid grid-cols-2 gap-2 text-xs"><Meta l="Curriculum" v={b.curriculum?.name||"Not set"}/><Meta l="Age" v={b.min_age&&b.max_age?`${b.min_age}–${b.max_age}`:"Not set"}/><Meta l="Year" v={b.academic_year?String(b.academic_year):"Not set"}/><Meta l="File" v={b.file_name||"PDF"}/></div>{b.processing_status==='indexed'&&<div className="mt-4 grid grid-cols-3 gap-2"><Count l="Chapters" n={b.indexed_chapter_count??0}/><Count l="Sections" n={b.indexed_section_count??0}/><Count l="Objectives" n={b.indexed_objective_count??0}/></div>}{b.processing_error&&<p className="mt-4 rounded-xl bg-red-50 p-3 text-xs leading-5 text-red-700">{b.processing_error}</p>}{b.description&&<p className="mt-4 text-sm leading-6 text-slate-500">{b.description}</p>}<div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t pt-4 text-xs"><span className="font-bold text-slate-400">{fmt(b.file_size)}</span><div className="flex gap-2">{b.processing_status==='indexed'&&<button disabled={busy||!!processingId} onClick={()=>void resetIndex(b)} className="rounded-xl px-3 py-2 font-black text-slate-500 hover:bg-slate-50">Rebuild</button>}{b.processing_status!=='processing'&&<button disabled={busy||!!processingId} onClick={()=>void processBook(b)} className="inline-flex items-center gap-1 rounded-xl bg-violet-600 px-3 py-2 font-black text-white disabled:opacity-50"><Zap size={14}/>{processingId===b.id?"Indexing…":"Process"}</button>}<button disabled={busy||!!processingId} onClick={()=>void archive(b)} className="rounded-xl px-3 py-2 font-black text-slate-500 hover:bg-red-50 hover:text-red-600">Archive</button></div></div></article>)}</section>
-  <section className="mt-6 rounded-3xl bg-gradient-to-r from-violet-50 to-cyan-50 p-6 ring-1 ring-violet-100"><div className="flex gap-4"><Sparkles className="shrink-0 text-violet-600"/><div><h2 className="font-black text-[#071b3a]">Book-to-AI pipeline</h2><p className="mt-1 text-sm leading-6 text-slate-600">Upload → Gemini reads the PDF → chapters → sections → learning objectives → AI Question Builder → validation → adaptive question bank.</p></div></div></section>
+  <section className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{filtered.length===0?<div className="sm:col-span-2 lg:col-span-3 rounded-3xl bg-white p-12 text-center shadow-sm ring-1 ring-slate-100"><FileText className="mx-auto text-slate-300" size={44}/><h3 className="mt-4 text-xl font-black text-[#071b3a]">No books yet</h3><p className="mt-2 text-sm text-slate-500">Add your first curriculum PDF to create the AI source library.</p></div>:filtered.map(b=><article key={b.id} className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100"><div className="flex items-start justify-between"><div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-700"><BookOpen/></div><span className={`rounded-full px-3 py-1 text-xs font-black capitalize ${b.processing_status==='indexed'?"bg-emerald-50 text-emerald-700":b.processing_status==='failed'?"bg-red-50 text-red-700":"bg-amber-50 text-amber-800"}`}>{b.processing_status}</span></div><h3 className="mt-5 text-xl font-black text-[#071b3a]">{b.title}</h3><p className="mt-1 text-sm font-semibold text-slate-500">{b.subject} · Grade {b.grade}</p><div className="mt-4 grid grid-cols-2 gap-2 text-xs"><Meta l="Curriculum" v={b.curriculum?.name||"Not set"}/><Meta l="Age" v={b.min_age&&b.max_age?`${b.min_age}–${b.max_age}`:"Not set"}/><Meta l="Year" v={b.academic_year?String(b.academic_year):"Not set"}/><Meta l="File" v={b.file_name||"PDF"}/></div>{b.processing_status==='indexed'&&<div className="mt-4 grid grid-cols-3 gap-2"><Count l="Chapters" n={b.indexed_chapter_count??0}/><Count l="Sections" n={b.indexed_section_count??0}/><Count l="Objectives" n={b.indexed_objective_count??0}/></div>}{b.processing_error&&<p className="mt-4 rounded-xl bg-red-50 p-3 text-xs leading-5 text-red-700">{b.processing_error}</p>}{b.description&&<p className="mt-4 text-sm leading-6 text-slate-500">{b.description}</p>}<div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t pt-4 text-xs"><span className="font-bold text-slate-400">{fmt(b.file_size)}</span><div className="flex gap-2">{b.processing_status==='indexed'&&<button disabled={busy||!!processingId} onClick={()=>void resetIndex(b)} className="... (truncated)"}
+  </div></article>)}</section>
  </div></main>;
 }
-function Gate({status}:{status:string}){return <main className="min-h-screen bg-slate-50 p-6"><div className="mx-auto mt-24 max-w-xl rounded-[2rem] bg-white p-10 text-center shadow-xl"><ShieldCheck className="mx-auto text-violet-600" size={48}/><h1 className="mt-4 text-2xl font-black text-[#071b3a]">Book Library</h1><p className="mt-3 text-sm text-slate-500">{status}</p><Link href="/admin" className="mt-6 inline-flex rounded-2xl bg-violet-600 px-5 py-3 font-black text-white">Admin dashboard</Link></div></main>}
-function Field({label,children}:{label:string;children:React.ReactNode}){return <label className="block"><span className="mb-2 block text-xs font-black uppercase tracking-wider text-slate-500">{label}</span>{children}</label>}
-function Meta({l,v}:{l:string;v:string}){return <div className="rounded-xl bg-slate-50 p-3"><p className="text-[10px] font-black uppercase tracking-wider text-slate-400">{l}</p><p className="mt-1 truncate font-bold text-slate-600">{v}</p></div>}
-function Count({l,n}:{l:string;n:number}){return <div className="rounded-xl bg-emerald-50 p-2 text-center"><p className="text-lg font-black text-emerald-700">{n}</p><p className="text-[9px] font-black uppercase text-emerald-600">{l}</p></div>}
-function fmt(n:number|null){if(!n)return "Size unavailable";return n<1048576?`${Math.round(n/1024)} KB`:`${(n/1048576).toFixed(1)} MB`}
+
+function Field({label,children}:{label:string;children:React.ReactNode}){return <label className="block"><span className="mb-1.5 block text-xs font-black uppercase tracking-wider text-slate-500">{label}</span>{children}</label>}
+function Meta({l,v}:{l:string;v:string}){return <div className="rounded-xl bg-slate-50 p-3"><p className="font-black uppercase tracking-wider text-slate-400">{l}</p><p className="mt-1 truncate font-bold text-slate-700">{v}</p></div>}
+function Count({l,n}:{l:string;n:number}){return <div className="rounded-xl bg-emerald-50 p-3 text-center"><p className="text-lg font-black text-emerald-700">{n}</p><p className="text-[10px] font-black uppercase text-emerald-600">{l}</p></div>}
+function fmt(n:number|null){if(!n)return "—";return `${(n/1024/1024).toFixed(1)} MB`}
+function Gate({status}:{status:string}){return <main className="grid min-h-screen place-items-center bg-slate-50 p-6"><div className="max-w-lg rounded-3xl bg-white p-8 text-center shadow-xl"><ShieldCheck className="mx-auto text-violet-600" size={42}/><h1 className="mt-4 text-2xl font-black text-[#071b3a]">Book Library</h1><p className="mt-2 text-sm leading-6 text-slate-500">{status}</p></div></main>}
