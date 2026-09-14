@@ -54,14 +54,7 @@ export default function BrainGamesPage() {
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {shown.map((game)=><article key={game.title} className="overflow-hidden rounded-[24px] border-4 border-white bg-white shadow-[0_8px_0_rgba(0,70,100,.12)] transition hover:-translate-y-1 hover:shadow-xl">
             <div className={`relative h-44 overflow-hidden bg-gradient-to-br ${game.color}`}>
-              {game.title === "Memory Tiles" ? (
-                <img src="/assets/memory-tiles-card.svg" alt="Memory Tiles" className="absolute inset-0 h-full w-full object-cover" />
-              ) : (
-                <>
-                  <div className="absolute inset-0 bg-white/5"/>
-                  <div aria-hidden="true" className="absolute inset-0 bg-no-repeat" style={{ backgroundImage: "url('/assets/brain-games-art.svg')", backgroundSize: "400% 200%", backgroundPosition: game.pos }} />
-                </>
-              )}
+              <img src="/assets/memory-tiles-card.png?v=2" alt={`${game.title} brain game`} className="absolute inset-0 h-full w-full object-cover" />
               {!game.active&&<div className="absolute inset-0 flex items-center justify-center bg-slate-900/10"><span className="rounded-full bg-white/95 px-4 py-2 text-xs font-black shadow"><Lock size={14} className="mr-1 inline"/> Locked</span></div>}
             </div>
             <div className="flex items-center justify-between px-4 py-3"><h3 className="text-lg font-black">{game.title}</h3><span className="flex items-center gap-1 rounded-full bg-yellow-50 px-2 py-1 text-xs font-black text-amber-700"><Coins size={13}/> 1</span></div>
