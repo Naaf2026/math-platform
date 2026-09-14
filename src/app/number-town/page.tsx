@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
-import { ArrowLeft, Coins, Gamepad2, Lock, MapPin, Maximize2, Minimize2, Sparkles, Star, Trophy, Zap } from "lucide-react";
+import { ArrowLeft, Coins, Gamepad2, Lock, MapPin, Maximize2, Minimize2, Sparkles, Star, Trophy, X, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -16,6 +16,7 @@ const QUESTIONS = [
 type Screen = "world" | "game" | "result";
 type Vec = { x: number; y: number };
 type Rect = { x: number; y: number; w: number; h: number };
+type Landmark = "school" | "shop" | "park" | "portal" | null;
 
 const PLAYER = { w: 4.2, h: 7.5 };
 const SPEED = 0.95;
@@ -47,7 +48,11 @@ export default function NumberTownPage() {
   const [player, setPlayer] = useState<Vec>(START);
   const [moving, setMoving] = useState(false);
   const [nearPortal, setNearPortal] = useState(false);
+  const [nearSchool, setNearSchool] = useState(false);
+  const [nearShop, setNearShop] = useState(false);
+  const [nearPark, setNearPark] = useState(false);
   const [nearLocked, setNearLocked] = useState(false);
+  const [activeLandmark, setActiveLandmark] = useState<Landmark>(null);
   const [joystick, setJoystick] = useState({ x: 0, y: 0 });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const keysRef = useRef<Record<string, boolean>>({});
@@ -78,11 +83,16 @@ export default function NumberTownPage() {
   }, []);
 
   const startGame = useCallback(() => {
-    setIndex(0); setScore(0); setMessage(""); setReward(null); setScreen("game");
+    setIndex(0); setScore(0); setMessage(""); setReward(null); setActiveLandmark(null); setScreen("game");
     void enterFullscreen();
   }, [enterFullscreen]);
 
-  const tryInteract = useCallback(() => { if (nearPortal) startGame(); }, [nearPortal, startGame]);
+  const tryInteract = useCallback(() => {
+    if (nearPortal) startGame();
+    else if (nearSchool) setActiveLandmark("school");
+    else if (nearShop) setActiveLandmark("shop");
+    else if (nearPark) setActiveLandmark("park");
+  }, [nearPortal, nearSchool, nearShop, nearPark, startGame]);
 
   useEffect(() => {
     if (screen !== "world") return;
@@ -91,13 +101,13 @@ export default function NumberTownPage() {
       if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d", "e", "enter"].includes(key)) {
         event.preventDefault();
         keysRef.current[key] = true;
-        if ((key === "e" || key === "enter") && nearPortal) startGame();
+        if ((key === "e" || key === "enter") && (nearPortal || nearSchool || nearShop || nearPark)) tryInteract();
       }
     };
     const up = (event: KeyboardEvent) => { keysRef.current[event.key.toLowerCase()] = false; };
     window.addEventListener("keydown", down); window.addEventListener("keyup", up);
     return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); };
-  }, [nearPortal, screen, startGame]);
+  }, [nearPortal, nearSchool, nearShop, nearPark, screen, tryInteract]);
 
   useEffect(() => {
     if (screen !== "world") return;
@@ -129,6 +139,9 @@ export default function NumberTownPage() {
 
   useEffect(() => {
     setNearPortal(distance(player, { x: 50, y: 46 }) < 12);
+    setNearSchool(distance(player, { x: 18, y: 34 }) < 13);
+    setNearShop(distance(player, { x: 86, y: 38 }) < 13);
+    setNearPark(distance(player, { x: 50, y: 67 }) < 13);
     setNearLocked(distance(player, { x: 86, y: 80 }) < 13);
   }, [player]);
 
@@ -169,6 +182,8 @@ export default function NumberTownPage() {
     joystickRef.current.active = false; joystickRef.current.x = 0; joystickRef.current.y = 0; setJoystick({ x: 0, y: 0 });
   };
 
+  const interaction = nearPortal ? { label: "Number Catcher", action: "PLAY GAME", icon: <Gamepad2 size={18} /> } : nearSchool ? { label: "Number School", action: "ENTER", icon: <Sparkles size={18} /> } : nearShop ? { label: "Coin Shop", action: "OPEN SHOP", icon: <Coins size={18} /> } : nearPark ? { label: "Number Park", action: "EXPLORE", icon: <Star size={18} /> } : null;
+
   if (screen === "result") {
     return <main className="nt-shell"><section className="nt-result"><div className="nt-burst">🏆</div><h1>Number Town Complete!</h1><p className="nt-score">{score} / {QUESTIONS.length}</p><div className="nt-rewards"><span><Zap size={18}/> +{reward?.xp ?? score * 10} XP</span><span><Coins size={18}/> +{reward?.coins ?? score * 2}</span><span><Star size={18}/> {reward?.stars ?? 0}</span></div>{reward?.badge_earned && <div className="nt-badge">🏅 Perfect Number Catcher badge earned!</div>}{saving && <p>Saving your progress…</p>}<div className="nt-actions"><button onClick={startGame}>Play Again</button><button className="secondary" onClick={() => setScreen("world")}>Return to Town</button><button className="secondary" onClick={() => router.push("/games")}>Game Hub</button></div></section></main>;
   }
@@ -181,15 +196,25 @@ export default function NumberTownPage() {
     <div className="nt-top"><button className="icon-btn" aria-label="Back to Game Hub" onClick={() => router.push("/games")}><ArrowLeft size={20}/></button><div><strong>Number Town</strong><small>World 1 · Level 1</small></div><button className="pill" aria-label="Open Game Hub" onClick={() => router.push("/games")}><Gamepad2 size={16}/> Game Hub</button></div>
     <section className="nt-world">
       <div className="nt-sky"/><div className="nt-road r1"/><div className="nt-road r2"/><div className="nt-hill h1"/><div className="nt-hill h2"/>
-      <div className="landmark school">🏫<span>Number School</span></div><div className="landmark shop">🏪<span>Coin Shop</span></div><div className="landmark park">🌳<span>Number Park</span></div>
+      <button className="landmark school landmark-button" onClick={() => setActiveLandmark("school")} aria-label="Open Number School">🏫<span>Number School</span></button>
+      <button className="landmark shop landmark-button" onClick={() => setActiveLandmark("shop")} aria-label="Open Coin Shop">🏪<span>Coin Shop</span></button>
+      <button className="landmark park landmark-button" onClick={() => setActiveLandmark("park")} aria-label="Open Number Park">🌳<span>Number Park</span></button>
       <button className="portal" onClick={startGame}><span>🎮</span><b>Number Catcher</b><small>PLAY GAME</small></button>
       <div className={`player ${moving ? "walking" : ""}`} style={{ left: `${player.x}%`, top: `${player.y}%` }}><span>🧑‍🎓</span><b>You</b></div>
       <div className="locked"><Lock size={18}/><span>Logic Valley</span><small>Unlock at Level 2</small></div><div className="town-sign"><MapPin size={18}/> NUMBER TOWN</div>
-      {nearPortal && <button className="nt-interact" onClick={tryInteract}><Gamepad2 size={18}/> Press E / Tap to Play</button>}
+      {interaction && <button className="nt-interact" onClick={tryInteract}>{interaction.icon} Press E / Tap · {interaction.action}</button>}
       {nearLocked && <div className="nt-locked-hint"><Lock size={16}/> Logic Valley unlocks at Level 2</div>}
       <div className="nt-controls-help">⌨️ WASD / Arrow Keys &nbsp; • &nbsp; 📱 Move with the joystick</div>
       <div className="nt-joystick" onPointerDown={joystickStart} onPointerMove={updateJoystick} onPointerUp={joystickEnd} onPointerCancel={joystickEnd} onPointerLeave={joystickEnd}><div className="nt-joystick-knob" style={{ transform: `translate(${joystick.x * 35}px, ${joystick.y * 35}px)` }} /></div>
     </section>
     <div className="nt-bottom"><div><Zap size={17}/> Level 1</div><div><Star size={17}/> 0 Stars</div><div><Coins size={17}/> 0 Coins</div><div><Trophy size={17}/> 0 Badges</div></div>
+
+    {activeLandmark && <div className="nt-modal-backdrop" onClick={() => setActiveLandmark(null)}><section className="nt-landmark-modal" onClick={(event) => event.stopPropagation()}>
+      <button className="nt-modal-close" aria-label="Close" onClick={() => setActiveLandmark(null)}><X size={20}/></button>
+      <div className="nt-modal-icon">{activeLandmark === "school" ? "🏫" : activeLandmark === "shop" ? "🏪" : "🌳"}</div>
+      <h2>{activeLandmark === "school" ? "Number School" : activeLandmark === "shop" ? "Coin Shop" : "Number Park"}</h2>
+      <p>{activeLandmark === "school" ? "Welcome to Number School! Learning activities will appear here as the Math World grows." : activeLandmark === "shop" ? "Welcome to the Coin Shop! Rewards and items will be available here." : "Welcome to Number Park! Explore the park and discover number activities."}</p>
+      <button className="nt-modal-primary" onClick={() => setActiveLandmark(null)}>Back to Town</button>
+    </section></div>}
   </main>;
 }
