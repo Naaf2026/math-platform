@@ -1,0 +1,127 @@
+"use client";
+
+import Link from "next/link";
+import { ArrowLeft, Brain, CheckCircle2, Clock3, Coins, Flame, Home, RotateCcw, Sparkles, Star, Trophy, Zap } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+
+type Round = { a: number; b: number; answer: number; choices: number[] };
+
+function makeRound(level: number): Round {
+  const max = level <= 2 ? 10 : level <= 4 ? 20 : 50;
+  const a = Math.floor(Math.random() * max) + 1;
+  const b = Math.floor(Math.random() * max) + 1;
+  const answer = a + b;
+  const offsets = [-3, -1, 2, 4].sort(() => Math.random() - 0.5);
+  const choices = Array.from(new Set([answer, ...offsets.map((n) => Math.max(0, answer + n))])).slice(0, 4).sort(() => Math.random() - 0.5);
+  while (choices.length < 4) choices.push(answer + choices.length + 3);
+  return { a, b, answer, choices: choices.slice(0, 4) };
+}
+
+export default function NumberRushPage() {
+  const [started, setStarted] = useState(false);
+  const [round, setRound] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [time, setTime] = useState(60);
+  const [score, setScore] = useState(0);
+  const [combo, setCombo] = useState(0);
+  const [bestCombo, setBestCombo] = useState(0);
+  const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [result, setResult] = useState<{ xp: number; coins: number; stars: number } | null>(null);
+  const [question, setQuestion] = useState<Round>(() => makeRound(1));
+  const supabase = useMemo(() => createClient(), []);
+
+  const finish = async () => {
+    if (saving || result) return;
+    setSaving(true);
+    const { data, error } = await supabase.rpc("complete_brain_game", { p_game_key: "number-rush", p_score: score, p_total: Math.max(1, round), p_combo: bestCombo });
+    if (!error && data?.[0]) setResult({ xp: data[0].xp, coins: data[0].coins, stars: data[0].stars });
+    else setResult({ xp: score * 10, coins: score * 2, stars: score >= Math.max(1, round) * 0.9 ? 3 : score >= Math.max(1, round) * 0.7 ? 2 : score > 0 ? 1 : 0 });
+    setSaving(false);
+  };
+
+  useEffect(() => {
+    if (!started || result) return;
+    if (time <= 0) { finish(); return; }
+    const id = window.setInterval(() => setTime((t) => t - 1), 1000);
+    return () => window.clearInterval(id);
+  }, [started, time, result]);
+
+  const choose = (value: number) => {
+    if (!started || result || feedback) return;
+    const correct = value === question.answer;
+    const nextCombo = correct ? combo + 1 : 0;
+    setFeedback(correct ? "correct" : "wrong");
+    if (correct) {
+      setScore((s) => s + 1);
+      setCombo(nextCombo);
+      setBestCombo((b) => Math.max(b, nextCombo));
+    } else setCombo(0);
+    window.setTimeout(() => {
+      const nextRound = round + 1;
+      const nextLevel = Math.min(6, 1 + Math.floor(nextRound / 5));
+      setRound(nextRound);
+      setLevel(nextLevel);
+      setQuestion(makeRound(nextLevel));
+      setFeedback(null);
+    }, 430);
+  };
+
+  const start = () => {
+    setStarted(true); setRound(0); setScore(0); setCombo(0); setBestCombo(0); setTime(60); setLevel(1); setResult(null); setFeedback(null); setQuestion(makeRound(1));
+  };
+
+  if (result) return (
+    <main className="min-h-screen bg-[radial-gradient(circle_at_20%_10%,#fff4a8,transparent_25%),linear-gradient(135deg,#eef8ff,#fff1fb)] px-4 py-8 text-[#16365a]">
+      <div className="mx-auto flex min-h-[85vh] max-w-3xl items-center justify-center">
+        <section className="w-full overflow-hidden rounded-[40px] border-4 border-white bg-white p-7 text-center shadow-[0_25px_70px_rgba(40,80,130,.18)] sm:p-12">
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 text-white shadow-lg"><Trophy size={48}/></div>
+          <div className="mt-5 text-sm font-black uppercase tracking-[.2em] text-purple-500">Brain Game Complete</div>
+          <h1 className="mt-2 text-4xl font-black sm:text-6xl">Number Rush! ⚡</h1>
+          <p className="mt-3 font-bold text-[#708ba5]">Great thinking! Your brain just got a little stronger.</p>
+          <div className="mt-8 grid grid-cols-3 gap-3">
+            <div className="rounded-3xl bg-blue-50 p-4"><b className="block text-3xl">{score}</b><span className="text-xs font-black text-blue-500">CORRECT</span></div>
+            <div className="rounded-3xl bg-yellow-50 p-4"><b className="block text-3xl">{result.stars} ⭐</b><span className="text-xs font-black text-amber-500">STARS</span></div>
+            <div className="rounded-3xl bg-green-50 p-4"><b className="block text-3xl">+{result.coins}</b><span className="text-xs font-black text-green-600">COINS</span></div>
+          </div>
+          <div className="mt-5 rounded-3xl bg-purple-50 p-4 text-lg font-black text-purple-700">✨ +{result.xp} XP · 🔥 Best combo {bestCombo}</div>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center"><button onClick={start} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 px-7 py-4 font-black text-white shadow-lg hover:scale-[1.02]"><RotateCcw size={19}/> Play Again</button><Link href="/games" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-100 px-7 py-4 font-black text-[#45647f]"><Home size={19}/> Game Zone</Link></div>
+        </section>
+      </div>
+    </main>
+  );
+
+  if (!started) return (
+    <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_15%_15%,#fff6a8,transparent_22%),radial-gradient(circle_at_90%_20%,#c8f6ff,transparent_25%),linear-gradient(135deg,#eef7ff,#fff1fb)] px-4 py-6 text-[#16365a]">
+      <div className="mx-auto max-w-5xl"><Link href="/games" className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 font-black shadow-sm"><ArrowLeft size={18}/> Game Zone</Link>
+        <section className="mt-5 overflow-hidden rounded-[42px] border-4 border-white bg-gradient-to-br from-blue-600 via-indigo-600 to-fuchsia-500 p-7 text-white shadow-[0_25px_70px_rgba(79,70,229,.25)] sm:p-12">
+          <div className="flex flex-col items-center text-center"><div className="mb-5 flex h-24 w-24 items-center justify-center rounded-[30px] bg-white/20 text-yellow-200 shadow-inner"><Zap size={55} fill="currentColor"/></div><div className="rounded-full bg-white/15 px-4 py-2 text-xs font-black tracking-widest">⚡ SPEED BRAIN GAME</div><h1 className="mt-4 text-5xl font-black sm:text-7xl">Number Rush</h1><p className="mt-4 max-w-2xl text-lg font-bold text-white/90">Race the clock, solve quick addition challenges, build combos and power up your math brain!</p>
+            <div className="mt-8 grid w-full max-w-xl grid-cols-3 gap-3"><div className="rounded-3xl bg-white/15 p-4"><Clock3 className="mx-auto"/><b className="mt-2 block text-xl">60 sec</b><span className="text-xs font-bold">TIME</span></div><div className="rounded-3xl bg-white/15 p-4"><Flame className="mx-auto"/><b className="mt-2 block text-xl">COMBO</b><span className="text-xs font-bold">BONUS</span></div><div className="rounded-3xl bg-white/15 p-4"><Sparkles className="mx-auto"/><b className="mt-2 block text-xl">+XP</b><span className="text-xs font-bold">REWARDS</span></div></div>
+            <button onClick={start} className="mt-9 inline-flex items-center gap-3 rounded-2xl bg-yellow-300 px-9 py-5 text-xl font-black text-blue-900 shadow-xl transition hover:scale-105"><Brain size={24}/> Start Brain Game 🚀</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+
+  const progress = Math.min(100, (time / 60) * 100);
+  return (
+    <main className="min-h-screen bg-[radial-gradient(circle_at_10%_10%,#fff5a8,transparent_20%),linear-gradient(135deg,#eef9ff,#fff4fb)] px-4 py-5 text-[#16365a]">
+      <div className="mx-auto max-w-4xl">
+        <div className="flex items-center justify-between"><Link href="/games" className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 font-black shadow-sm"><ArrowLeft size={18}/> Exit</Link><div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 font-black shadow-sm"><Brain size={18} className="text-purple-500"/> Brain Power</div></div>
+        <section className="mt-5 rounded-[34px] border-4 border-white bg-white p-5 shadow-[0_20px_55px_rgba(40,80,130,.14)] sm:p-8">
+          <div className="flex items-center justify-between gap-3"><div><div className="text-xs font-black uppercase tracking-widest text-purple-500">Number Rush · Level {level}</div><div className="mt-1 text-2xl font-black">Round {round + 1}</div></div><div className="rounded-2xl bg-orange-50 px-4 py-2 text-center"><Clock3 className="mx-auto text-orange-500" size={20}/><b className="block text-2xl text-orange-600">{time}s</b></div></div>
+          <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all" style={{width:`${progress}%`}}/></div>
+          <div className="mt-5 flex items-center justify-between text-sm font-black"><span>⭐ Score: {score}</span><span className="text-orange-500">🔥 Combo: {combo}</span></div>
+          <div className={`relative mt-7 rounded-[34px] border-4 p-7 text-center transition sm:p-12 ${feedback === "correct" ? "border-green-300 bg-green-50" : feedback === "wrong" ? "border-pink-300 bg-pink-50" : "border-cyan-100 bg-gradient-to-br from-cyan-50 to-purple-50"}`}>
+            <div className="text-sm font-black text-[#7290aa]">QUICK THINK!</div><div className="mt-4 text-6xl font-black tracking-tight sm:text-8xl">{question.a} + {question.b}</div><div className="mt-2 text-xl font-black text-purple-500">= ?</div>
+            {feedback && <div className={`mt-4 text-lg font-black ${feedback === "correct" ? "text-green-600" : "text-pink-600"}`}>{feedback === "correct" ? "✨ Correct! Keep going!" : `💡 The answer was ${question.answer}`}</div>}
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">{question.choices.map((choice, i) => <button key={`${round}-${choice}-${i}`} onClick={() => choose(choice)} className="min-h-20 rounded-3xl border-4 border-white bg-white text-3xl font-black text-blue-600 shadow-[0_8px_20px_rgba(40,100,160,.12)] transition hover:-translate-y-1 hover:bg-blue-50 active:scale-95">{choice}</button>)}</div>
+          <div className="mt-6 flex items-center justify-center gap-2 text-sm font-bold text-[#7892aa]"><Coins size={17} className="text-yellow-500"/> Correct answers earn XP + coins. Build a combo for bonus rewards!</div>
+        </section>
+      </div>
+    </main>
+  );
+}
