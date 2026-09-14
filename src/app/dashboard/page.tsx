@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, BarChart3, BookOpen, GraduationCap, Home, Settings, Trophy, Gift, Users } from "lucide-react";
+import { Bell, BarChart3, Gamepad2, GraduationCap, Home, Settings, Trophy, Gift } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = {
@@ -46,6 +46,7 @@ export default function DashboardPage() {
           <Link href="/dashboard" className="flex min-w-0 items-center gap-4"><img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[48px] w-auto max-w-[260px] object-contain sm:h-[57px] sm:max-w-none" /></Link>
           <nav className="hidden items-center gap-8 lg:flex">
             <Link href="/dashboard" className="relative flex items-center gap-3 px-4 py-7 text-lg font-black"><Home size={25} /> Home<span className="absolute bottom-0 left-4 right-4 h-1 rounded-full bg-yellow-400" /></Link>
+            <Link href="/number-town" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Gamepad2 size={25} /> Games</Link>
             <Link href="/leaderboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Trophy size={25} /> Leaderboard</Link>
             <Link href="/rewards" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Gift size={25} /> Rewards</Link>
             <Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><BarChart3 size={25} /> Progress</Link>
@@ -78,8 +79,9 @@ export default function DashboardPage() {
         </section>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-4 border-t border-[#d8e8f2] bg-white/98 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(7,59,115,0.10)] backdrop-blur lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-[#d8e8f2] bg-white/98 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(7,59,115,0.10)] backdrop-blur lg:hidden">
         <Link href="/dashboard" className="grid place-items-center gap-1 rounded-xl bg-blue-50 py-2 text-xs font-black text-blue-700"><Home size={20} />Home</Link>
+        <Link href="/number-town" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Gamepad2 size={20} />Games</Link>
         <Link href="/leaderboard" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Trophy size={20} />Leaderboard</Link>
         <Link href="/rewards" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Gift size={20} />Rewards</Link>
         <Link href="/progress" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><BarChart3 size={20} />Progress</Link>
