@@ -82,7 +82,7 @@ export default function BrainGamesPage() {
           {shown.map((game) => (
             <article key={game.title} className="group overflow-hidden rounded-[25px] border-4 border-white bg-white shadow-[0_9px_0_rgba(0,70,100,.13)] transition duration-200 hover:-translate-y-1 hover:shadow-xl">
               <div className="relative h-44 overflow-hidden bg-sky-200">
-                <div role="img" aria-label={`${game.title} game illustration`} className="absolute inset-0 bg-no-repeat transition duration-300 group-hover:scale-[1.04]" style={{ backgroundImage: "url('/assets/brain-games-art.svg')", backgroundSize: "400% 200%", backgroundPosition: game.pos }} />
+                <div role="img" aria-label={`${game.title} game illustration`} className="absolute inset-0 bg-no-repeat transition duration-300 group-hover:scale-[1.04]" style={{ backgroundImage: "url('/assets/brain-games-art-rich.svg')", backgroundSize: "400% 200%", backgroundPosition: game.pos }} />
                 {!game.active && <div className="absolute inset-0 flex items-center justify-center bg-slate-900/30"><span className="rounded-full bg-white/95 px-4 py-2 text-xs font-black shadow"><Lock size={14} className="mr-1 inline" /> Locked</span></div>}
               </div>
               <div className="flex items-center justify-between px-4 pt-3"><h3 className="text-lg font-black text-slate-700">{game.title}</h3><span className="flex items-center gap-1 rounded-full bg-yellow-50 px-2 py-1 text-xs font-black text-amber-700"><Coins size={13} /> +{game.reward}</span></div>
