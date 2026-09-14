@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
-import { ArrowLeft, Coins, Gamepad2, Lock, MapPin, Sparkles, Star, Trophy, Zap } from "lucide-react";
+import { ArrowLeft, Coins, Gamepad2, Lock, MapPin, Maximize2, Minimize2, Sparkles, Star, Trophy, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -49,6 +49,7 @@ export default function NumberTownPage() {
   const [nearPortal, setNearPortal] = useState(false);
   const [nearLocked, setNearLocked] = useState(false);
   const [joystick, setJoystick] = useState({ x: 0, y: 0 });
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const keysRef = useRef<Record<string, boolean>>({});
   const joystickRef = useRef({ active: false, x: 0, y: 0 });
   const frameRef = useRef<number | null>(null);
@@ -57,9 +58,29 @@ export default function NumberTownPage() {
 
   useEffect(() => { document.title = "Number Town | Math Platform"; }, []);
 
+  useEffect(() => {
+    const syncFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", syncFullscreen);
+    return () => document.removeEventListener("fullscreenchange", syncFullscreen);
+  }, []);
+
+  const exitFullscreen = useCallback(async () => {
+    if (document.fullscreenElement && document.exitFullscreen) {
+      try { await document.exitFullscreen(); } catch { /* browser may already have exited */ }
+    }
+  }, []);
+
+  const enterFullscreen = useCallback(async () => {
+    if (document.fullscreenElement) return;
+    try {
+      if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+    } catch { /* Fullscreen can be blocked until a user gesture or by browser policy. */ }
+  }, []);
+
   const startGame = useCallback(() => {
     setIndex(0); setScore(0); setMessage(""); setReward(null); setScreen("game");
-  }, []);
+    void enterFullscreen();
+  }, [enterFullscreen]);
 
   const tryInteract = useCallback(() => { if (nearPortal) startGame(); }, [nearPortal, startGame]);
 
@@ -111,6 +132,10 @@ export default function NumberTownPage() {
     setNearLocked(distance(player, { x: 86, y: 80 }) < 13);
   }, [player]);
 
+  useEffect(() => {
+    if (screen !== "game" && document.fullscreenElement) void exitFullscreen();
+  }, [screen, exitFullscreen]);
+
   async function choose(value: number) {
     if (message) return;
     const correct = value === q.target;
@@ -149,7 +174,7 @@ export default function NumberTownPage() {
   }
 
   if (screen === "game") {
-    return <main className="nt-shell"><div className="nt-top"><button className="icon-btn" aria-label="Back to Number Town" onClick={() => setScreen("world")}><ArrowLeft size={20}/></button><div><strong>Number Catcher</strong><small>Challenge {index + 1} of {QUESTIONS.length}</small></div><button className="pill" aria-label="Exit to Game Hub" onClick={() => router.push("/games")}><Gamepad2 size={16}/> Game Hub</button></div><section className="nt-game"><div className="nt-cloud c1"/><div className="nt-cloud c2"/><div className="nt-house">🏠</div><div className="nt-tree">🌳</div><div className="nt-character">🧑‍🎓</div><div className="nt-question"><span>Find the number</span><b>{q.target}</b></div><div className="nt-choices">{q.choices.map((n) => <button key={n} onClick={() => choose(n)} className={message && n === q.target ? "correct" : ""}>{n}</button>)}</div><div className={`nt-feedback ${message.includes("Great") ? "good" : ""}`}>{message || "Choose the correct number"}</div></section></main>;
+    return <main className="nt-shell nt-game-fullscreen"><div className="nt-top"><button className="icon-btn" aria-label="Back to Number Town" onClick={() => { void exitFullscreen(); setScreen("world"); }}><ArrowLeft size={20}/></button><div><strong>Number Catcher</strong><small>Challenge {index + 1} of {QUESTIONS.length}</small></div><button className="pill" aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"} onClick={() => isFullscreen ? exitFullscreen() : enterFullscreen()}>{isFullscreen ? <Minimize2 size={16}/> : <Maximize2 size={16}/>} {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}</button><button className="pill" aria-label="Exit to Game Hub" onClick={() => { void exitFullscreen(); router.push("/games"); }}><Gamepad2 size={16}/> Game Hub</button></div><section className="nt-game"><div className="nt-cloud c1"/><div className="nt-cloud c2"/><div className="nt-house">🏠</div><div className="nt-tree">🌳</div><div className="nt-character">🧑‍🎓</div><div className="nt-question"><span>Find the number</span><b>{q.target}</b></div><div className="nt-choices">{q.choices.map((n) => <button key={n} onClick={() => choose(n)} className={message && n === q.target ? "correct" : ""}>{n}</button>)}</div><div className={`nt-feedback ${message.includes("Great") ? "good" : ""}`}>{message || "Choose the correct number"}</div></section></main>;
   }
 
   return <main className="nt-shell">
