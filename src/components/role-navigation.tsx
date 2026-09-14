@@ -9,8 +9,13 @@ import AdminNavigation from "@/components/admin-navigation";
 export default function RoleNavigation() {
   const pathname = usePathname();
 
-  // Dashboard and Daily Challenge provide their own full-screen navigation.
-  if (pathname === "/dashboard" || pathname.startsWith("/challenge")) return null;
+  // Dashboard, Daily Challenge, and Number Town provide their own navigation.
+  // Number Town must be completely unobstructed while Number Catcher is in fullscreen.
+  if (
+    pathname === "/dashboard" ||
+    pathname.startsWith("/challenge") ||
+    pathname.startsWith("/number-town")
+  ) return null;
 
   if (pathname.startsWith("/teacher")) return <TeacherNavigation />;
   if (pathname.startsWith("/parent")) return <ParentNavigation />;
