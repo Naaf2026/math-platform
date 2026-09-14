@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Brain, Lock, Play, Star, Timer } from "lucide-react";
+import { ArrowLeft, Brain, Lock, Play, Star, Timer, Zap, Eye, Shuffle, Puzzle, Search, Coins, PersonStanding, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 const games = [
@@ -16,13 +16,63 @@ const games = [
 ];
 
 function Art({ kind }: { kind: string }) {
-  if (kind === "memory") return <div className="relative h-full w-full"><Tile x="13" y="28" text="2+3" rotate="-8"/><Tile x="36" y="12" text="5" rotate="7"/><Tile x="59" y="29" text="4+4" rotate="-5"/><Tile x="38" y="55" text="8" rotate="6"/><span className="absolute left-[45%] top-[67%] text-5xl">🧠</span></div>;
-  if (kind === "rush") return <div className="relative h-full w-full"><span className="absolute bottom-[15%] left-[22%] text-7xl">🏃</span><span className="absolute right-[18%] top-[20%] text-5xl">⚡</span><Bubble x="12" y="22" text="7+6"/><Bubble x="61" y="42" text="13"/></div>;
-  if (kind === "evenodd") return <div className="relative h-full w-full"><Circle x="14" text="8"/><Circle x="59" text="7"/><span className="absolute bottom-[12%] left-[39%] text-5xl">👀</span></div>;
-  if (kind === "flash") return <div className="relative h-full w-full"><div className="absolute left-[19%] top-[27%] rounded-[28px] bg-white/90 px-6 py-4 text-4xl font-black text-teal-600 shadow-xl">4 8 2</div><span className="absolute bottom-[14%] left-[28%] text-5xl">✨</span><div className="absolute right-[17%] bottom-[20%] rounded-xl bg-white/90 px-4 py-2 text-2xl font-black text-cyan-600">?</div></div>;
-  if (kind === "order") return <div className="relative h-full w-full"><Tile x="10" y="30" text="42" rotate="-7"/><Tile x="37" y="18" text="17" rotate="4"/><Tile x="64" y="32" text="31" rotate="7"/><span className="absolute bottom-[13%] left-[43%] text-5xl">🔀</span></div>;
-  if (kind === "pattern") return <div className="relative h-full w-full"><Bubble x="10" y="32" text="2"/><Bubble x="31" y="21" text="4"/><Bubble x="52" y="33" text="6"/><Bubble x="73" y="21" text="?"/><span className="absolute bottom-[13%] left-[43%] text-5xl">🧩</span></div>;
-  return <div className="relative h-full w-full"><div className="absolute left-[13%] top-[25%] grid grid-cols-4 gap-2">{[1,2,3,4,5,6,7,8].map(n=><span key={n} className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/80 text-lg font-black text-indigo-600 shadow-sm">{n}</span>)}</div><span className="absolute bottom-[12%] right-[20%] text-5xl">🔎</span></div>;
+  if (kind === "memory") return (
+    <div className="relative h-full w-full">
+      <Tile x="13" y="28" text="2+3" rotate="-8" />
+      <Tile x="36" y="12" text="5" rotate="7" />
+      <Tile x="59" y="29" text="4+4" rotate="-5" />
+      <Tile x="38" y="55" text="8" rotate="6" />
+      <div className="absolute bottom-[9%] left-[43%] flex h-14 w-14 items-center justify-center rounded-full border-4 border-white/80 bg-cyan-100/90 text-cyan-700 shadow-xl"><Brain size={30} strokeWidth={2.5} /></div>
+    </div>
+  );
+  if (kind === "rush") return (
+    <div className="relative h-full w-full">
+      <div className="absolute bottom-[12%] left-[21%] flex h-16 w-16 items-center justify-center rounded-full border-4 border-white/80 bg-white/90 text-pink-600 shadow-xl"><PersonStanding size={38} strokeWidth={2.7} /></div>
+      <div className="absolute right-[17%] top-[16%] flex h-14 w-14 items-center justify-center rounded-full bg-yellow-200/90 text-orange-600 shadow-lg"><Zap size={30} fill="currentColor" /></div>
+      <Bubble x="12" y="22" text="7+6" />
+      <Bubble x="61" y="42" text="13" />
+      <div className="absolute bottom-[17%] left-[38%] h-1 w-20 rotate-[-8deg] rounded-full bg-white/70" />
+    </div>
+  );
+  if (kind === "evenodd") return (
+    <div className="relative h-full w-full">
+      <Circle x="14" text="8" />
+      <Circle x="59" text="7" />
+      <div className="absolute bottom-[10%] left-[39%] flex h-14 w-14 items-center justify-center rounded-full border-4 border-white/80 bg-purple-100/90 text-purple-700 shadow-xl"><Eye size={30} strokeWidth={2.5} /></div>
+    </div>
+  );
+  if (kind === "flash") return (
+    <div className="relative h-full w-full">
+      <div className="absolute left-[19%] top-[27%] rounded-[28px] border-4 border-white/70 bg-white/90 px-6 py-4 text-4xl font-black text-teal-600 shadow-xl">4 8 2</div>
+      <div className="absolute bottom-[12%] left-[28%] flex h-12 w-12 items-center justify-center rounded-full bg-yellow-200/90 text-amber-600 shadow-lg"><Sparkles size={25} fill="currentColor" /></div>
+      <div className="absolute bottom-[20%] right-[17%] flex h-12 w-12 items-center justify-center rounded-xl bg-white/90 text-2xl font-black text-cyan-600 shadow-lg">?</div>
+    </div>
+  );
+  if (kind === "order") return (
+    <div className="relative h-full w-full">
+      <Tile x="10" y="30" text="42" rotate="-7" />
+      <Tile x="37" y="18" text="17" rotate="4" />
+      <Tile x="64" y="32" text="31" rotate="7" />
+      <div className="absolute bottom-[10%] left-[42%] flex h-14 w-14 items-center justify-center rounded-full border-4 border-white/80 bg-amber-100/90 text-rose-600 shadow-xl"><Shuffle size={29} strokeWidth={2.5} /></div>
+    </div>
+  );
+  if (kind === "pattern") return (
+    <div className="relative h-full w-full">
+      <Bubble x="10" y="32" text="2" />
+      <Bubble x="31" y="21" text="4" />
+      <Bubble x="52" y="33" text="6" />
+      <Bubble x="73" y="21" text="?" />
+      <div className="absolute bottom-[10%] left-[42%] flex h-14 w-14 items-center justify-center rounded-full border-4 border-white/80 bg-pink-100/90 text-red-600 shadow-xl"><Puzzle size={29} strokeWidth={2.5} /></div>
+    </div>
+  );
+  return (
+    <div className="relative h-full w-full">
+      <div className="absolute left-[13%] top-[25%] grid grid-cols-4 gap-2">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => <span key={n} className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/80 text-lg font-black text-indigo-600 shadow-sm">{n}</span>)}
+      </div>
+      <div className="absolute bottom-[10%] right-[19%] flex h-14 w-14 items-center justify-center rounded-full border-4 border-white/80 bg-indigo-100/90 text-indigo-700 shadow-xl"><Search size={29} strokeWidth={2.5} /></div>
+    </div>
+  );
 }
 
 function Tile({ x, y, text, rotate }: { x: string; y: string; text: string; rotate: string }) { return <div style={{ left: `${x}%`, top: `${y}%`, transform: `rotate(${rotate}deg)` }} className="absolute flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-white/80 bg-white/90 text-xl font-black text-cyan-700 shadow-lg">{text}</div>; }
@@ -62,7 +112,7 @@ export default function BrainGamesPage() {
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {shown.map((game)=><article key={game.title} className="overflow-hidden rounded-[24px] border-4 border-white bg-white shadow-[0_8px_0_rgba(0,70,100,.12)] transition hover:-translate-y-1 hover:shadow-xl">
             <div className={`relative h-44 bg-gradient-to-br ${game.color}`}><div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,.25),transparent_25%),radial-gradient(circle_at_80%_70%,rgba(255,255,255,.2),transparent_25%)]"/><div className="relative h-full"><Art kind={game.kind}/>{!game.active&&<div className="absolute inset-0 flex items-center justify-center bg-slate-900/10"><span className="rounded-full bg-white/95 px-4 py-2 text-xs font-black shadow"><Lock size={14} className="mr-1 inline"/> Locked</span></div>}</div></div>
-            <div className="flex items-center justify-between px-4 py-3"><h3 className="text-lg font-black">{game.title}</h3><span className="rounded-full bg-yellow-50 px-2 py-1 text-xs font-black text-amber-700">🪙 {game.cost}</span></div>
+            <div className="flex items-center justify-between px-4 py-3"><h3 className="text-lg font-black">{game.title}</h3><span className="flex items-center gap-1 rounded-full bg-yellow-50 px-2 py-1 text-xs font-black text-amber-700"><Coins size={13} /> {game.cost}</span></div>
             {game.active ? <Link href={game.href} className="mx-4 mb-4 flex items-center justify-center gap-2 rounded-xl bg-[#08a6df] py-2.5 text-sm font-black text-white shadow"><Play size={15} fill="currentColor"/> Play</Link> : <div className="mx-4 mb-4 rounded-xl bg-slate-100 py-2.5 text-center text-sm font-black text-slate-400">Coming Soon</div>}
           </article>)}
         </div>
