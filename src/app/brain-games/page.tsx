@@ -27,16 +27,16 @@ export default function BrainGamesPage() {
         <div className="pointer-events-none absolute -left-20 top-36 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
         <div className="pointer-events-none absolute -right-24 top-[42%] h-72 w-72 rounded-full bg-cyan-300/10 blur-3xl" />
 
-        <header className="sticky top-0 z-40 border-b border-white/20 bg-[#0878c5]/95 px-3 py-2 text-white shadow-lg backdrop-blur-md sm:px-5 landscape:py-1.5">
-          <div className="mx-auto flex max-w-[1500px] items-center justify-between">
-            <div className="flex items-center gap-3 landscape:gap-2">
-              <Link href="/games" className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 transition hover:scale-105 hover:bg-white/25 active:scale-95 landscape:h-8 landscape:w-8 landscape:rounded-lg" aria-label="Back to games"><ArrowLeft size={21} className="landscape:h-[17px] landscape:w-[17px]" /></Link>
-              <div className="hidden h-8 w-px bg-white/30 sm:block landscape:h-6" />
-              <div className="flex items-center gap-2 text-base font-black sm:text-lg landscape:text-sm"><Brain size={22} className="landscape:h-[18px] landscape:w-[18px]" /> Brain Games</div>
+        <header className="sticky top-0 z-40 border-b border-white/20 bg-[#0878c5]/95 px-3 py-1.5 text-white shadow-md backdrop-blur-md sm:px-5 landscape:py-1">
+          <div className="mx-auto flex h-9 max-w-[1500px] items-center justify-between sm:h-10">
+            <div className="flex items-center gap-2">
+              <Link href="/games" className="grid h-7 w-7 place-items-center rounded-lg bg-white/15 transition hover:bg-white/25 active:scale-95 sm:h-8 sm:w-8" aria-label="Back to games"><ArrowLeft size={16} /></Link>
+              <div className="h-5 w-px bg-white/25" />
+              <div className="flex items-center gap-1.5 text-sm font-black sm:text-base"><Brain size={17} /> Brain Games</div>
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2 landscape:gap-1">
-              <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1.5 text-sm font-black shadow-inner sm:px-3 landscape:px-2 landscape:py-1 landscape:text-xs"><Coins size={17} className="text-yellow-300 landscape:h-[14px] landscape:w-[14px]" fill="currentColor" /> 320</div>
-              <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1.5 text-sm font-black shadow-inner sm:px-3 landscape:px-2 landscape:py-1 landscape:text-xs"><Star size={17} className="text-yellow-300 landscape:h-[14px] landscape:w-[14px]" fill="currentColor" /> 5</div>
+            <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-2 py-1 text-[11px] font-black shadow-inner sm:text-xs"><Coins size={13} className="text-yellow-300" fill="currentColor" /> 320</div>
+              <div className="flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-2 py-1 text-[11px] font-black shadow-inner sm:text-xs"><Star size={13} className="text-yellow-300" fill="currentColor" /> 5</div>
             </div>
           </div>
         </header>
