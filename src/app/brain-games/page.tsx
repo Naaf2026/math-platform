@@ -66,13 +66,6 @@ export default function BrainGamesPage() {
             </div>
           </section>
 
-          <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] landscape:mt-2 landscape:gap-1.5 landscape:pb-0" aria-label="Brain game categories">
-            {filters.map((item) => {
-              const Icon = item === "Memory" ? Brain : item === "Speed" ? Zap : item === "Attention" ? Target : item === "Problem Solving" ? Sparkles : Star;
-              return <button key={item} onClick={() => setFilter(item)} className={`flex shrink-0 items-center gap-2 rounded-full border-2 px-5 py-3 text-sm font-black shadow-sm transition duration-200 active:scale-95 landscape:gap-1.5 landscape:rounded-full landscape:border landscape:px-3 landscape:py-1.5 landscape:text-[11px] ${filter === item ? "border-white bg-white text-[#0878c5] shadow-lg" : "border-white/20 bg-[#0878c5]/80 text-white hover:-translate-y-0.5 hover:bg-[#0878c5]"}`}><Icon size={18} className="landscape:h-[13px] landscape:w-[13px]" fill={filter === item && item !== "Problem Solving" ? "currentColor" : "none"} />{item}</button>;
-            })}
-          </nav>
-
           <div className="mt-7 flex items-end justify-between text-white landscape:mt-4"><div><div className="text-xs font-black uppercase tracking-[.22em] text-white/70 landscape:text-[9px]">Game Arena</div><h2 className="mt-1 text-2xl font-black sm:text-3xl landscape:text-xl">Choose your game</h2></div><div className="rounded-full border border-white/30 bg-white/90 px-3 py-1.5 text-xs font-black text-[#0878c5] shadow-sm landscape:px-2 landscape:py-1 landscape:text-[10px]">{shown.length} games</div></div>
 
           <section className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 landscape:mt-2 landscape:gap-3 landscape:grid-cols-3">
@@ -90,12 +83,12 @@ export default function BrainGamesPage() {
                   {game.active && <div className="mt-3 landscape:mt-2"><div className="mb-1 flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-400 landscape:text-[8px]"><span>Progress</span><span>{game.progress}%</span></div><div className="h-2 overflow-hidden rounded-full bg-slate-100 landscape:h-1.5"><div className="h-full rounded-full bg-[#10b9df] transition-all" style={{ width: `${game.progress}%` }} /></div></div>}
                 </div>
 
-                {game.active ? <Link href={game.href} className="mx-4 mb-4 mt-3 flex items-center justify-center gap-2 rounded-xl bg-[#079fe0] py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-[#078bc4] active:scale-[.98] landscape:mx-3 landscape:mb-3 landscape:mt-2 landscape:rounded-lg landscape:py-1.5 landscape:text-[11px]"><Play size={15} fill="currentColor" className="landscape:h-3 landscape:w-3" /> Play Game</Link> : <div className="mx-4 mb-4 mt-3 flex items-center justify-center gap-2 rounded-xl bg-slate-100 py-2.5 text-xs font-black text-slate-400 landscape:mx-3 landscape:mb-3 landscape:mt-2 landscape:rounded-lg landscape:py-1.5 landscape:text-[10px]"><Lock size={14} className="landscape:h-3 landscape:w-3" /> Locked</div>}
+                {game.active ? <Link href={game.href} className="mx-4 mb-4 mt-3 flex items-center justify-center gap-2 rounded-xl bg-[#079fe0] py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-[#078bc4] active:scale-[.98] landscape:mx-3 landscape:mb-3 landscape:mt-2 landscape:rounded-lg landscape:py-1.5 landscape:text-[11px]"><Play size={15} fill="currentColor" /> Play Game</Link> : <div className="mx-4 mb-4 mt-3 flex items-center justify-center gap-2 rounded-xl bg-slate-100 py-2.5 text-xs font-black text-slate-400 landscape:mx-3 landscape:mb-3 landscape:mt-2 landscape:py-1.5 landscape:text-[10px]"><Lock size={14} /> Locked</div>}
               </article>
             ))}
           </section>
 
-          <div className="mt-6 flex items-center justify-center gap-2 text-xs font-bold text-white/75 landscape:mt-4 landscape:text-[10px]"><Check size={15} className="landscape:h-3 landscape:w-3" /> Complete games to earn rewards and build your Brain Arena progress.</div>
+          <div className="mt-6 flex items-center justify-center gap-2 text-xs font-bold text-white/75 landscape:mt-4"><Check size={15} /> Complete games to earn rewards and build your Brain Arena progress.</div>
         </div>
       </div>
     </main>
