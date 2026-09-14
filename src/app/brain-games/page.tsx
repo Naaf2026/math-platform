@@ -5,7 +5,7 @@ import { ArrowLeft, Brain, Coins, Lock, Play, Star, Timer } from "lucide-react";
 import { useState } from "react";
 
 const games = [
-  { title: "Memory Tiles", href: "/brain-games/memory-tiles", active: true, color: "from-cyan-400 to-blue-500", pos: "0% 0%" },
+  { title: "Memory Tiles", href: "/brain-games/memory-tiles", active: true, color: "from-cyan-400 to-blue-500", image: "/assets/memory-tiles-card.svg" },
   { title: "Number Rush", href: "/brain-games/number-rush", active: true, color: "from-orange-300 to-pink-500", pos: "33.333% 0%" },
   { title: "Even or Odd", href: "/brain-games/even-odd", active: true, color: "from-purple-400 to-fuchsia-500", pos: "66.667% 0%" },
   { title: "Flash Memory", href: "/brain-games/flash-memory", active: true, color: "from-sky-400 to-teal-500", pos: "100% 0%" },
@@ -54,16 +54,24 @@ export default function BrainGamesPage() {
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {shown.map((game)=><article key={game.title} className="overflow-hidden rounded-[24px] border-4 border-white bg-white shadow-[0_8px_0_rgba(0,70,100,.12)] transition hover:-translate-y-1 hover:shadow-xl">
             <div className={`relative h-44 overflow-hidden bg-gradient-to-br ${game.color}`}>
-              <div
-                role="img"
-                aria-label={`${game.title} brain game illustration`}
-                className="absolute inset-0 bg-no-repeat"
-                style={{
-                  backgroundImage: "url('/assets/brain-games-art.svg')",
-                  backgroundSize: "400% 200%",
-                  backgroundPosition: game.pos,
-                }}
-              />
+              {game.image ? (
+                <img
+                  src={game.image}
+                  alt={`${game.title} brain game illustration`}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : (
+                <div
+                  role="img"
+                  aria-label={`${game.title} brain game illustration`}
+                  className="absolute inset-0 bg-no-repeat"
+                  style={{
+                    backgroundImage: "url('/assets/brain-games-art.svg')",
+                    backgroundSize: "400% 200%",
+                    backgroundPosition: game.pos,
+                  }}
+                />
+              )}
               {!game.active&&<div className="absolute inset-0 flex items-center justify-center bg-slate-900/10"><span className="rounded-full bg-white/95 px-4 py-2 text-xs font-black shadow"><Lock size={14} className="mr-1 inline"/> Locked</span></div>}
             </div>
             <div className="flex items-center justify-between px-4 py-3"><h3 className="text-lg font-black">{game.title}</h3><span className="flex items-center gap-1 rounded-full bg-yellow-50 px-2 py-1 text-xs font-black text-amber-700"><Coins size={13}/> 1</span></div>
