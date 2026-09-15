@@ -1,1 +1,1 @@
-__RESTORE_PENDING__
+// RECOVERY: will restore from known good commit
