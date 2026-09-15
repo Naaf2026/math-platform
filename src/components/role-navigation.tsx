@@ -9,12 +9,12 @@ import AdminNavigation from "@/components/admin-navigation";
 export default function RoleNavigation() {
   const pathname = usePathname();
 
-  // Dashboard, Daily Challenge, and Number Town provide their own navigation.
-  // Number Town must be completely unobstructed while Number Catcher is in fullscreen.
+  // These immersive pages provide their own compact navigation.
   if (
     pathname === "/dashboard" ||
     pathname.startsWith("/challenge") ||
-    pathname.startsWith("/number-town")
+    pathname.startsWith("/number-town") ||
+    pathname.startsWith("/brain-games")
   ) return null;
 
   if (pathname.startsWith("/teacher")) return <TeacherNavigation />;
