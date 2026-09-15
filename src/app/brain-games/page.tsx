@@ -35,23 +35,22 @@ function matches(g:Game,f:string){
  return ["Pattern Quest","What's Missing?"].includes(g.title);
 }
 
-const positions:Record<Art,string>={
- memory:"0% 0%",rush:"33.333% 0%",evenodd:"66.666% 0%",flash:"100% 0%",
- order:"0% 100%",pattern:"33.333% 100%",hidden:"66.666% 100%",missing:"100% 100%"
+const cardImages:Record<Art,string>={
+ memory:"/assets/brain-games-cards/memory-tiles.jpg",
+ rush:"/assets/brain-games-cards/number-rush.jpg",
+ evenodd:"/assets/brain-games-cards/even-or-odd.jpg",
+ flash:"/assets/brain-games-cards/flash-memory.jpg",
+ order:"/assets/brain-games-cards/number-order.jpg",
+ pattern:"/assets/brain-games-cards/pattern-quest.jpg",
+ hidden:"/assets/brain-games-cards/hidden-numbers.jpg",
+ missing:"/assets/brain-games-cards/whats-missing.jpg",
 };
 
 function CardArt({game}:{game:Game}){
-  const pos=positions[game.art];
-  return (
-    <div className="relative h-full w-full overflow-hidden bg-cyan-100" role="img" aria-label={`${game.title} illustrated game artwork`}>
-      <img
-        src="/assets/brain-games-art-rich.svg?v=20260915-2"
-        alt={`${game.title} illustrated game scene`}
-        className="absolute max-w-none transition duration-300 group-hover:scale-[1.025]"
-        style={{width:"400%",height:"200%",left:pos.includes("100%")?"-300%":pos.includes("33.333")?"-100%":pos.includes("66.666")?"-200%":"0%",top:pos.endsWith("100%")?"-100%":"0%"}}
-      />
-    </div>
-  );
+ const src=cardImages[game.art];
+ return <div className="relative h-full w-full overflow-hidden bg-cyan-100" role="img" aria-label={`${game.title} illustrated game artwork`}>
+   <img src={src} alt={`${game.title} illustrated game scene`} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.025]" />
+ </div>;
 }
 
 function Hero(){
