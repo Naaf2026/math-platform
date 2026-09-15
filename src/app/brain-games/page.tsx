@@ -15,8 +15,8 @@ type Zone = {
 const zones: Zone[] = [
   {
     id: "memory",
-    label: "Memory — Play Memory Tiles",
-    href: "/brain-games/memory-tiles",
+    label: "Memory — Explore Memory Games",
+    href: "/brain-games/memory",
     x: "10%",
     y: "30%",
     width: "31%",
@@ -24,8 +24,8 @@ const zones: Zone[] = [
   },
   {
     id: "flexibility",
-    label: "Flexibility — Play Number Order",
-    href: "/brain-games/number-order",
+    label: "Flexibility — Explore Flexibility Games",
+    href: "/brain-games/flexibility",
     x: "37%",
     y: "34%",
     width: "27%",
@@ -33,8 +33,8 @@ const zones: Zone[] = [
   },
   {
     id: "speed",
-    label: "Speed — Play Number Rush",
-    href: "/brain-games/number-rush",
+    label: "Speed — Explore Speed Games",
+    href: "/brain-games/speed",
     x: "68%",
     y: "29%",
     width: "25%",
@@ -42,8 +42,8 @@ const zones: Zone[] = [
   },
   {
     id: "attention",
-    label: "Attention — Play Even or Odd",
-    href: "/brain-games/even-odd",
+    label: "Attention — Explore Attention Games",
+    href: "/brain-games/attention",
     x: "10%",
     y: "52%",
     width: "30%",
@@ -51,8 +51,8 @@ const zones: Zone[] = [
   },
   {
     id: "problem-solving",
-    label: "Problem Solving — Play Pattern Quest",
-    href: "/brain-games/pattern-quest",
+    label: "Problem Solving — Explore Problem Solving Games",
+    href: "/brain-games/problem-solving",
     x: "37%",
     y: "61%",
     width: "29%",
@@ -60,8 +60,8 @@ const zones: Zone[] = [
   },
   {
     id: "adventure",
-    label: "Adventure — Explore Hidden Numbers",
-    href: "/brain-games/hidden-numbers",
+    label: "Adventure — Explore Adventure Games",
+    href: "/brain-games/adventure",
     x: "68%",
     y: "52%",
     width: "27%",
@@ -73,7 +73,6 @@ export default function BrainGamesPage() {
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#05b8d8]">
       <section className="relative mx-auto w-full max-w-[1800px]">
-        {/* The illustrated Maldives-inspired map is the visual layer. */}
         <div className="relative aspect-[1672/940] w-full">
           <img
             src="/assets/brain-games/brain-games-map.webp"
@@ -81,7 +80,6 @@ export default function BrainGamesPage() {
             className="absolute inset-0 h-full w-full object-cover"
           />
 
-          {/* Real HTML links sit above the artwork, keeping navigation accessible. */}
           {zones.map((zone) => (
             <Link
               key={zone.id}
@@ -102,7 +100,6 @@ export default function BrainGamesPage() {
             </Link>
           ))}
 
-          {/* Small accessibility/navigation control. */}
           <Link
             href="/"
             aria-label="Back to FAHI VISSNUN home"
