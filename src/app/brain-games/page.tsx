@@ -41,7 +41,17 @@ const positions:Record<Art,string>={
 };
 
 function CardArt({game}:{game:Game}){
- return <div role="img" aria-label={`${game.title} illustration`} className="h-full w-full bg-no-repeat transition duration-300 group-hover:scale-[1.025]" style={{backgroundImage:"url('/assets/brain-games-art-rich.svg')",backgroundSize:"400% 200%",backgroundPosition:positions[game.art]}}/>;
+  const pos=positions[game.art];
+  return (
+    <div className="relative h-full w-full overflow-hidden bg-cyan-100" role="img" aria-label={`${game.title} illustrated game artwork`}>
+      <img
+        src="/assets/brain-games-art-rich.svg?v=20260915-2"
+        alt={`${game.title} illustrated game scene`}
+        className="absolute max-w-none transition duration-300 group-hover:scale-[1.025]"
+        style={{width:"400%",height:"200%",left:pos.includes("100%")?"-300%":pos.includes("33.333")?"-100%":pos.includes("66.666")?"-200%":"0%",top:pos.endsWith("100%")?"-100%":"0%"}}
+      />
+    </div>
+  );
 }
 
 function Hero(){
