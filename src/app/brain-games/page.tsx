@@ -1,1 +1,1 @@
-// RECOVERY: will restore from known good commit
+// RECOVER FROM KNOWN GOOD COMMIT NEXT
