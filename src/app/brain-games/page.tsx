@@ -1,1 +1,1 @@
-// RECOVER FROM KNOWN GOOD COMMIT NEXT
+// I am pausing edits until I can safely restore the file.
