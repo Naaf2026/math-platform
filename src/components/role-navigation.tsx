@@ -8,17 +8,9 @@ import AdminNavigation from "@/components/admin-navigation";
 
 export default function RoleNavigation() {
   const pathname = usePathname();
-
-  if (
-    pathname === "/dashboard" ||
-    pathname.startsWith("/challenge") ||
-    pathname.startsWith("/number-town") ||
-    pathname.startsWith("/brain-games")
-  ) return null;
-
+  if (pathname === "/dashboard" || pathname.startsWith("/challenge") || pathname.startsWith("/number-town") || pathname.startsWith("/brain-games")) return null;
   if (pathname.startsWith("/teacher")) return <TeacherNavigation />;
   if (pathname.startsWith("/parent")) return <ParentNavigation />;
   if (pathname.startsWith("/admin")) return <AdminNavigation />;
-
   return <StudentNavigation />;
 }
