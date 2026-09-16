@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, Brain, Lock, Play, Sparkles, Star, Zap, Trophy, Timer, Target, Crown } from "lucide-react";
+import CategoryGameIllustration from "@/components/brain-games/CategoryGameIllustration";
 
 const categories = {
   memory: {
@@ -11,10 +12,10 @@ const categories = {
     badge: "MEMORY MASTER",
     tip: "Remember it. Match it. Master it!",
     games: [
-      { title: "Memory Tiles", description: "Match each math equation with its answer.", href: "/brain-games/memory-tiles", reward: "+30 XP", active: true, emoji: "🧠", art: "🔢✨" },
-      { title: "Flash Memory", description: "Watch a number sequence and rebuild it from memory.", href: "/brain-games/flash-memory", reward: "+25 XP", active: true, emoji: "⚡", art: "👀🔢" },
-      { title: "Hidden Numbers", description: "Find and remember hidden numbers around the scene.", href: "/brain-games/hidden-numbers", reward: "+30 XP", active: false, emoji: "🔎", art: "🌴🔢" },
-      { title: "What's Missing?", description: "Remember the set and spot the missing number.", href: "/brain-games/whats-missing", reward: "+30 XP", active: false, emoji: "❓", art: "🧩🔢" },
+      { title: "Memory Tiles", description: "Match each math equation with its answer.", href: "/brain-games/memory-tiles", reward: "+30 XP", active: true, illustration: "memory" },
+      { title: "Flash Memory", description: "Watch a number sequence and rebuild it from memory.", href: "/brain-games/flash-memory", reward: "+25 XP", active: true, illustration: "flash" },
+      { title: "Hidden Numbers", description: "Find and remember hidden numbers around the scene.", href: "/brain-games/hidden-numbers", reward: "+30 XP", active: false, illustration: "hidden" },
+      { title: "What's Missing?", description: "Remember the set and spot the missing number.", href: "/brain-games/whats-missing", reward: "+30 XP", active: false, illustration: "missing" },
     ],
   },
   flexibility: {
@@ -26,8 +27,8 @@ const categories = {
     badge: "FLEX CHALLENGER",
     tip: "Change your strategy. Find a new way!",
     games: [
-      { title: "Number Order", description: "Remember the numbers and rebuild them in the correct order.", href: "/brain-games/number-order", reward: "+30 XP", active: true, emoji: "🔢", art: "1️⃣ 2️⃣ 3️⃣" },
-      { title: "Pattern Quest", description: "Discover the rule and continue the changing number pattern.", href: "/brain-games/pattern-quest", reward: "+30 XP", active: true, emoji: "🧩", art: "🔵🟡🔵" },
+      { title: "Number Order", description: "Remember the numbers and rebuild them in the correct order.", href: "/brain-games/number-order", reward: "+30 XP", active: true, illustration: "order" },
+      { title: "Pattern Quest", description: "Discover the rule and continue the changing number pattern.", href: "/brain-games/pattern-quest", reward: "+30 XP", active: true, illustration: "pattern" },
     ],
   },
   speed: {
@@ -39,7 +40,7 @@ const categories = {
     badge: "SPEED STAR",
     tip: "Think fast. Build your combo!",
     games: [
-      { title: "Number Rush", description: "Solve fast addition challenges and build your combo.", href: "/brain-games/number-rush", reward: "+40 XP", active: true, emoji: "🚀", art: "➕⚡🔢" },
+      { title: "Number Rush", description: "Solve fast addition challenges and build your combo.", href: "/brain-games/number-rush", reward: "+40 XP", active: true, illustration: "rush" },
     ],
   },
   attention: {
@@ -51,7 +52,7 @@ const categories = {
     badge: "FOCUS HERO",
     tip: "Look closely. Trust your focus!",
     games: [
-      { title: "Even or Odd", description: "Quickly identify whether each number is even or odd.", href: "/brain-games/even-odd", reward: "+30 XP", active: true, emoji: "🎯", art: "2️⃣ 5️⃣ 8️⃣" },
+      { title: "Even or Odd", description: "Quickly identify whether each number is even or odd.", href: "/brain-games/even-odd", reward: "+30 XP", active: true, illustration: "even" },
     ],
   },
   "problem-solving": {
@@ -63,8 +64,8 @@ const categories = {
     badge: "LOGIC LEGEND",
     tip: "Think differently. Crack the puzzle!",
     games: [
-      { title: "Pattern Quest", description: "Find the hidden rule and solve the next step.", href: "/brain-games/pattern-quest", reward: "+30 XP", active: true, emoji: "🧩", art: "🔺🔵⭐" },
-      { title: "What's Missing?", description: "Work out which number belongs in the missing space.", href: "/brain-games/whats-missing", reward: "+30 XP", active: false, emoji: "🔍", art: "❓➕🔢" },
+      { title: "Pattern Quest", description: "Find the hidden rule and solve the next step.", href: "/brain-games/pattern-quest", reward: "+30 XP", active: true, illustration: "pattern" },
+      { title: "What's Missing?", description: "Work out which number belongs in the missing space.", href: "/brain-games/whats-missing", reward: "+30 XP", active: false, illustration: "missing" },
     ],
   },
   adventure: {
@@ -76,7 +77,7 @@ const categories = {
     badge: "MATH EXPLORER",
     tip: "Explore. Discover. Keep going!",
     games: [
-      { title: "Hidden Numbers", description: "Explore the challenge and uncover hidden numbers.", href: "/brain-games/hidden-numbers", reward: "+30 XP", active: false, emoji: "🗺️", art: "🌴🪙🔢" },
+      { title: "Hidden Numbers", description: "Explore the challenge and uncover hidden numbers.", href: "/brain-games/hidden-numbers", reward: "+30 XP", active: false, illustration: "hidden" },
     ],
   },
 } as const;
@@ -103,14 +104,12 @@ export default async function BrainGameCategoryPage({ params }: Props) {
   return (
     <main className={`min-h-screen overflow-x-hidden bg-gradient-to-b ${category.soft} to-white px-3 py-4 text-[#17395f] sm:px-6 sm:py-6`}>
       <div className="mx-auto max-w-7xl">
-        {/* Small game navigation — intentionally much lighter than the main dashboard navigation. */}
         <header className="flex items-center justify-between rounded-[22px] border-2 border-white bg-white/85 px-3 py-2.5 shadow-sm backdrop-blur sm:px-4">
           <Link href="/brain-games" className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-sm font-black text-slate-700 transition hover:bg-slate-200"><ArrowLeft size={17} /> Brain Games</Link>
           <div className="hidden items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-500 sm:flex"><Brain size={15} /> PLAY • THINK • GROW</div>
           <Link href="/dashboard" className="rounded-full px-3 py-2 text-sm font-black text-slate-500 transition hover:bg-slate-100 hover:text-slate-800">Home</Link>
         </header>
 
-        {/* KooBits-inspired category hero: bright, playful and illustration-led without copying their artwork. */}
         <section className={`relative mt-4 overflow-hidden rounded-[34px] bg-gradient-to-br ${category.accent} px-5 py-6 text-white shadow-[0_18px_45px_rgba(56,189,248,.22)] sm:px-8 sm:py-8`}>
           <div className="pointer-events-none absolute -right-12 -top-16 h-48 w-48 rounded-full bg-white/15" />
           <div className="pointer-events-none absolute -bottom-20 right-24 h-40 w-40 rounded-full bg-yellow-300/20" />
@@ -137,7 +136,6 @@ export default async function BrainGameCategoryPage({ params }: Props) {
           </div>
         </section>
 
-        {/* Category chips make it feel like a game world rather than a plain list page. */}
         <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {categoryOrder.map((item) => {
             const selected = item === key;
@@ -155,14 +153,16 @@ export default async function BrainGameCategoryPage({ params }: Props) {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {category.games.map((game: Game) => (
               <article key={game.title} className={`group relative overflow-hidden rounded-[30px] border-4 border-white bg-white shadow-[0_10px_28px_rgba(15,23,42,.08)] transition duration-300 ${game.active ? "hover:-translate-y-2 hover:shadow-[0_20px_38px_rgba(15,23,42,.14)]" : "opacity-90"}`}>
-                <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${category.accent}`}>
+                <div className={`relative h-52 overflow-hidden bg-gradient-to-br ${category.accent}`}>
                   <div className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-white/15" />
                   <div className="absolute -bottom-14 -left-8 h-32 w-32 rounded-full bg-white/10" />
-                  <div className="absolute left-4 top-4 rounded-full bg-white/20 px-3 py-1 text-[10px] font-black tracking-wide text-white backdrop-blur">{game.active ? "READY TO PLAY" : "COMING SOON"}</div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="relative grid h-28 w-28 place-items-center rounded-[34px] border-4 border-white/70 bg-white/20 text-6xl shadow-2xl backdrop-blur transition duration-300 group-hover:scale-110 group-hover:rotate-2">{game.emoji}<span className="absolute -bottom-3 -right-5 rounded-2xl border-2 border-white/70 bg-white/90 px-2.5 py-1 text-sm font-black text-slate-700 shadow">{game.art}</span></div>
+                  <div className="absolute left-4 top-4 z-10 rounded-full bg-white/20 px-3 py-1 text-[10px] font-black tracking-wide text-white backdrop-blur">{game.active ? "READY TO PLAY" : "COMING SOON"}</div>
+                  <div className="absolute inset-0 flex items-center justify-center px-5 pt-2">
+                    <div className="h-full w-full max-w-[320px] text-white transition duration-300 group-hover:scale-[1.04] group-hover:-rotate-1">
+                      <CategoryGameIllustration type={game.illustration} />
+                    </div>
                   </div>
-                  <div className="absolute bottom-3 left-4 flex gap-1 text-white/80"><span>★</span><span>★</span><span>★</span></div>
+                  <div className="absolute bottom-3 left-4 z-10 flex gap-1 text-white/80"><span>★</span><span>★</span><span>★</span></div>
                 </div>
                 <div className="p-5">
                   <div className="flex items-start justify-between gap-3"><h3 className="text-2xl font-black text-slate-800">{game.title}</h3><span className="rounded-full bg-yellow-50 px-2.5 py-1 text-[11px] font-black text-amber-700">{game.reward}</span></div>
@@ -170,7 +170,7 @@ export default async function BrainGameCategoryPage({ params }: Props) {
                   <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full bg-gradient-to-r ${category.accent} ${game.active ? "w-[8%]" : "w-0"}`} /></div>
                   <div className="mt-4 flex items-center justify-between gap-3">
                     {game.active ? <Link href={game.href} className={`inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${category.accent} px-5 py-3.5 font-black text-white shadow-md transition hover:scale-[1.02]`}><Play size={17} fill="currentColor" /> Play Now</Link> : <span className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-slate-100 px-5 py-3.5 font-black text-slate-400"><Lock size={16} /> Coming Soon</span>}
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-slate-50 text-xl">{game.active ? "🚀" : "🔒"}</span>
+                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-slate-50 text-slate-400"><Star size={19} fill="currentColor" /></span>
                   </div>
                 </div>
               </article>
@@ -178,7 +178,12 @@ export default async function BrainGameCategoryPage({ params }: Props) {
           </div>
         </section>
 
-        <div className="mt-7 flex justify-center pb-4"><Link href="/brain-games" className="inline-flex items-center gap-2 rounded-2xl border-2 border-white bg-white px-6 py-3 font-black text-slate-600 shadow-md transition hover:-translate-y-0.5"><ArrowLeft size={18} /> Back to Brain Games Map</Link></div>
+        <section className="mt-7 rounded-[28px] border-2 border-white bg-white/80 p-5 shadow-sm backdrop-blur sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4"><div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${category.accent} text-white shadow-md`}><Crown size={27} /></div><div><div className="text-xs font-black uppercase tracking-[.16em] text-slate-400">Brain Games</div><h3 className="text-xl font-black text-slate-800">Keep your brain moving!</h3><p className="mt-1 text-sm font-semibold text-slate-500">Play a little every day and build your math thinking skills.</p></div></div>
+            <Link href="/brain-games" className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 font-black text-white transition hover:scale-[1.02]">Back to Brain Games</Link>
+          </div>
+        </section>
       </div>
     </main>
   );
