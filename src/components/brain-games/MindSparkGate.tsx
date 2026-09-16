@@ -8,7 +8,6 @@ type StartResult = { session_id: string; game_key: string; cost: number; charged
 type TimerStatus = { seconds_remaining: number; seconds_used: number; daily_limit_seconds: number };
 type Props = { gameKey: string; gameTitle: string; onStarted: (result: StartResult) => void | Promise<void>; children: React.ReactNode; className?: string };
 
-// All catalog Brain Games use the same simple 3 Mind Sparks entry cost.
 const COSTS: Record<string, number> = {
   "memory-master": 3, "brain-flash-memory": 3, "flash-memory": 3, memory: 3,
   "number-sequence": 3, "brain-number-order": 3, "number-order": 3,
@@ -33,8 +32,7 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
     try {
       const supabase = createClient();
       const [{ data, error: rpcError }, { data: timerData, error: timerError }] = await Promise.all([
-        supabase.rpc("get_mind_spark_status"),
-        supabase.rpc("get_brain_game_timer_status"),
+        supabase.rpc("get_mind_spark_status"), supabase.rpc("get_brain_game_timer_status"),
       ]);
       if (rpcError) throw rpcError;
       if (timerError) throw timerError;
@@ -56,12 +54,13 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
       if (rpcError) throw rpcError;
       const row = (Array.isArray(data) ? data[0] : data) as StartResult | null;
       if (!row) throw new Error("The game could not be started.");
+      window.localStorage.setItem("brain_game_active_session", row.session_id);
       setOpen(false); await onStarted(row);
     } catch (e: any) { setError(e?.message || "The game could not be started."); }
     finally { setLoading(false); }
   };
 
-  const cost = 3;
+  const cost = COSTS[gameKey] ?? 3;
   const free = Boolean(status?.free_play_available);
   const balance = status?.balance ?? 0;
   const insufficient = !free && balance < cost;
@@ -78,10 +77,7 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
         </div>
         <div className="p-6 text-center">
           <div className="mb-4 rounded-2xl bg-cyan-50 p-4"><div className="flex items-center justify-center gap-2 text-xs font-black text-slate-400"><Clock3 size={14}/> BRAIN TIME LEFT</div><div className="mt-1 text-3xl font-black text-cyan-700">{formatTime(timer.seconds_remaining)}</div><div className="mt-1 text-[10px] font-bold text-slate-400">30 minutes available each day</div></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl bg-purple-50 p-4"><div className="text-xs font-black text-slate-400">YOUR SPARKS</div><div className="mt-1 text-2xl font-black text-purple-700">✨ {balance}</div></div>
-            <div className="rounded-2xl bg-cyan-50 p-4"><div className="text-xs font-black text-slate-400">PLAY COST</div><div className="mt-1 text-2xl font-black text-cyan-700">{free ? "FREE" : `✨ ${cost}`}</div></div>
-          </div>
+          <div className="grid grid-cols-2 gap-3"><div className="rounded-2xl bg-purple-50 p-4"><div className="text-xs font-black text-slate-400">YOUR SPARKS</div><div className="mt-1 text-2xl font-black text-purple-700">✨ {balance}</div></div><div className="rounded-2xl bg-cyan-50 p-4"><div className="text-xs font-black text-slate-400">PLAY COST</div><div className="mt-1 text-2xl font-black text-cyan-700">{free ? "FREE" : `✨ ${cost}`}</div></div></div>
           {!free && <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 font-bold text-slate-600">After playing: <span className="font-black text-slate-900">✨ {Math.max(0, balance - cost)}</span> Mind Sparks</div>}
           {free ? <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 font-black text-emerald-700">🎁 Daily Free Play available!</div> : <p className="mt-4 font-semibold text-slate-500">3 Mind Sparks are used to enter Brain Games.</p>}
           {timeFinished && <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 font-black text-rose-700">⏰ Your 30-minute Brain Time is finished for today.</div>}
