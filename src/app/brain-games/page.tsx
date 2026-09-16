@@ -41,22 +41,24 @@ export default function BrainGamesPage() {
   }, []);
 
   return <main className="min-h-screen overflow-x-hidden bg-[#05b8d8]">
-    {/* Compact phone-only experience. Desktop map remains unchanged below. */}
-    <section className="min-h-screen bg-gradient-to-b from-sky-100 via-cyan-50 to-white px-3 pb-5 pt-3 md:hidden">
-      <div className="mx-auto max-w-md">
-        <div className="mb-3 flex items-center justify-between rounded-2xl bg-white/95 px-3 py-2 shadow-sm ring-1 ring-sky-100">
-          <Link href="/" aria-label="Back to home" className="grid h-8 w-8 place-items-center rounded-full bg-slate-800 text-xl leading-none text-white">‹</Link>
-          <div className="text-center leading-tight"><div className="text-[10px] font-black uppercase tracking-[0.18em] text-sky-500">Brain Games</div><div className="text-lg font-black text-slate-800">Pick Your Challenge! 🎮</div></div>
-          <div className="flex flex-col items-center rounded-xl bg-slate-800 px-2 py-1 text-white"><span className="text-[9px] font-bold text-white/70">SPARKS</span><span className="text-[11px] font-black">✨ {mindSparks === null ? "—" : mindSparks}</span></div>
+    {/* Compact phone-only experience using the same Brain Games world background as desktop. */}
+    <section className="relative min-h-screen overflow-hidden px-3 pb-5 pt-3 md:hidden">
+      <img src="/assets/brain-games/brain-games-map.webp" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center" />
+      <div className="absolute inset-0 bg-slate-950/20" aria-hidden="true" />
+      <div className="relative z-10 mx-auto max-w-md">
+        <div className="mb-3 flex items-center justify-between rounded-2xl border border-white/60 bg-[#062b57]/85 px-3 py-2 text-white shadow-xl backdrop-blur-md">
+          <Link href="/" aria-label="Back to home" className="grid h-8 w-8 place-items-center rounded-full bg-white/20 text-xl leading-none text-white ring-1 ring-white/30 transition active:scale-95">‹</Link>
+          <div className="text-center leading-tight"><div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200">Brain Games</div><div className="text-lg font-black text-white">Pick Your Challenge! 🎮</div></div>
+          <div className="flex flex-col items-center rounded-xl bg-white/15 px-2 py-1 ring-1 ring-white/20"><span className="text-[9px] font-bold text-white/70">SPARKS</span><span className="text-[11px] font-black">✨ {mindSparks === null ? "—" : mindSparks}</span></div>
         </div>
-        <div className="mb-3 flex items-center justify-center gap-2 text-[11px] font-extrabold text-slate-500"><Clock3 size={13} /> {brainTime === null ? "--:--" : formatTime(brainTime)} Brain Time</div>
+        <div className="mb-3 flex items-center justify-center gap-2 text-[11px] font-extrabold text-white drop-shadow-md"><Clock3 size={13} /> {brainTime === null ? "--:--" : formatTime(brainTime)} Brain Time</div>
         <div className="grid grid-cols-2 gap-2.5">
-          {mobileCards.map(([id, name, emoji, href, image]) => <Link key={id} href={href} className="group overflow-hidden rounded-2xl bg-white p-2 shadow-md ring-1 ring-slate-100 transition active:scale-[.98]">
-            <div className="relative h-[108px] overflow-hidden rounded-xl bg-sky-50"><img src={image} alt="" className="h-full w-full object-contain transition duration-200 group-hover:scale-105" /><span className="absolute left-1.5 top-1.5 rounded-full bg-white/95 px-1.5 py-1 text-sm shadow-sm">{emoji}</span></div>
+          {mobileCards.map(([id, name, emoji, href, image]) => <Link key={id} href={href} className="group overflow-hidden rounded-2xl border border-white/70 bg-white/90 p-2 shadow-xl backdrop-blur-sm transition active:scale-[.98]">
+            <div className="relative h-[108px] overflow-hidden rounded-xl bg-white/70"><img src={image} alt="" className="h-full w-full object-contain transition duration-200 group-hover:scale-105" /><span className="absolute left-1.5 top-1.5 rounded-full bg-white/95 px-1.5 py-1 text-sm shadow-sm">{emoji}</span></div>
             <div className="flex items-center justify-between gap-1 px-1 pt-2"><span className="truncate text-[13px] font-black text-slate-800">{name}</span><span className="shrink-0 rounded-full bg-sky-500 px-2 py-1 text-[9px] font-black text-white">PLAY</span></div>
           </Link>)}
         </div>
-        {freePlayAvailable && <div className="mt-3 rounded-xl bg-white px-3 py-2 text-center text-[11px] font-extrabold text-slate-600 shadow-sm">🎁 Free Play available</div>}
+        {freePlayAvailable && <div className="mt-3 rounded-xl border border-white/60 bg-white/90 px-3 py-2 text-center text-[11px] font-extrabold text-slate-700 shadow-lg backdrop-blur-sm">🎁 Free Play available</div>}
       </div>
     </section>
 
