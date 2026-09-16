@@ -20,12 +20,13 @@ export default function MemoryPage() {
       <div className="mx-auto max-w-6xl">
         <header className="flex h-8 items-center justify-between px-1">
           <Link href="/brain-games" className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-black text-slate-500 hover:bg-white"><ArrowLeft size={13} /> Brain Games</Link>
-          <div className="text-[10px] font-black tracking-widest text-violet-500">MEMORY ✨</div>
           <Link href="/dashboard" className="rounded-full px-2 py-1 text-[10px] font-black text-slate-500 hover:bg-white">Home</Link>
         </header>
 
-        <section className="px-1 pb-2 pt-0.5 text-center sm:pb-2.5">
-          <h1 className="text-lg font-black leading-tight text-slate-800 sm:text-xl">🧠 MEMORY</h1>
+        <section className="relative px-1 pb-3 pt-1 text-center sm:pb-4 sm:pt-1.5">
+          <div className="pointer-events-none absolute left-[18%] top-1 text-lg text-pink-400 sm:text-xl">✦</div>
+          <div className="pointer-events-none absolute right-[18%] top-3 text-sm text-amber-400 sm:text-lg">✦</div>
+          <h1 className="text-3xl font-black leading-none tracking-tight text-violet-600 drop-shadow-[0_2px_0_rgba(255,255,255,.9)] sm:text-4xl md:text-5xl">🧠 MEMORY</h1>
         </section>
 
         <nav className="flex gap-1.5 overflow-x-auto border-y border-sky-100 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
