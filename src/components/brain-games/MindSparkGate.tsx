@@ -25,21 +25,12 @@ function formatTime(seconds: number) {
 async function getAuthenticatedClient() {
   const supabase = createClient();
   if (!supabase) throw new Error("Supabase is not configured yet.");
-
-  // The dashboard can already be signed in while the browser client is still
-  // restoring its persisted session after navigation. Give it a moment, then
-  // refresh the session once before calling SECURITY DEFINER RPCs that depend
-  // on auth.uid().
   let { data: { session } } = await supabase.auth.getSession();
   if (!session) {
     const refreshed = await supabase.auth.refreshSession();
     session = refreshed.data.session;
   }
-
-  if (!session) {
-    throw new Error("Your student session has expired. Please sign in again.");
-  }
-
+  if (!session) throw new Error("Your student session has expired. Please sign in again.");
   return supabase;
 }
 
@@ -65,7 +56,7 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
       setTimer({ seconds_remaining: Number(timerRow?.seconds_remaining ?? 0), seconds_used: Number(timerRow?.seconds_used ?? 0), daily_limit_seconds: Number(timerRow?.daily_limit_seconds ?? 1800) });
       setOpen(true);
     } catch (e: any) {
-      const message = String(e?.message || "Unable to load Brain Time.");
+      const message = String(e?.message || "Unable to load Mind Time.");
       setError(message.toLowerCase().includes("not authenticated") ? "Your student session has expired. Please sign in again." : message);
     } finally { setLoading(false); }
   };
@@ -74,7 +65,7 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
     setError(null); setLoading(true);
     try {
       const supabase = await getAuthenticatedClient();
-      if ((timer?.seconds_remaining ?? 0) <= 0) throw new Error("Your 30-minute Brain Time is finished for today. Come back tomorrow!");
+      if ((timer?.seconds_remaining ?? 0) <= 0) throw new Error("Your 30-minute Mind Time is finished for today. Come back tomorrow!");
       const { data, error: rpcError } = await supabase.rpc("start_brain_game", { p_game_key: gameKey });
       if (rpcError) throw rpcError;
       const row = (Array.isArray(data) ? data[0] : data) as StartResult | null;
@@ -92,25 +83,57 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
   const balance = status?.balance ?? 0;
   const insufficient = !free && balance < cost;
   const timeFinished = (timer?.seconds_remaining ?? 0) <= 0;
+  const canPlay = !loading && !insufficient && !timeFinished;
 
   return <>
     <button type="button" onClick={prepare} disabled={loading} className={className}>{loading ? "Loading…" : children}</button>
-    {open && status && timer && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">
-      <div className="w-full max-w-md overflow-hidden rounded-[30px] border-4 border-white bg-white shadow-2xl">
-        <div className="bg-gradient-to-br from-cyan-500 via-blue-600 to-purple-600 p-6 text-center text-white">
-          <button type="button" onClick={() => setOpen(false)} className="float-right rounded-full bg-white/15 p-2" aria-label="Close"><X size={18}/></button>
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-white/15 text-3xl"><Sparkles/></div>
-          <h2 className="mt-3 text-2xl font-black">Ready to play?</h2><p className="mt-1 font-bold text-white/85">{gameTitle}</p>
+    {open && status && timer && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">
+      <div className="w-full max-w-[430px] overflow-hidden rounded-[28px] border-4 border-white bg-white shadow-2xl">
+        <div className="relative bg-gradient-to-br from-cyan-500 via-blue-600 to-violet-600 px-6 pb-5 pt-6 text-center text-white">
+          <button type="button" onClick={() => setOpen(false)} className="absolute right-4 top-4 rounded-full bg-white/15 p-2 transition hover:bg-white/25" aria-label="Close"><X size={18}/></button>
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-2xl shadow-lg">✨</div>
+          <h2 className="mt-3 text-[23px] font-black tracking-tight">Ready to play?</h2>
+          <p className="mt-1 truncate px-6 font-bold text-white/90">{gameTitle}</p>
         </div>
-        <div className="p-6 text-center">
-          <div className="mb-4 rounded-2xl bg-cyan-50 p-4"><div className="flex items-center justify-center gap-2 text-xs font-black text-slate-400"><Clock3 size={14}/> BRAIN TIME LEFT</div><div className="mt-1 text-3xl font-black text-cyan-700">{formatTime(timer.seconds_remaining)}</div><div className="mt-1 text-[10px] font-bold text-slate-400">30 minutes available each day</div></div>
-          <div className="grid grid-cols-2 gap-3"><div className="rounded-2xl bg-purple-50 p-4"><div className="text-xs font-black text-slate-400">YOUR SPARKS</div><div className="mt-1 text-2xl font-black text-purple-700">✨ {balance}</div></div><div className="rounded-2xl bg-cyan-50 p-4"><div className="text-xs font-black text-slate-400">PLAY COST</div><div className="mt-1 text-2xl font-black text-cyan-700">{free ? "FREE" : `✨ ${cost}`}</div></div></div>
-          {!free && <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 font-bold text-slate-600">After playing: <span className="font-black text-slate-900">✨ {Math.max(0, balance - cost)}</span> Mind Sparks</div>}
-          {free ? <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 font-black text-emerald-700">🎁 Daily Free Play available!</div> : <p className="mt-4 font-semibold text-slate-500">3 Mind Sparks are used to enter Brain Games.</p>}
-          {timeFinished && <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 font-black text-rose-700">⏰ Your 30-minute Brain Time is finished for today.</div>}
-          {insufficient && !timeFinished && <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 font-black text-rose-700">Not enough Mind Sparks. You need 3 to play.</div>}
-          {error && <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700">{error}</div>}
-          <div className="mt-5 flex gap-3"><button type="button" onClick={() => setOpen(false)} className="flex-1 rounded-2xl bg-slate-100 px-4 py-3 font-black text-slate-700">Cancel</button><button type="button" onClick={start} disabled={loading || insufficient || timeFinished} className="flex-1 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 font-black text-white disabled:cursor-not-allowed disabled:opacity-50"><Zap className="mr-1 inline" size={17}/> {loading ? "Starting…" : "Play Now"}</button></div>
+
+        <div className="p-5 sm:p-6">
+          {free ? (
+            <div className="rounded-2xl border-2 border-emerald-100 bg-emerald-50 px-4 py-4 text-center">
+              <div className="text-lg font-black text-emerald-700">🎁 You have 1 free game play today!</div>
+              <p className="mt-1 text-sm font-bold text-emerald-600">Ready to play?</p>
+            </div>
+          ) : (
+            <div className="rounded-2xl border-2 border-purple-100 bg-purple-50 px-4 py-4 text-center">
+              <div className="text-base font-black leading-snug text-purple-800">✨ It takes {cost} Mind Sparks to play this game for today.</div>
+              <p className="mt-1 text-sm font-bold text-purple-600">Continue?</p>
+            </div>
+          )}
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-2xl bg-slate-50 px-3 py-3 text-center">
+              <div className="text-[10px] font-black tracking-wide text-slate-400">MIND SPARKS</div>
+              <div className="mt-1 text-xl font-black text-purple-700">✨ {balance}</div>
+            </div>
+            <div className="rounded-2xl bg-cyan-50 px-3 py-3 text-center">
+              <div className="flex items-center justify-center gap-1 text-[10px] font-black tracking-wide text-slate-400"><Clock3 size={12}/> MIND TIME</div>
+              <div className="mt-1 text-xl font-black text-cyan-700">{formatTime(timer.seconds_remaining)}</div>
+            </div>
+          </div>
+
+          {!free && <div className="mt-3 text-center text-xs font-bold text-slate-400">After playing: <span className="font-black text-slate-600">✨ {Math.max(0, balance - cost)}</span> Mind Sparks</div>}
+          {timeFinished && <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-center text-sm font-black text-rose-700">⏰ Your 30-minute Mind Time is finished for today.</div>}
+          {insufficient && !timeFinished && <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-center text-sm font-black text-rose-700">Not enough Mind Sparks. You need {cost} to play.</div>}
+          {error && <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-center text-sm font-bold text-rose-700">{error}</div>}
+
+          <div className="mt-5 grid grid-cols-1 gap-2.5">
+            <button type="button" onClick={start} disabled={!canPlay} className="order-1 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-violet-600 px-4 py-3.5 text-base font-black text-white shadow-lg shadow-blue-200 transition active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50">
+              {free ? "YES, LET'S PLAY!" : "✨ YES, LET'S PLAY!"}
+            </button>
+            <button type="button" onClick={start} disabled={!canPlay || free} className="order-2 rounded-2xl border-2 border-purple-200 bg-white px-4 py-3 font-black text-purple-700 transition hover:bg-purple-50 disabled:cursor-not-allowed disabled:opacity-45">
+              🔓 Unlock &amp; Play
+            </button>
+            <button type="button" onClick={() => setOpen(false)} className="order-3 rounded-2xl px-4 py-2.5 font-black text-slate-400 transition hover:bg-slate-50 hover:text-slate-600">CANCEL</button>
+          </div>
         </div>
       </div>
     </div>}
