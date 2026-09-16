@@ -14,12 +14,33 @@ const COSTS: Record<string, number> = {
   "speed-quiz": 3, "number-rush": 3, unscramble: 3,
   "pattern-master": 3, "brain-pattern-quest": 3, "pattern-quest": 3,
   "memory-cards": 3, "memory-tiles": 3, "word-search": 3, "fill-blanks": 3,
-  "whats-inside": 3,
+  "whats-inside": 3, "hidden-numbers": 3,
 };
 
 function formatTime(seconds: number) {
   const safe = Math.max(0, Math.floor(seconds));
   return `${Math.floor(safe / 60).toString().padStart(2, "0")}:${(safe % 60).toString().padStart(2, "0")}`;
+}
+
+async function getAuthenticatedClient() {
+  const supabase = createClient();
+  if (!supabase) throw new Error("Supabase is not configured yet.");
+
+  // The dashboard can already be signed in while the browser client is still
+  // restoring its persisted session after navigation. Give it a moment, then
+  // refresh the session once before calling SECURITY DEFINER RPCs that depend
+  // on auth.uid().
+  let { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    const refreshed = await supabase.auth.refreshSession();
+    session = refreshed.data.session;
+  }
+
+  if (!session) {
+    throw new Error("Your student session has expired. Please sign in again.");
+  }
+
+  return supabase;
 }
 
 export default function MindSparkGate({ gameKey, gameTitle, onStarted, children, className }: Props) {
@@ -31,7 +52,7 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
   const prepare = async () => {
     setError(null); setLoading(true);
     try {
-      const supabase = createClient();
+      const supabase = await getAuthenticatedClient();
       const [{ data, error: rpcError }, { data: timerData, error: timerError }] = await Promise.all([
         supabase.rpc("get_mind_spark_status"), supabase.rpc("get_brain_game_timer_status"),
       ]);
@@ -43,22 +64,27 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
       setStatus({ balance: Number(row.balance ?? 0), free_play_available: Boolean(row.free_play_available) });
       setTimer({ seconds_remaining: Number(timerRow?.seconds_remaining ?? 0), seconds_used: Number(timerRow?.seconds_used ?? 0), daily_limit_seconds: Number(timerRow?.daily_limit_seconds ?? 1800) });
       setOpen(true);
-    } catch (e: any) { setError(e?.message || "Unable to load Brain Time."); }
-    finally { setLoading(false); }
+    } catch (e: any) {
+      const message = String(e?.message || "Unable to load Brain Time.");
+      setError(message.toLowerCase().includes("not authenticated") ? "Your student session has expired. Please sign in again." : message);
+    } finally { setLoading(false); }
   };
 
   const start = async () => {
     setError(null); setLoading(true);
     try {
+      const supabase = await getAuthenticatedClient();
       if ((timer?.seconds_remaining ?? 0) <= 0) throw new Error("Your 30-minute Brain Time is finished for today. Come back tomorrow!");
-      const { data, error: rpcError } = await createClient().rpc("start_brain_game", { p_game_key: gameKey });
+      const { data, error: rpcError } = await supabase.rpc("start_brain_game", { p_game_key: gameKey });
       if (rpcError) throw rpcError;
       const row = (Array.isArray(data) ? data[0] : data) as StartResult | null;
       if (!row) throw new Error("The game could not be started.");
       window.localStorage.setItem("brain_game_active_session", row.session_id);
       setOpen(false); await onStarted(row);
-    } catch (e: any) { setError(e?.message || "The game could not be started."); }
-    finally { setLoading(false); }
+    } catch (e: any) {
+      const message = String(e?.message || "The game could not be started.");
+      setError(message.toLowerCase().includes("not authenticated") ? "Your student session has expired. Please sign in again." : message);
+    } finally { setLoading(false); }
   };
 
   const cost = COSTS[gameKey] ?? 3;
