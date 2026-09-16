@@ -47,7 +47,7 @@ export default function HomePage() {
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <Link href="/dashboard" className="hidden rounded-xl px-3 py-2 text-sm font-bold text-[#5B5CE2] transition hover:bg-[#F0F0FF] sm:inline-flex">Dashboard</Link>
-            <button type="button" onClick={() => setLoginOpen(true)} className="rounded-xl bg-[#20265B] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#20265B]/15 transition hover:-translate-y-0.5 hover:bg-[#303878]">Learner Login</button>
+            <button type="button" onClick={() => setLoginOpen(true)} className="rounded-xl bg-[#20265B] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-[#20265B]/15 transition hover:-translate-y-0.5 hover:bg-[#303878]">Login</button>
           </div>
         </div>
       </header>
