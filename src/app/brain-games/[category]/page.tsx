@@ -4,7 +4,7 @@ import CategoryGameIllustration from "@/components/brain-games/CategoryGameIllus
 
 const categories = {
   memory: {
-    title: "Memory",
+    title: "Brain Boost",
     subtitle: "Train your memory by remembering numbers, equations and patterns.",
     icon: "🧠",
     accent: "from-violet-500 via-purple-500 to-indigo-600",
@@ -19,7 +19,7 @@ const categories = {
     ],
   },
   flexibility: {
-    title: "Flexibility",
+    title: "Brain Twist",
     subtitle: "Switch strategies, compare choices and arrange numbers in new ways.",
     icon: "🔄",
     accent: "from-emerald-400 via-teal-500 to-cyan-600",
@@ -32,7 +32,7 @@ const categories = {
     ],
   },
   speed: {
-    title: "Speed",
+    title: "Speed Rush",
     subtitle: "Think quickly and solve number challenges before the clock runs out.",
     icon: "⚡",
     accent: "from-orange-400 via-amber-500 to-rose-500",
@@ -44,7 +44,7 @@ const categories = {
     ],
   },
   attention: {
-    title: "Attention",
+    title: "Spot On!",
     subtitle: "Focus carefully, spot details and make accurate decisions.",
     icon: "🎯",
     accent: "from-cyan-400 via-sky-500 to-blue-600",
@@ -56,7 +56,7 @@ const categories = {
     ],
   },
   "problem-solving": {
-    title: "Problem Solving",
+    title: "Puzzle Power",
     subtitle: "Use logic, patterns and mathematical thinking to crack each challenge.",
     icon: "🧩",
     accent: "from-fuchsia-500 via-purple-500 to-violet-600",
@@ -69,7 +69,7 @@ const categories = {
     ],
   },
   adventure: {
-    title: "Adventure",
+    title: "Brain Quest",
     subtitle: "Explore playful mathematical challenges and discover what comes next.",
     icon: "🗺️",
     accent: "from-sky-400 via-cyan-500 to-teal-500",
