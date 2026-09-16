@@ -14,6 +14,7 @@ const COSTS: Record<string, number> = {
   "speed-quiz": 3, "number-rush": 3, unscramble: 3,
   "pattern-master": 3, "brain-pattern-quest": 3, "pattern-quest": 3,
   "memory-cards": 3, "memory-tiles": 3, "word-search": 3, "fill-blanks": 3,
+  "whats-inside": 3,
 };
 
 function formatTime(seconds: number) {
