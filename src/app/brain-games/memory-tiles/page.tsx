@@ -4,151 +4,21 @@ import Link from "next/link";
 import { ArrowLeft, Brain, CheckCircle2, Coins, Home, RotateCcw, Sparkles, Star, Trophy, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import MindSparkGate from "@/components/brain-games/MindSparkGate";
 
 type Card = { id: number; pair: string; value: string; matched: boolean; flipped: boolean };
-
-const PAIRS = [
-  ["3 + 2", "5"],
-  ["4 + 4", "8"],
-  ["6 - 2", "4"],
-  ["2 + 7", "9"],
-  ["10 - 3", "7"],
-  ["5 + 5", "10"],
-];
-
-function makeCards(): Card[] {
-  return PAIRS.flatMap(([question, answer], pairIndex) => [
-    { id: pairIndex * 2, pair: String(pairIndex), value: question, matched: false, flipped: false },
-    { id: pairIndex * 2 + 1, pair: String(pairIndex), value: answer, matched: false, flipped: false },
-  ]).sort(() => Math.random() - 0.5);
-}
-
+const PAIRS = [["3 + 2", "5"],["4 + 4", "8"],["6 - 2", "4"],["2 + 7", "9"],["10 - 3", "7"],["5 + 5", "10"]];
+function makeCards(): Card[] { return PAIRS.flatMap(([question, answer], pairIndex) => [{ id: pairIndex * 2, pair: String(pairIndex), value: question, matched: false, flipped: false },{ id: pairIndex * 2 + 1, pair: String(pairIndex), value: answer, matched: false, flipped: false }]).sort(() => Math.random() - 0.5); }
 export default function MemoryTilesPage() {
-  const [cards, setCards] = useState<Card[]>(makeCards);
-  const [flipped, setFlipped] = useState<number[]>([]);
-  const [moves, setMoves] = useState(0);
-  const [matches, setMatches] = useState(0);
-  const [time, setTime] = useState(60);
-  const [started, setStarted] = useState(false);
-  const [finished, setFinished] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [reward, setReward] = useState<{ xp: number; coins: number; stars: number } | null>(null);
-
-  const totalPairs = PAIRS.length;
-  const progress = Math.round((matches / totalPairs) * 100);
-
-  useEffect(() => {
-    if (!started || finished) return;
-    const timer = window.setInterval(() => setTime((t) => Math.max(0, t - 1)), 1000);
-    return () => window.clearInterval(timer);
-  }, [started, finished]);
-
-  useEffect(() => {
-    if (!started || finished || time > 0) return;
-    finishGame();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [time]);
-
-  useEffect(() => {
-    if (started && matches === totalPairs && !finished) finishGame();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matches]);
-
-  useEffect(() => {
-    if (flipped.length !== 2) return;
-    const [firstId, secondId] = flipped;
-    const first = cards.find((c) => c.id === firstId);
-    const second = cards.find((c) => c.id === secondId);
-    if (!first || !second) return;
-    const isMatch = first.pair === second.pair;
-    const timer = window.setTimeout(() => {
-      if (isMatch) {
-        setCards((current) => current.map((c) => c.id === firstId || c.id === secondId ? { ...c, matched: true, flipped: true } : c));
-        setMatches((m) => m + 1);
-      } else {
-        setCards((current) => current.map((c) => c.id === firstId || c.id === secondId ? { ...c, flipped: false } : c));
-      }
-      setFlipped([]);
-    }, isMatch ? 350 : 750);
-    return () => window.clearTimeout(timer);
-  }, [flipped, cards]);
-
-  const finishGame = async () => {
-    if (finished) return;
-    setFinished(true);
-    setFlipped([]);
-    setSaving(true);
-    const score = matches;
-    try {
-      const supabase = createClient();
-      const { data } = await supabase.rpc("complete_brain_game", {
-        p_game_key: "memory-tiles",
-        p_score: score,
-        p_total: totalPairs,
-        p_combo: Math.max(0, totalPairs - moves + 1),
-      });
-      const row = Array.isArray(data) ? data[0] : data;
-      if (row) setReward({ xp: row.xp ?? score * 10, coins: row.coins ?? score * 2, stars: row.stars ?? (score >= 6 ? 3 : score >= 4 ? 2 : score > 0 ? 1 : 0) });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const start = () => {
-    setCards(makeCards());
-    setFlipped([]);
-    setMoves(0);
-    setMatches(0);
-    setTime(60);
-    setReward(null);
-    setFinished(false);
-    setStarted(true);
-  };
-
-  const flipCard = (id: number) => {
-    if (!started || finished || flipped.length >= 2) return;
-    const card = cards.find((c) => c.id === id);
-    if (!card || card.flipped || card.matched) return;
-    setCards((current) => current.map((c) => c.id === id ? { ...c, flipped: true } : c));
-    setFlipped((current) => [...current, id]);
-    setMoves((m) => m + 1);
-  };
-
-  const stars = reward?.stars ?? 0;
-  const message = matches === totalPairs ? "Amazing memory! You found every pair." : "Great thinking! Try again and beat your time.";
-
-  return (
-    <main className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_10%_8%,#fff59a,transparent_20%),radial-gradient(circle_at_90%_15%,#b9f5ff,transparent_24%),linear-gradient(135deg,#effcff,#eef7ff_45%,#f9efff)] px-3 py-4 text-[#12375d] sm:px-6 sm:py-6">
-      <div className="mx-auto max-w-6xl">
-        <header className="flex items-center justify-between rounded-[24px] border-4 border-white bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 px-3 py-3 text-white shadow-xl sm:px-5">
-          <Link href="/brain-games" className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-2 font-black"><ArrowLeft size={18}/> Brain Games</Link>
-          <div className="hidden items-center gap-2 rounded-full bg-white/15 px-4 py-2 font-black sm:flex"><Brain size={18}/> MEMORY LAB</div>
-          <Link href="/dashboard" className="rounded-full bg-white/15 p-2.5"><Home size={19}/></Link>
-        </header>
-
-        <section className="mt-5 rounded-[34px] border-4 border-white bg-gradient-to-br from-cyan-500 via-sky-500 to-blue-700 p-5 text-white shadow-[0_20px_55px_rgba(14,165,233,.25)] sm:p-8">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div><div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-black"><Sparkles size={15}/> MEMORY • ATTENTION</div><h1 className="mt-2 text-4xl font-black sm:text-6xl">Memory Tiles 🧠</h1><p className="mt-2 max-w-2xl font-bold text-white/90">Flip the tiles, remember the math, and match each equation with its answer.</p></div>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3"><div className="rounded-2xl bg-white/15 p-3 text-center"><Zap className="mx-auto" size={19}/><b className="mt-1 block text-xl">{time}s</b><span className="text-[10px] font-bold">TIME</span></div><div className="rounded-2xl bg-white/15 p-3 text-center"><Brain className="mx-auto" size={19}/><b className="mt-1 block text-xl">{matches}/{totalPairs}</b><span className="text-[10px] font-bold">MATCHES</span></div><div className="rounded-2xl bg-white/15 p-3 text-center"><Trophy className="mx-auto" size={19}/><b className="mt-1 block text-xl">{moves}</b><span className="text-[10px] font-bold">MOVES</span></div></div>
-          </div>
-          <div className="mt-5 h-3 overflow-hidden rounded-full bg-white/20"><div className="h-full rounded-full bg-yellow-300 transition-all duration-300" style={{ width: `${progress}%` }}/></div>
-        </section>
-
-        {!started && !finished && <section className="mt-6 rounded-[32px] border-4 border-white bg-white p-7 text-center shadow-xl sm:p-10"><div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[26px] bg-cyan-100 text-5xl">🧠</div><h2 className="mt-4 text-3xl font-black">Ready to test your memory?</h2><p className="mx-auto mt-2 max-w-xl font-semibold text-slate-500">You have 60 seconds. Match every math equation to its correct number. Fewer moves and faster time means a better brain score!</p><button onClick={start} className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-lg font-black text-white shadow-lg transition hover:scale-105"><Zap size={20} fill="currentColor"/> Start Game</button></section>}
-
-        {started && !finished && <section className="mt-6 rounded-[32px] border-4 border-white bg-gradient-to-br from-cyan-50 via-white to-blue-50 p-4 shadow-xl sm:p-7">
-          <div className="mx-auto grid max-w-3xl grid-cols-3 gap-3 sm:grid-cols-4">
-            {cards.map((card) => <button key={card.id} aria-label="memory tile" onClick={() => flipCard(card.id)} className={`relative aspect-square rounded-[20px] border-4 transition-all duration-200 [perspective:800px] ${card.matched ? "border-emerald-300 bg-emerald-100" : card.flipped ? "border-cyan-300 bg-white shadow-lg scale-[1.02]" : "border-white bg-gradient-to-br from-blue-500 to-indigo-700 shadow-md hover:-translate-y-1 hover:shadow-xl"}`}>
-              <span className="absolute inset-0 flex items-center justify-center p-2 text-center text-xl font-black sm:text-2xl">{card.flipped || card.matched ? card.value : "?"}</span>
-              {!card.flipped && !card.matched && <span className="absolute inset-0 flex items-center justify-center text-4xl text-white/90">✦</span>}
-              {card.matched && <CheckCircle2 className="absolute right-2 top-2 text-emerald-600" size={19}/>} 
-            </button>)}
-          </div>
-          <div className="mt-5 text-center text-sm font-black text-slate-500">💡 Find the matching pair: <span className="text-cyan-600">equation ↔ answer</span></div>
-        </section>}
-
-        {finished && <section className="mt-6 rounded-[34px] border-4 border-white bg-white p-7 text-center shadow-xl sm:p-10"><div className="text-6xl">{matches === totalPairs ? "🏆" : "🧠"}</div><h2 className="mt-3 text-4xl font-black">{matches === totalPairs ? "Memory Master!" : "Time's Up!"}</h2><p className="mt-2 font-semibold text-slate-500">{message}</p><div className="mx-auto mt-6 grid max-w-xl grid-cols-3 gap-3"><div className="rounded-2xl bg-cyan-50 p-4"><b className="block text-2xl text-cyan-700">{matches}/{totalPairs}</b><span className="text-xs font-black text-slate-500">MATCHES</span></div><div className="rounded-2xl bg-yellow-50 p-4"><b className="block text-2xl text-amber-600">{stars}/3</b><span className="text-xs font-black text-slate-500">STARS</span></div><div className="rounded-2xl bg-purple-50 p-4"><b className="block text-2xl text-purple-600">{moves}</b><span className="text-xs font-black text-slate-500">MOVES</span></div></div><div className="mt-6 flex flex-wrap justify-center gap-3"><div className="rounded-full bg-orange-50 px-5 py-3 font-black text-orange-700"><Coins className="mr-1 inline" size={17}/> +{reward?.coins ?? 0} Coins</div><div className="rounded-full bg-blue-50 px-5 py-3 font-black text-blue-700"><Zap className="mr-1 inline" size={17}/> +{reward?.xp ?? 0} XP</div><div className="rounded-full bg-yellow-50 px-5 py-3 font-black text-yellow-700"><Star className="mr-1 inline" size={17} fill="currentColor"/> {saving ? "Saving..." : "Reward saved"}</div></div><div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row"><button onClick={start} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-7 py-4 font-black text-white shadow-lg hover:scale-105"><RotateCcw size={19}/> Play Again</button><Link href="/brain-games" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-100 px-7 py-4 font-black text-slate-700"><ArrowLeft size={19}/> Brain Games</Link></div></section>}
-      </div>
-    </main>
-  );
+  const [cards, setCards] = useState<Card[]>(makeCards), [flipped, setFlipped] = useState<number[]>([]), [moves, setMoves] = useState(0), [matches, setMatches] = useState(0), [time, setTime] = useState(60), [started, setStarted] = useState(false), [finished, setFinished] = useState(false), [saving, setSaving] = useState(false), [reward, setReward] = useState<{ xp: number; coins: number; stars: number } | null>(null);
+  const totalPairs = PAIRS.length, progress = Math.round((matches / totalPairs) * 100);
+  useEffect(() => { if (!started || finished) return; const timer = window.setInterval(() => setTime((t) => Math.max(0, t - 1)), 1000); return () => window.clearInterval(timer); }, [started, finished]);
+  useEffect(() => { if (!started || finished || time > 0) return; finishGame(); }, [time]);
+  useEffect(() => { if (started && matches === totalPairs && !finished) finishGame(); }, [matches]);
+  useEffect(() => { if (flipped.length !== 2) return; const [firstId, secondId] = flipped; const first = cards.find((c) => c.id === firstId), second = cards.find((c) => c.id === secondId); if (!first || !second) return; const isMatch = first.pair === second.pair; const timer = window.setTimeout(() => { if (isMatch) { setCards((current) => current.map((c) => c.id === firstId || c.id === secondId ? { ...c, matched: true, flipped: true } : c)); setMatches((m) => m + 1); } else setCards((current) => current.map((c) => c.id === firstId || c.id === secondId ? { ...c, flipped: false } : c)); setFlipped([]); }, isMatch ? 350 : 750); return () => window.clearTimeout(timer); }, [flipped, cards]);
+  const finishGame = async () => { if (finished) return; setFinished(true); setFlipped([]); setSaving(true); const score = matches; try { const { data } = await createClient().rpc("complete_brain_game", { p_game_key: "memory-tiles", p_score: score, p_total: totalPairs, p_combo: Math.max(0, totalPairs - moves + 1) }); const row = Array.isArray(data) ? data[0] : data; if (row) setReward({ xp: row.xp ?? score * 10, coins: row.coins ?? score * 2, stars: row.stars ?? (score >= 6 ? 3 : score >= 4 ? 2 : score > 0 ? 1 : 0) }); } finally { setSaving(false); } };
+  const start = () => { setCards(makeCards()); setFlipped([]); setMoves(0); setMatches(0); setTime(60); setReward(null); setFinished(false); setStarted(true); };
+  const flipCard = (id: number) => { if (!started || finished || flipped.length >= 2) return; const card = cards.find((c) => c.id === id); if (!card || card.flipped || card.matched) return; setCards((current) => current.map((c) => c.id === id ? { ...c, flipped: true } : c)); setFlipped((current) => [...current, id]); setMoves((m) => m + 1); };
+  const stars = reward?.stars ?? 0, message = matches === totalPairs ? "Amazing memory! You found every pair." : "Great thinking! Try again and beat your time.", Gate = ({ children }: { children: React.ReactNode }) => <MindSparkGate gameKey="memory-tiles" gameTitle="Memory Cards" onStarted={start}>{children}</MindSparkGate>;
+  return <main className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_10%_8%,#fff59a,transparent_20%),radial-gradient(circle_at_90%_15%,#b9f5ff,transparent_24%),linear-gradient(135deg,#effcff,#eef7ff_45%,#f9efff)] px-3 py-4 text-[#12375d] sm:px-6 sm:py-6"><div className="mx-auto max-w-6xl"><header className="flex items-center justify-between rounded-[24px] border-4 border-white bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 px-3 py-3 text-white shadow-xl sm:px-5"><Link href="/brain-games" className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-2 font-black"><ArrowLeft size={18}/> Brain Games</Link><div className="hidden items-center gap-2 rounded-full bg-white/15 px-4 py-2 font-black sm:flex"><Brain size={18}/> MEMORY LAB</div><Link href="/dashboard" className="rounded-full bg-white/15 p-2.5"><Home size={19}/></Link></header><section className="mt-5 rounded-[34px] border-4 border-white bg-gradient-to-br from-cyan-500 via-sky-500 to-blue-700 p-5 text-white shadow-[0_20px_55px_rgba(14,165,233,.25)] sm:p-8"><div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between"><div><div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-black"><Sparkles size={15}/> MEMORY • ATTENTION</div><h1 className="mt-2 text-4xl font-black sm:text-6xl">Memory Tiles 🧠</h1><p className="mt-2 max-w-2xl font-bold text-white/90">Flip the tiles, remember the math, and match each equation with its answer.</p></div><div className="grid grid-cols-3 gap-2 sm:gap-3"><div className="rounded-2xl bg-white/15 p-3 text-center"><Zap className="mx-auto" size={19}/><b className="mt-1 block text-xl">{time}s</b><span className="text-[10px] font-bold">TIME</span></div><div className="rounded-2xl bg-white/15 p-3 text-center"><Brain className="mx-auto" size={19}/><b className="mt-1 block text-xl">{matches}/{totalPairs}</b><span className="text-[10px] font-bold">MATCHES</span></div><div className="rounded-2xl bg-white/15 p-3 text-center"><Trophy className="mx-auto" size={19}/><b className="mt-1 block text-xl">{moves}</b><span className="text-[10px] font-bold">MOVES</span></div></div></div><div className="mt-5 h-3 overflow-hidden rounded-full bg-white/20"><div className="h-full rounded-full bg-yellow-300 transition-all duration-300" style={{ width: `${progress}%` }}/></div></section>{!started && !finished && <section className="mt-6 rounded-[32px] border-4 border-white bg-white p-7 text-center shadow-xl sm:p-10"><div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[26px] bg-cyan-100 text-5xl">🧠</div><h2 className="mt-4 text-3xl font-black">Ready to test your memory?</h2><p className="mx-auto mt-2 max-w-xl font-semibold text-slate-500">You have 60 seconds. Match every math equation to its correct number. Fewer moves and faster time means a better brain score!</p><Gate><span className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-lg font-black text-white shadow-lg transition hover:scale-105"><Zap size={20} fill="currentColor"/> Start Game</span></Gate></section>}{started && !finished && <section className="mt-6 rounded-[32px] border-4 border-white bg-gradient-to-br from-cyan-50 via-white to-blue-50 p-4 shadow-xl sm:p-7"><div className="mx-auto grid max-w-3xl grid-cols-3 gap-3 sm:grid-cols-4">{cards.map((card) => <button key={card.id} aria-label="memory tile" onClick={() => flipCard(card.id)} className={`relative aspect-square rounded-[20px] border-4 transition-all duration-200 [perspective:800px] ${card.matched ? "border-emerald-300 bg-emerald-100" : card.flipped ? "border-cyan-300 bg-white shadow-lg scale-[1.02]" : "border-white bg-gradient-to-br from-blue-500 to-indigo-700 shadow-md hover:-translate-y-1 hover:shadow-xl"}`}><span className="absolute inset-0 flex items-center justify-center p-2 text-center text-xl font-black sm:text-2xl">{card.flipped || card.matched ? card.value : "?"}</span>{!card.flipped && !card.matched && <span className="absolute inset-0 flex items-center justify-center text-4xl text-white/90">✦</span>}{card.matched && <CheckCircle2 className="absolute right-2 top-2 text-emerald-600" size={19}/>}</button>)}</div><div className="mt-5 text-center text-sm font-black text-slate-500">💡 Find the matching pair: <span className="text-cyan-600">equation ↔ answer</span></div></section>}{finished && <section className="mt-6 rounded-[34px] border-4 border-white bg-white p-7 text-center shadow-xl sm:p-10"><div className="text-6xl">{matches === totalPairs ? "🏆" : "🧠"}</div><h2 className="mt-3 text-4xl font-black">{matches === totalPairs ? "Memory Master!" : "Time's Up!"}</h2><p className="mt-2 font-semibold text-slate-500">{message}</p><div className="mx-auto mt-6 grid max-w-xl grid-cols-3 gap-3"><div className="rounded-2xl bg-cyan-50 p-4"><b className="block text-2xl text-cyan-700">{matches}/{totalPairs}</b><span className="text-xs font-black text-slate-500">MATCHES</span></div><div className="rounded-2xl bg-yellow-50 p-4"><b className="block text-2xl text-amber-600">{stars}/3</b><span className="text-xs font-black text-slate-500">STARS</span></div><div className="rounded-2xl bg-purple-50 p-4"><b className="block text-2xl text-purple-600">{moves}</b><span className="text-xs font-black text-slate-500">MOVES</span></div></div><div className="mt-6 flex flex-wrap justify-center gap-3"><div className="rounded-full bg-orange-50 px-5 py-3 font-black text-orange-700"><Coins className="mr-1 inline" size={17}/> +{reward?.coins ?? 0} Coins</div><div className="rounded-full bg-blue-50 px-5 py-3 font-black text-blue-700"><Zap className="mr-1 inline" size={17}/> +{reward?.xp ?? 0} XP</div><div className="rounded-full bg-yellow-50 px-5 py-3 font-black text-yellow-700"><Star className="mr-1 inline" size={17} fill="currentColor"/> {saving ? "Saving..." : "Reward saved"}</div></div><div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row"><Gate><span className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-7 py-4 font-black text-white shadow-lg hover:scale-105"><RotateCcw size={19}/> Play Again</span></Gate><Link href="/brain-games" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-100 px-7 py-4 font-black text-slate-700"><ArrowLeft size={19}/> Brain Games</Link></div></section>}</div></main>;
 }
