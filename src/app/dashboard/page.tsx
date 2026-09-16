@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, BarChart3, Gamepad2, GraduationCap, Home, LogOut, Settings, Trophy, Gift } from "lucide-react";
+import { Bell, BarChart3, Gamepad2, GraduationCap, Home, LogOut, Trophy, Gift } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = { full_name: string | null; grade: string | null; xp: number; current_streak: number };
@@ -15,7 +15,6 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [mind, setMind] = useState<MindStatus>({ balance: 0, remaining_seconds: 0 });
   const [loading, setLoading] = useState(true);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
@@ -74,15 +73,16 @@ export default function DashboardPage() {
             <Link href="/rewards" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Gift size={25} /> Rewards</Link>
             <Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><BarChart3 size={25} /> Progress</Link>
           </nav>
-          <div className="flex items-center gap-2 sm:gap-3"><div className="hidden items-center gap-3 rounded-full bg-white/10 px-3 py-1.5 sm:flex"><span className="text-sm font-black">✨ {mind.balance}</span><span className="text-sm font-black">⏱️ Mind Time {formatMindTime(mind.remaining_seconds)}</span></div><button aria-label="Notifications" className="relative grid h-11 w-11 place-items-center rounded-full hover:bg-white/10 sm:h-12 sm:w-12"><Bell size={24} /><span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-red-400" /></button><button aria-label="Settings" onClick={() => setSettingsOpen(true)} className="grid h-11 w-11 place-items-center rounded-full bg-[#197bdc] shadow-sm transition hover:bg-[#2589ea] sm:h-12 sm:w-12"><Settings size={24} /></button></div>
+          <div className="flex items-center gap-2 sm:gap-3"><div className="hidden items-center gap-3 rounded-full bg-white/10 px-3 py-1.5 sm:flex"><span className="text-sm font-black">✨ {mind.balance}</span><span className="text-sm font-black">⏱️ Mind Time {formatMindTime(mind.remaining_seconds)}</span></div><button aria-label="Notifications" className="relative grid h-11 w-11 place-items-center rounded-full hover:bg-white/10 sm:h-12 sm:w-12"><Bell size={24} /><span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-red-400" /></button></div>
         </div>
       </header>
 
       <div className="mx-auto flex min-h-[calc(100vh-90px)] max-w-[1680px]">
-        <aside className="hidden w-[245px] shrink-0 border-r border-[#dcecf6] bg-[#f5fbff] px-7 py-9 lg:block">
+        <aside className="hidden min-h-full w-[245px] shrink-0 flex-col border-r border-[#dcecf6] bg-[#f5fbff] px-7 py-9 lg:flex">
           <div className="flex flex-col items-center text-center"><div className="h-[148px] w-[148px] overflow-hidden rounded-full border-4 border-white bg-[#dff7ff] shadow-lg"><img src="/dashboard-assets/dashboard-avatar.svg" alt="Student avatar" className="h-full w-full object-cover" /></div><h2 className="mt-5 text-[34px] font-black tracking-tight">{firstName}</h2><div className="mt-1 flex items-center gap-2 text-[19px] font-bold"><GraduationCap size={22} /> {grade}</div></div>
           <div className="mt-7 border-t border-[#dcecf6] pt-5"><div className="flex items-center gap-3 py-2"><span className="text-2xl">🔥</span><p className="text-[17px] font-black">{profile?.current_streak ?? 0} Day Streak</p></div><div className="flex items-center gap-3 py-2"><span className="text-2xl">⭐</span><p className="text-[17px] font-black">{profile?.xp ?? 0} XP</p></div><div className="flex items-center gap-3 py-2"><span className="text-2xl">🏅</span><p className="text-[17px] font-black">12 Badges</p></div></div>
           <div className="mt-5 border-t border-[#dcecf6] pt-4 space-y-2"><div className="flex items-center justify-between rounded-xl bg-[#fff8d9] px-3 py-2"><span className="text-xs font-black text-[#806a12]">Mind Sparks</span><span className="text-sm font-black">✨ {mind.balance}</span></div><div className="flex items-center justify-between rounded-xl bg-[#eaf7ff] px-3 py-2"><span className="text-xs font-black text-[#25638d]">Mind Time</span><span className="text-sm font-black">⏱️ {formatMindTime(mind.remaining_seconds)}</span></div></div>
+          <button type="button" onClick={handleLogout} disabled={loggingOut} className="mt-auto pt-8 flex w-full items-center justify-center gap-2 rounded-2xl border border-[#ffd7d7] bg-[#fff5f5] px-4 py-3 text-sm font-black text-[#d43d3d] transition hover:bg-[#ffeaea] disabled:opacity-60"><LogOut size={18} />{loggingOut ? "Logging out…" : "Log Out"}</button>
         </aside>
 
         <section className="min-w-0 flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-12 xl:px-14">
@@ -111,16 +111,6 @@ export default function DashboardPage() {
         <Link href="/rewards" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Gift size={20} />Rewards</Link>
         <Link href="/progress" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><BarChart3 size={20} />Progress</Link>
       </nav>
-
-      {settingsOpen && (
-        <div className="fixed inset-0 z-[70] grid place-items-center bg-[#062c54]/45 p-4 backdrop-blur-[3px]" onClick={() => !loggingOut && setSettingsOpen(false)}>
-          <div className="w-full max-w-[360px] rounded-[28px] bg-white p-5 shadow-2xl" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-center gap-3"><div className="grid h-11 w-11 place-items-center rounded-2xl bg-[#eaf4ff] text-[#197bdc]"><Settings size={22} /></div><div><h2 className="text-xl font-black text-[#083d78]">Settings</h2><p className="text-sm font-semibold text-[#7189a0]">Account options</p></div></div>
-            <button type="button" onClick={handleLogout} disabled={loggingOut} className="mt-5 flex w-full items-center gap-3 rounded-2xl border border-[#ffd7d7] bg-[#fff5f5] px-4 py-3.5 text-left font-black text-[#d43d3d] transition hover:bg-[#ffeaea] disabled:opacity-60"><LogOut size={21} />{loggingOut ? "Logging out…" : "Log Out"}</button>
-            <button type="button" onClick={() => setSettingsOpen(false)} disabled={loggingOut} className="mt-2.5 w-full rounded-2xl px-4 py-3 text-sm font-black text-[#6a8097] transition hover:bg-[#f3f7fa]">Cancel</button>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
