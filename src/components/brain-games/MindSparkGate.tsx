@@ -8,12 +8,13 @@ type StartResult = { session_id: string; game_key: string; cost: number; charged
 type TimerStatus = { seconds_remaining: number; seconds_used: number; daily_limit_seconds: number };
 type Props = { gameKey: string; gameTitle: string; onStarted: (result: StartResult) => void | Promise<void>; children: React.ReactNode; className?: string };
 
+// All catalog Brain Games use the same simple 3 Mind Sparks entry cost.
 const COSTS: Record<string, number> = {
-  "memory-master": 5, "brain-flash-memory": 5, "flash-memory": 5, memory: 5,
-  "number-sequence": 5, "brain-number-order": 5, "number-order": 5,
-  "speed-quiz": 6, "number-rush": 6, unscramble: 4,
-  "pattern-master": 6, "brain-pattern-quest": 6, "pattern-quest": 6,
-  "memory-cards": 6, "memory-tiles": 6, "word-search": 4, "fill-blanks": 4,
+  "memory-master": 3, "brain-flash-memory": 3, "flash-memory": 3, memory: 3,
+  "number-sequence": 3, "brain-number-order": 3, "number-order": 3,
+  "speed-quiz": 3, "number-rush": 3, unscramble: 3,
+  "pattern-master": 3, "brain-pattern-quest": 3, "pattern-quest": 3,
+  "memory-cards": 3, "memory-tiles": 3, "word-search": 3, "fill-blanks": 3,
 };
 
 function formatTime(seconds: number) {
@@ -60,10 +61,10 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
     finally { setLoading(false); }
   };
 
-  const cost = COSTS[gameKey] ?? 0;
+  const cost = 3;
   const free = Boolean(status?.free_play_available);
   const balance = status?.balance ?? 0;
-  const insufficient = !free && cost > 0 && balance < cost;
+  const insufficient = !free && balance < cost;
   const timeFinished = (timer?.seconds_remaining ?? 0) <= 0;
 
   return <>
@@ -81,10 +82,10 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
             <div className="rounded-2xl bg-purple-50 p-4"><div className="text-xs font-black text-slate-400">YOUR SPARKS</div><div className="mt-1 text-2xl font-black text-purple-700">✨ {balance}</div></div>
             <div className="rounded-2xl bg-cyan-50 p-4"><div className="text-xs font-black text-slate-400">PLAY COST</div><div className="mt-1 text-2xl font-black text-cyan-700">{free ? "FREE" : `✨ ${cost}`}</div></div>
           </div>
-          {!free && cost > 0 && <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 font-bold text-slate-600">After playing: <span className="font-black text-slate-900">✨ {Math.max(0, balance - cost)}</span> Mind Sparks</div>}
-          {free ? <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 font-black text-emerald-700">🎁 Daily Free Play available!</div> : <p className="mt-4 font-semibold text-slate-500">Mind Sparks are used to enter Brain Games.</p>}
+          {!free && <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 font-bold text-slate-600">After playing: <span className="font-black text-slate-900">✨ {Math.max(0, balance - cost)}</span> Mind Sparks</div>}
+          {free ? <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 font-black text-emerald-700">🎁 Daily Free Play available!</div> : <p className="mt-4 font-semibold text-slate-500">3 Mind Sparks are used to enter Brain Games.</p>}
           {timeFinished && <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 font-black text-rose-700">⏰ Your 30-minute Brain Time is finished for today.</div>}
-          {insufficient && !timeFinished && <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 font-black text-rose-700">Not enough Mind Sparks for this game.</div>}
+          {insufficient && !timeFinished && <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 font-black text-rose-700">Not enough Mind Sparks. You need 3 to play.</div>}
           {error && <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700">{error}</div>}
           <div className="mt-5 flex gap-3"><button type="button" onClick={() => setOpen(false)} className="flex-1 rounded-2xl bg-slate-100 px-4 py-3 font-black text-slate-700">Cancel</button><button type="button" onClick={start} disabled={loading || insufficient || timeFinished} className="flex-1 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 font-black text-white disabled:cursor-not-allowed disabled:opacity-50"><Zap className="mr-1 inline" size={17}/> {loading ? "Starting…" : "Play Now"}</button></div>
         </div>
