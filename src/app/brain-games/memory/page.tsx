@@ -25,9 +25,7 @@ export default function MemoryPage() {
         </header>
 
         <section className="px-1 pb-2 pt-0.5 text-center sm:pb-2.5">
-          <div className="text-[9px] font-black uppercase tracking-[.18em] text-violet-400">🧠 MEMORY MAGIC</div>
-          <h1 className="mt-0.5 text-lg font-black leading-tight text-slate-800 sm:text-xl">Let’s Play &amp; Remember! 🎉</h1>
-          <p className="mx-auto mt-0.5 max-w-xl text-[10px] font-bold text-slate-500 sm:text-[11px]">Remember it • Match it • Beat your best! ⭐</p>
+          <h1 className="text-lg font-black leading-tight text-slate-800 sm:text-xl">🧠 MEMORY</h1>
         </section>
 
         <nav className="flex gap-1.5 overflow-x-auto border-y border-sky-100 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
