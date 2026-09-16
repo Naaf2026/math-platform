@@ -150,27 +150,27 @@ export default async function BrainGameCategoryPage({ params }: Props) {
             <div className="hidden items-center gap-1 rounded-full bg-white px-3 py-2 text-xs font-black text-slate-500 shadow-sm sm:flex"><Timer size={14} /> Quick brain workout</div>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {category.games.map((game: Game) => (
-              <article key={game.title} className={`group relative overflow-hidden rounded-[30px] border-4 border-white bg-white shadow-[0_10px_28px_rgba(15,23,42,.08)] transition duration-300 ${game.active ? "hover:-translate-y-2 hover:shadow-[0_20px_38px_rgba(15,23,42,.14)]" : "opacity-90"}`}>
-                <div className={`relative aspect-[375/502] w-full overflow-hidden bg-gradient-to-br ${category.accent}`}>
-                  <div className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-white/15" />
-                  <div className="absolute -bottom-14 -left-8 h-32 w-32 rounded-full bg-white/10" />
-                  <div className="absolute left-4 top-4 z-10 rounded-full bg-white/20 px-3 py-1 text-[10px] font-black tracking-wide text-white backdrop-blur">{game.active ? "READY TO PLAY" : "COMING SOON"}</div>
+              <article key={game.title} className={`group relative overflow-hidden rounded-[24px] border-4 border-white bg-white shadow-[0_8px_22px_rgba(15,23,42,.08)] transition duration-300 ${game.active ? "hover:-translate-y-1.5 hover:shadow-[0_16px_30px_rgba(15,23,42,.14)]" : "opacity-90"}`}>
+                <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${category.accent}`}>
+                  <div className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/15" />
+                  <div className="absolute -bottom-12 -left-7 h-24 w-24 rounded-full bg-white/10" />
+                  <div className="absolute left-3 top-3 z-10 rounded-full bg-white/20 px-2.5 py-1 text-[9px] font-black tracking-wide text-white backdrop-blur">{game.active ? "READY TO PLAY" : "COMING SOON"}</div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="h-full w-full text-white transition duration-300 group-hover:scale-[1.02] group-hover:-rotate-1">
+                    <div className="h-full w-full text-white transition duration-300 group-hover:scale-[1.03] group-hover:-rotate-1">
                       <CategoryGameIllustration type={game.illustration} />
                     </div>
                   </div>
-                  <div className="absolute bottom-3 left-4 z-10 flex gap-1 text-white/80"><span>★</span><span>★</span><span>★</span></div>
+                  <div className="absolute bottom-2 left-3 z-10 flex gap-0.5 text-sm text-white/80"><span>★</span><span>★</span><span>★</span></div>
                 </div>
-                <div className="p-5">
-                  <div className="flex items-start justify-between gap-3"><h3 className="text-2xl font-black text-slate-800">{game.title}</h3><span className="rounded-full bg-yellow-50 px-2.5 py-1 text-[11px] font-black text-amber-700">{game.reward}</span></div>
-                  <p className="mt-2 min-h-12 font-semibold leading-6 text-slate-500">{game.description}</p>
-                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full bg-gradient-to-r ${category.accent} ${game.active ? "w-[8%]" : "w-0"}`} /></div>
-                  <div className="mt-4 flex items-center justify-between gap-3">
-                    {game.active ? <Link href={game.href} className={`inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${category.accent} px-5 py-3.5 font-black text-white shadow-md transition hover:scale-[1.02]`}><Play size={17} fill="currentColor" /> Play Now</Link> : <span className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-slate-100 px-5 py-3.5 font-black text-slate-400"><Lock size={16} /> Coming Soon</span>}
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-slate-50 text-slate-400"><Star size={19} fill="currentColor" /></span>
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-2"><h3 className="text-xl font-black leading-tight text-slate-800">{game.title}</h3><span className="shrink-0 rounded-full bg-yellow-50 px-2 py-1 text-[10px] font-black text-amber-700">{game.reward}</span></div>
+                  <p className="mt-2 min-h-10 text-sm font-semibold leading-5 text-slate-500">{game.description}</p>
+                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full bg-gradient-to-r ${category.accent} ${game.active ? "w-[8%]" : "w-0"}`} /></div>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    {game.active ? <Link href={game.href} className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r ${category.accent} px-4 py-3 text-sm font-black text-white shadow-md transition hover:scale-[1.02]`}><Play size={15} fill="currentColor" /> Play Now</Link> : <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-4 py-3 text-sm font-black text-slate-400"><Lock size={14} /> Coming Soon</span>}
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-slate-50 text-slate-400"><Star size={17} fill="currentColor" /></span>
                   </div>
                 </div>
               </article>
