@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type Zone = {
   id: string;
@@ -70,6 +72,32 @@ const zones: Zone[] = [
 ];
 
 export default function BrainGamesPage() {
+  const [mindSparks, setMindSparks] = useState<number | null>(null);
+  const [freePlayAvailable, setFreePlayAvailable] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadMindSparks() {
+      const supabase = createClient();
+      if (!supabase) return;
+
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) return;
+
+      const { data, error } = await supabase.rpc("get_mind_spark_status");
+      if (!error && data?.[0] && active) {
+        setMindSparks(data[0].balance);
+        setFreePlayAvailable(Boolean(data[0].free_play_available));
+      }
+    }
+
+    loadMindSparks();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#05b8d8]">
       <section className="relative mx-auto w-full max-w-[1800px]">
@@ -79,6 +107,18 @@ export default function BrainGamesPage() {
             alt="FAHI VISSNUN Brain Games Maldives-inspired island world"
             className="absolute inset-0 h-full w-full object-cover"
           />
+
+          <div className="absolute right-[2%] top-[2.5%] z-30 flex items-center gap-2 rounded-full border border-white/50 bg-[#062b57]/85 px-4 py-2 text-white shadow-xl backdrop-blur-md">
+            <span className="text-lg leading-none">✨</span>
+            <span className="text-sm font-black tracking-tight sm:text-base">
+              {mindSparks === null ? "—" : mindSparks} Mind Sparks
+            </span>
+            {freePlayAvailable && (
+              <span className="hidden rounded-full bg-white/15 px-2 py-1 text-[10px] font-extrabold sm:inline">
+                🎁 Free Play
+              </span>
+            )}
+          </div>
 
           {zones.map((zone) => (
             <Link
