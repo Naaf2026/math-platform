@@ -63,7 +63,7 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#eef9ff] text-[#083d78]">
-      <header className="sticky top-0 z-40 h-[90px] border-b border-white/10 bg-[#073b73] text-white shadow-sm">
+      <header className="sticky top-0 z-40 hidden h-[90px] border-b border-white/10 bg-[#073b73] text-white shadow-sm lg:block">
         <div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12">
           <Link href="/dashboard" className="flex min-w-0 items-center gap-4"><img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[48px] w-auto max-w-[260px] object-contain sm:h-[57px] sm:max-w-none" /></Link>
           <nav className="hidden items-center gap-8 lg:flex">
@@ -77,7 +77,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="mx-auto flex min-h-[calc(100vh-90px)] max-w-[1680px]">
+      <div className="mx-auto flex min-h-screen max-w-[1680px] lg:min-h-[calc(100vh-90px)]">
         <aside className="hidden min-h-full w-[245px] shrink-0 flex-col border-r border-[#dcecf6] bg-[#f5fbff] px-7 py-9 lg:flex">
           <div className="flex flex-col items-center text-center"><div className="h-[148px] w-[148px] overflow-hidden rounded-full border-4 border-white bg-[#dff7ff] shadow-lg"><img src="/dashboard-assets/dashboard-avatar.svg" alt="Student avatar" className="h-full w-full object-cover" /></div><h2 className="mt-5 text-[34px] font-black tracking-tight">{firstName}</h2><div className="mt-1 flex items-center gap-2 text-[19px] font-bold"><GraduationCap size={22} /> {grade}</div></div>
           <div className="mt-7 border-t border-[#dcecf6] pt-5"><div className="flex items-center gap-3 py-2"><span className="text-2xl">🔥</span><p className="text-[17px] font-black">{profile?.current_streak ?? 0} Day Streak</p></div><div className="flex items-center gap-3 py-2"><span className="text-2xl">⭐</span><p className="text-[17px] font-black">{profile?.xp ?? 0} XP</p></div><div className="flex items-center gap-3 py-2"><span className="text-2xl">🏅</span><p className="text-[17px] font-black">12 Badges</p></div></div>
@@ -104,14 +104,6 @@ export default function DashboardPage() {
           </div>
         </section>
       </div>
-
-      <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-[#d8e8f2] bg-white/98 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(7,59,115,0.10)] backdrop-blur lg:hidden">
-        <Link href="/dashboard" className="grid place-items-center gap-1 rounded-xl bg-blue-50 py-2 text-xs font-black text-blue-700"><Home size={20} />Home</Link>
-        <Link href="/brain-games" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Gamepad2 size={20} />Games</Link>
-        <Link href="/leaderboard" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Trophy size={20} />Leaderboard</Link>
-        <Link href="/rewards" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Gift size={20} />Rewards</Link>
-        <Link href="/progress" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><BarChart3 size={20} />Progress</Link>
-      </nav>
     </main>
   );
 }
