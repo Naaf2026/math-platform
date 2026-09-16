@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowLeft, Brain, Lock, Play, Sparkles, Star, Zap } from "lucide-react";
 
@@ -31,7 +29,6 @@ const categories = {
 
 type CategoryKey = keyof typeof categories;
 type Game = (typeof categories)[CategoryKey]["games"][number];
-
 type Props = { params: Promise<{ category: string }> };
 
 export default async function BrainGameCategoryPage({ params }: Props) {
