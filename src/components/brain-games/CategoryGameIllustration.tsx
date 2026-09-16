@@ -37,18 +37,35 @@ const CARD_ART: Record<string, { src: string; alt: string }> = {
   },
 };
 
+const MIND_SPARK_COST: Record<string, number> = {
+  memory: 6,
+  flash: 5,
+  order: 5,
+  pattern: 6,
+  rush: 6,
+};
+
 export default function CategoryGameIllustration({ type }: Props) {
-  const art = CARD_ART[type.toLowerCase()];
+  const key = type.toLowerCase();
+  const art = CARD_ART[key];
+  const cost = MIND_SPARK_COST[key];
 
   if (!art) return null;
 
   return (
-    <img
-      src={art.src}
-      alt={art.alt}
-      className="h-full w-full object-contain drop-shadow-[0_10px_16px_rgba(15,23,42,.22)]"
-      loading="eager"
-      draggable={false}
-    />
+    <div className="relative h-full w-full">
+      <img
+        src={art.src}
+        alt={art.alt}
+        className="h-full w-full object-contain drop-shadow-[0_10px_16px_rgba(15,23,42,.22)]"
+        loading="eager"
+        draggable={false}
+      />
+      {cost !== undefined && (
+        <div className="absolute right-2 top-2 z-20 rounded-full border border-white/80 bg-slate-950/75 px-2.5 py-1 text-[10px] font-black text-white shadow-lg backdrop-blur-sm">
+          ✨ {cost} Mind Sparks
+        </div>
+      )}
+    </div>
   );
 }
