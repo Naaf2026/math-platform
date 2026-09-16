@@ -6,14 +6,13 @@ import { Bell, BarChart3, Gamepad2, GraduationCap, Home, Settings, Trophy, Gift 
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = { full_name: string | null; grade: string | null; xp: number; current_streak: number };
-type MindStatus = { balance: number; remaining_seconds: number };
+type MindStatus = { balance: number };
 
 function gradeLabel(value: string | null | undefined) { const match = String(value || "").match(/[1-7]/); return match ? `Grade ${match[0]}` : "Grade 3"; }
-function formatMindTime(seconds: number) { const safe = Math.max(0, Math.floor(seconds)); return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, "0")}`; }
 
 export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [mind, setMind] = useState<MindStatus>({ balance: 0, remaining_seconds: 1800 });
+  const [mind, setMind] = useState<MindStatus>({ balance: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,17 +30,12 @@ export default function DashboardPage() {
       setProfile(data ?? { full_name: auth.user.user_metadata?.full_name ?? "Student", grade: null, xp: 0, current_streak: 0 });
       if (mindData) {
         const status = Array.isArray(mindData) ? mindData[0] : mindData;
-        setMind({ balance: Number(status?.balance ?? 0), remaining_seconds: Number(status?.remaining_seconds ?? status?.mind_time_remaining_seconds ?? 1800) });
+        setMind({ balance: Number(status?.balance ?? 0) });
       }
       setLoading(false);
     }
     void load();
     return () => { mounted = false; };
-  }, []);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setMind((v) => ({ ...v, remaining_seconds: Math.max(0, v.remaining_seconds - 1) })), 1000);
-    return () => window.clearInterval(timer);
   }, []);
 
   if (loading) return <main className="grid min-h-screen place-items-center bg-[#eef9ff]"><div className="rounded-3xl bg-white px-8 py-6 font-black text-[#083d78] shadow-xl">Loading…</div></main>;
@@ -61,7 +55,7 @@ export default function DashboardPage() {
             <Link href="/rewards" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Gift size={25} /> Rewards</Link>
             <Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><BarChart3 size={25} /> Progress</Link>
           </nav>
-          <div className="flex items-center gap-2 sm:gap-3"><div className="hidden items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 sm:flex"><span className="text-sm font-black">✨ {mind.balance}</span><span className="h-4 w-px bg-white/20" /><span className="text-sm font-black">⏱️ {formatMindTime(mind.remaining_seconds)}</span></div><button aria-label="Notifications" className="relative grid h-11 w-11 place-items-center rounded-full hover:bg-white/10 sm:h-12 sm:w-12"><Bell size={24} /><span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-red-400" /></button><button aria-label="Settings" className="grid h-11 w-11 place-items-center rounded-full bg-[#197bdc] shadow-sm sm:h-12 sm:w-12"><Settings size={24} /></button></div>
+          <div className="flex items-center gap-2 sm:gap-3"><div className="hidden items-center rounded-full bg-white/10 px-3 py-1.5 sm:flex"><span className="text-sm font-black">✨ {mind.balance}</span></div><button aria-label="Notifications" className="relative grid h-11 w-11 place-items-center rounded-full hover:bg-white/10 sm:h-12 sm:w-12"><Bell size={24} /><span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-red-400" /></button><button aria-label="Settings" className="grid h-11 w-11 place-items-center rounded-full bg-[#197bdc] shadow-sm sm:h-12 sm:w-12"><Settings size={24} /></button></div>
         </div>
       </header>
 
@@ -69,7 +63,7 @@ export default function DashboardPage() {
         <aside className="hidden w-[245px] shrink-0 border-r border-[#dcecf6] bg-[#f5fbff] px-7 py-9 lg:block">
           <div className="flex flex-col items-center text-center"><div className="h-[148px] w-[148px] overflow-hidden rounded-full border-4 border-white bg-[#dff7ff] shadow-lg"><img src="/dashboard-assets/dashboard-avatar.svg" alt="Student avatar" className="h-full w-full object-cover" /></div><h2 className="mt-5 text-[34px] font-black tracking-tight">{firstName}</h2><div className="mt-1 flex items-center gap-2 text-[19px] font-bold"><GraduationCap size={22} /> {grade}</div></div>
           <div className="mt-7 border-t border-[#dcecf6] pt-5"><div className="flex items-center gap-3 py-2"><span className="text-2xl">🔥</span><p className="text-[17px] font-black">{profile?.current_streak ?? 0} Day Streak</p></div><div className="flex items-center gap-3 py-2"><span className="text-2xl">⭐</span><p className="text-[17px] font-black">{profile?.xp ?? 0} XP</p></div><div className="flex items-center gap-3 py-2"><span className="text-2xl">🏅</span><p className="text-[17px] font-black">12 Badges</p></div></div>
-          <div className="mt-5 border-t border-[#dcecf6] pt-4"><div className="mb-2 flex items-center justify-between rounded-xl bg-[#fff8d9] px-3 py-2"><span className="text-xs font-black text-[#806a12]">Mind Sparks</span><span className="text-sm font-black">✨ {mind.balance}</span></div><div className="flex items-center justify-between rounded-xl bg-[#e9f8ff] px-3 py-2"><span className="text-xs font-black text-[#17618a]">Mind Time</span><span className="text-sm font-black">⏱️ {formatMindTime(mind.remaining_seconds)}</span></div></div>
+          <div className="mt-5 border-t border-[#dcecf6] pt-4"><div className="flex items-center justify-between rounded-xl bg-[#fff8d9] px-3 py-2"><span className="text-xs font-black text-[#806a12]">Mind Sparks</span><span className="text-sm font-black">✨ {mind.balance}</span></div></div>
         </aside>
 
         <section className="min-w-0 flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-12 xl:px-14">
@@ -77,7 +71,7 @@ export default function DashboardPage() {
             <div className="mb-5 rounded-[24px] border border-[#d7eaf7] bg-white/85 p-4 shadow-sm lg:hidden sm:p-5">
               <div className="flex items-center gap-4"><div className="h-[68px] w-[68px] shrink-0 overflow-hidden rounded-full border-4 border-white bg-[#dff7ff] shadow-md sm:h-[76px] sm:w-[76px]"><img src="/dashboard-assets/dashboard-avatar.svg" alt="Student avatar" className="h-full w-full object-cover" /></div><div className="min-w-0 flex-1"><h2 className="truncate text-[25px] font-black leading-tight sm:text-[30px]">{firstName}</h2><div className="mt-1 flex items-center gap-1.5 text-[16px] font-bold text-[#55708b] sm:text-[18px]"><GraduationCap size={19} /> {grade}</div></div></div>
               <div className="mt-3 grid grid-cols-3 gap-1.5 border-t border-[#dcecf6] pt-3 sm:gap-2"><div className="flex items-center justify-center gap-1.5 rounded-xl bg-[#fff6df] px-1.5 py-1.5"><span className="text-base">🔥</span><p className="text-[11px] font-black leading-none">{profile?.current_streak ?? 0} Streak</p></div><div className="flex items-center justify-center gap-1.5 rounded-xl bg-[#fff8d9] px-1.5 py-1.5"><span className="text-base">⭐</span><p className="text-[11px] font-black leading-none">{profile?.xp ?? 0} XP</p></div><div className="flex items-center justify-center gap-1.5 rounded-xl bg-[#eef8ff] px-1.5 py-1.5"><span className="text-base">🏅</span><p className="text-[11px] font-black leading-none">12 Badges</p></div></div>
-              <div className="mt-1.5 grid grid-cols-2 gap-1.5 border-t border-[#dcecf6] pt-1.5"><div className="flex items-center justify-center gap-1.5 rounded-xl bg-[#fff8d9] px-1.5 py-1.5"><span className="text-sm">✨</span><p className="text-[11px] font-black leading-none">Mind Sparks <span className="text-[#806a12]">{mind.balance}</span></p></div><div className="flex items-center justify-center gap-1.5 rounded-xl bg-[#e9f8ff] px-1.5 py-1.5"><span className="text-sm">⏱️</span><p className="text-[11px] font-black leading-none">Mind Time <span className="text-[#17618a]">{formatMindTime(mind.remaining_seconds)}</span></p></div></div>
+              <div className="mt-1.5 border-t border-[#dcecf6] pt-1.5"><div className="flex items-center justify-center gap-1.5 rounded-xl bg-[#fff8d9] px-1.5 py-1.5"><span className="text-sm">✨</span><p className="text-[11px] font-black leading-none">Mind Sparks <span className="text-[#806a12]">{mind.balance}</span></p></div></div>
             </div>
 
             <div className="mb-7 pl-1 sm:mb-8 sm:pl-2 lg:pl-5"><h1 className="text-[38px] font-black leading-none tracking-tight sm:text-[48px] lg:text-[54px]">Hi {firstName}! <span className="inline-block">👋</span></h1><p className="mt-3 text-[19px] font-semibold text-[#6685a4] sm:text-[23px] lg:text-[25px]">Ready for today’s math adventure?</p></div>
