@@ -153,12 +153,12 @@ export default async function BrainGameCategoryPage({ params }: Props) {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {category.games.map((game: Game) => (
               <article key={game.title} className={`group relative overflow-hidden rounded-[30px] border-4 border-white bg-white shadow-[0_10px_28px_rgba(15,23,42,.08)] transition duration-300 ${game.active ? "hover:-translate-y-2 hover:shadow-[0_20px_38px_rgba(15,23,42,.14)]" : "opacity-90"}`}>
-                <div className={`relative h-52 overflow-hidden bg-gradient-to-br ${category.accent}`}>
+                <div className={`relative aspect-[375/502] w-full overflow-hidden bg-gradient-to-br ${category.accent}`}>
                   <div className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-white/15" />
                   <div className="absolute -bottom-14 -left-8 h-32 w-32 rounded-full bg-white/10" />
                   <div className="absolute left-4 top-4 z-10 rounded-full bg-white/20 px-3 py-1 text-[10px] font-black tracking-wide text-white backdrop-blur">{game.active ? "READY TO PLAY" : "COMING SOON"}</div>
-                  <div className="absolute inset-0 flex items-center justify-center px-5 pt-2">
-                    <div className="h-full w-full max-w-[320px] text-white transition duration-300 group-hover:scale-[1.04] group-hover:-rotate-1">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="h-full w-full text-white transition duration-300 group-hover:scale-[1.02] group-hover:-rotate-1">
                       <CategoryGameIllustration type={game.illustration} />
                     </div>
                   </div>
