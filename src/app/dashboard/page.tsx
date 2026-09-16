@@ -5,33 +5,43 @@ import Link from "next/link";
 import { Bell, BarChart3, Gamepad2, GraduationCap, Home, Settings, Trophy, Gift } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-type Profile = {
-  full_name: string | null;
-  grade: string | null;
-  xp: number;
-  current_streak: number;
-};
+type Profile = { full_name: string | null; grade: string | null; xp: number; current_streak: number };
+type MindStatus = { balance: number; remaining_seconds: number };
 
-function gradeLabel(value: string | null | undefined) {
-  const match = String(value || "").match(/[1-7]/);
-  return match ? `Grade ${match[0]}` : "Grade 3";
-}
+function gradeLabel(value: string | null | undefined) { const match = String(value || "").match(/[1-7]/); return match ? `Grade ${match[0]}` : "Grade 3"; }
+function formatMindTime(seconds: number) { const safe = Math.max(0, Math.floor(seconds)); return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, "0")}`; }
 
 export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [mind, setMind] = useState<MindStatus>({ balance: 0, remaining_seconds: 1800 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
     async function load() {
       const supabase = createClient();
       if (!supabase) { setLoading(false); return; }
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) { window.location.href = "/login"; return; }
-      const { data } = await supabase.from("profiles").select("full_name,grade,xp,current_streak").eq("id", auth.user.id).maybeSingle();
+      const [{ data }, { data: mindData }] = await Promise.all([
+        supabase.from("profiles").select("full_name,grade,xp,current_streak").eq("id", auth.user.id).maybeSingle(),
+        supabase.rpc("get_mind_spark_status")
+      ]);
+      if (!mounted) return;
       setProfile(data ?? { full_name: auth.user.user_metadata?.full_name ?? "Student", grade: null, xp: 0, current_streak: 0 });
+      if (mindData) {
+        const status = Array.isArray(mindData) ? mindData[0] : mindData;
+        setMind({ balance: Number(status?.balance ?? 0), remaining_seconds: Number(status?.remaining_seconds ?? status?.mind_time_remaining_seconds ?? 1800) });
+      }
       setLoading(false);
     }
     void load();
+    return () => { mounted = false; };
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setMind((v) => ({ ...v, remaining_seconds: Math.max(0, v.remaining_seconds - 1) })), 1000);
+    return () => window.clearInterval(timer);
   }, []);
 
   if (loading) return <main className="grid min-h-screen place-items-center bg-[#eef9ff]"><div className="rounded-3xl bg-white px-8 py-6 font-black text-[#083d78] shadow-xl">Loading…</div></main>;
@@ -51,7 +61,11 @@ export default function DashboardPage() {
             <Link href="/rewards" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Gift size={25} /> Rewards</Link>
             <Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><BarChart3 size={25} /> Progress</Link>
           </nav>
-          <div className="flex items-center gap-2 sm:gap-3"><button aria-label="Notifications" className="relative grid h-11 w-11 place-items-center rounded-full hover:bg-white/10 sm:h-12 sm:w-12"><Bell size={24} /><span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-red-400" /></button><button aria-label="Settings" className="grid h-11 w-11 place-items-center rounded-full bg-[#197bdc] shadow-sm sm:h-12 sm:w-12"><Settings size={24} /></button></div>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="hidden items-center gap-3 rounded-full bg-white/10 px-4 py-2 sm:flex"><span className="font-black">✨ {mind.balance}</span><span className="h-5 w-px bg-white/20" /><span className="font-black">⏱️ {formatMindTime(mind.remaining_seconds)}</span></div>
+            <button aria-label="Notifications" className="relative grid h-11 w-11 place-items-center rounded-full hover:bg-white/10 sm:h-12 sm:w-12"><Bell size={24} /><span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-red-400" /></button>
+            <button aria-label="Settings" className="grid h-11 w-11 place-items-center rounded-full bg-[#197bdc] shadow-sm sm:h-12 sm:w-12"><Settings size={24} /></button>
+          </div>
         </div>
       </header>
 
@@ -68,6 +82,8 @@ export default function DashboardPage() {
               <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[#dcecf6] pt-4 sm:gap-3"><div className="rounded-2xl bg-[#fff6df] px-2 py-3 text-center"><div className="text-2xl">🔥</div><p className="mt-1 text-[14px] font-black sm:text-[16px]">{profile?.current_streak ?? 0} Day Streak</p></div><div className="rounded-2xl bg-[#fff8d9] px-2 py-3 text-center"><div className="text-2xl">⭐</div><p className="mt-1 text-[14px] font-black sm:text-[16px]">{profile?.xp ?? 0} XP</p></div><div className="rounded-2xl bg-[#eef8ff] px-2 py-3 text-center"><div className="text-2xl">🏅</div><p className="mt-1 text-[14px] font-black sm:text-[16px]">12 Badges</p></div></div>
             </div>
 
+            <div className="mb-5 grid grid-cols-2 gap-3 sm:mb-7 sm:gap-4 lg:hidden"><div className="rounded-2xl border border-[#e8d37a] bg-[#fff8d9] px-4 py-3 shadow-sm"><p className="text-xs font-black text-[#806a12]">Mind Sparks</p><p className="mt-1 text-2xl font-black">✨ {mind.balance}</p></div><div className="rounded-2xl border border-[#9bd8f5] bg-[#e9f8ff] px-4 py-3 shadow-sm"><p className="text-xs font-black text-[#17618a]">Mind Time</p><p className="mt-1 text-2xl font-black">⏱️ {formatMindTime(mind.remaining_seconds)}</p></div></div>
+
             <div className="mb-7 pl-1 sm:mb-8 sm:pl-2 lg:pl-5"><h1 className="text-[38px] font-black leading-none tracking-tight sm:text-[48px] lg:text-[54px]">Hi {firstName}! <span className="inline-block">👋</span></h1><p className="mt-3 text-[19px] font-semibold text-[#6685a4] sm:text-[23px] lg:text-[25px]">Ready for today’s math adventure?</p></div>
 
             <div className="grid gap-6 md:grid-cols-3 lg:gap-7">
@@ -80,11 +96,7 @@ export default function DashboardPage() {
       </div>
 
       <nav className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-[#d8e8f2] bg-white/98 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(7,59,115,0.10)] backdrop-blur lg:hidden">
-        <Link href="/dashboard" className="grid place-items-center gap-1 rounded-xl bg-blue-50 py-2 text-xs font-black text-blue-700"><Home size={20} />Home</Link>
-        <Link href="/brain-games" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Gamepad2 size={20} />Games</Link>
-        <Link href="/leaderboard" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Trophy size={20} />Leaderboard</Link>
-        <Link href="/rewards" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Gift size={20} />Rewards</Link>
-        <Link href="/progress" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><BarChart3 size={20} />Progress</Link>
+        <Link href="/dashboard" className="grid place-items-center gap-1 rounded-xl bg-blue-50 py-2 text-xs font-black text-blue-700"><Home size={20} />Home</Link><Link href="/brain-games" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Gamepad2 size={20} />Games</Link><Link href="/leaderboard" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Trophy size={20} />Leaderboard</Link><Link href="/rewards" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Gift size={20} />Rewards</Link><Link href="/progress" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><BarChart3 size={20} />Progress</Link>
       </nav>
     </main>
   );
