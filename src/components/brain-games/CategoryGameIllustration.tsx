@@ -37,12 +37,13 @@ const CARD_ART: Record<string, { src: string; alt: string }> = {
   },
 };
 
+// All catalog Brain Games have one consistent 3 Mind Sparks entry cost.
 const MIND_SPARK_COST: Record<string, number> = {
-  memory: 6,
-  flash: 5,
-  order: 5,
-  pattern: 6,
-  rush: 6,
+  memory: 3,
+  flash: 3,
+  order: 3,
+  pattern: 3,
+  rush: 3,
 };
 
 export default function CategoryGameIllustration({ type }: Props) {
