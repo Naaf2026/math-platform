@@ -88,10 +88,18 @@ export default function DashboardPage() {
         <section className="min-w-0 flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-12 xl:px-14">
           <div className="mx-auto max-w-[1340px]">
             <div className="mb-5 rounded-[24px] border border-[#d7eaf7] bg-white/85 p-4 shadow-sm lg:hidden sm:p-5">
-              <div className="flex items-center gap-4"><div className="h-[68px] w-[68px] shrink-0 overflow-hidden rounded-full border-4 border-white bg-[#dff7ff] shadow-md sm:h-[76px] sm:w-[76px]"><img src="/dashboard-assets/dashboard-avatar.svg" alt="Student avatar" className="h-full w-full object-cover" /></div><div className="min-w-0 flex-1"><h2 className="truncate text-[25px] font-black leading-tight sm:text-[30px]">{firstName}</h2><div className="mt-1 flex items-center gap-1.5 text-[16px] font-bold text-[#55708b] sm:text-[18px]"><GraduationCap size={19} /> {grade}</div></div></div>
+              <div className="flex items-center gap-3">
+                <div className="h-[68px] w-[68px] shrink-0 overflow-hidden rounded-full border-4 border-white bg-[#dff7ff] shadow-md sm:h-[76px] sm:w-[76px]"><img src="/dashboard-assets/dashboard-avatar.svg" alt="Student avatar" className="h-full w-full object-cover" /></div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h2 className="truncate text-[25px] font-black leading-tight sm:text-[30px]">{firstName}</h2>
+                    <button type="button" onClick={handleLogout} disabled={loggingOut} aria-label="Log out" title="Log out" className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#ffd7d7] bg-[#fff5f5] text-[#d43d3d] shadow-sm transition active:scale-95 disabled:opacity-60 sm:h-10 sm:w-10"><LogOut size={17} /></button>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 text-[16px] font-bold text-[#55708b] sm:text-[18px]"><GraduationCap size={19} /> {grade}</div>
+                </div>
+              </div>
               <div className="mt-3 grid grid-cols-3 gap-1.5 border-t border-[#dcecf6] pt-3 sm:gap-2"><div className="flex items-center justify-center gap-1.5 rounded-xl bg-[#fff6df] px-1.5 py-1.5"><span className="text-base">🔥</span><p className="text-[11px] font-black leading-none">{profile?.current_streak ?? 0} Streak</p></div><div className="flex items-center justify-center gap-1.5 rounded-xl bg-[#fff8d9] px-1.5 py-1.5"><span className="text-base">⭐</span><p className="text-[11px] font-black leading-none">{profile?.xp ?? 0} XP</p></div><div className="flex items-center justify-center gap-1.5 rounded-xl bg-[#eef8ff] px-1.5 py-1.5"><span className="text-base">🏅</span><p className="text-[11px] font-black leading-none">12 Badges</p></div></div>
               <div className="mt-1.5 grid grid-cols-2 gap-1.5 border-t border-[#dcecf6] pt-1.5"><div className="flex items-center justify-center gap-1.5 rounded-xl bg-[#fff8d9] px-1.5 py-1.5"><span className="text-sm">✨</span><p className="text-[11px] font-black leading-none">Mind Sparks <span className="text-[#806a12]">{mind.balance}</span></p></div><div className="flex items-center justify-center gap-1.5 rounded-xl bg-[#eaf7ff] px-1.5 py-1.5"><span className="text-sm">⏱️</span><p className="text-[11px] font-black leading-none">Mind Time <span className="text-[#25638d]">{formatMindTime(mind.remaining_seconds)}</span></p></div></div>
-              <button type="button" onClick={handleLogout} disabled={loggingOut} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#ffd7d7] bg-[#fff5f5] px-3 py-2.5 text-sm font-black text-[#d43d3d] transition active:scale-[0.99] disabled:opacity-60"><LogOut size={17} />{loggingOut ? "Logging out…" : "Log Out"}</button>
             </div>
 
             <div className="mb-7 pl-1 sm:mb-8 sm:pl-2 lg:pl-5"><h1 className="text-[38px] font-black leading-none tracking-tight sm:text-[48px] lg:text-[54px]">Hi {firstName}! <span className="inline-block">👋</span></h1><p className="mt-3 text-[19px] font-semibold text-[#6685a4] sm:text-[23px] lg:text-[25px]">Ready for today’s math adventure?</p></div>
