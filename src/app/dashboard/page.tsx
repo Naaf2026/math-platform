@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, BarChart3, Gamepad2, GraduationCap, Home, Settings, Trophy, Gift } from "lucide-react";
+import { Bell, BarChart3, Gamepad2, GraduationCap, Home, LogOut, Settings, Trophy, Gift } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = { full_name: string | null; grade: string | null; xp: number; current_streak: number };
@@ -15,6 +15,8 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [mind, setMind] = useState<MindStatus>({ balance: 0, remaining_seconds: 0 });
   const [loading, setLoading] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -46,6 +48,15 @@ export default function DashboardPage() {
     return () => window.clearInterval(timer);
   }, []);
 
+  async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    const supabase = createClient();
+    if (!supabase) { window.location.href = "/login"; return; }
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  }
+
   if (loading) return <main className="grid min-h-screen place-items-center bg-[#eef9ff]"><div className="rounded-3xl bg-white px-8 py-6 font-black text-[#083d78] shadow-xl">Loading…</div></main>;
 
   const firstName = (profile?.full_name || "Student").split(" ")[0];
@@ -63,7 +74,7 @@ export default function DashboardPage() {
             <Link href="/rewards" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Gift size={25} /> Rewards</Link>
             <Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><BarChart3 size={25} /> Progress</Link>
           </nav>
-          <div className="flex items-center gap-2 sm:gap-3"><div className="hidden items-center gap-3 rounded-full bg-white/10 px-3 py-1.5 sm:flex"><span className="text-sm font-black">✨ {mind.balance}</span><span className="text-sm font-black">⏱️ Mind Time {formatMindTime(mind.remaining_seconds)}</span></div><button aria-label="Notifications" className="relative grid h-11 w-11 place-items-center rounded-full hover:bg-white/10 sm:h-12 sm:w-12"><Bell size={24} /><span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-red-400" /></button><button aria-label="Settings" className="grid h-11 w-11 place-items-center rounded-full bg-[#197bdc] shadow-sm sm:h-12 sm:w-12"><Settings size={24} /></button></div>
+          <div className="flex items-center gap-2 sm:gap-3"><div className="hidden items-center gap-3 rounded-full bg-white/10 px-3 py-1.5 sm:flex"><span className="text-sm font-black">✨ {mind.balance}</span><span className="text-sm font-black">⏱️ Mind Time {formatMindTime(mind.remaining_seconds)}</span></div><button aria-label="Notifications" className="relative grid h-11 w-11 place-items-center rounded-full hover:bg-white/10 sm:h-12 sm:w-12"><Bell size={24} /><span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-red-400" /></button><button aria-label="Settings" onClick={() => setSettingsOpen(true)} className="grid h-11 w-11 place-items-center rounded-full bg-[#197bdc] shadow-sm transition hover:bg-[#2589ea] sm:h-12 sm:w-12"><Settings size={24} /></button></div>
         </div>
       </header>
 
@@ -87,7 +98,7 @@ export default function DashboardPage() {
             <div className="grid gap-6 md:grid-cols-3 lg:gap-7">
               <Link href="/challenge" className="group relative h-auto min-h-[500px] overflow-hidden rounded-[32px] border-2 border-[#ffbd28] bg-[#fff3cc] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[500px] md:min-h-0"><div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-[#ffd45c]"><img src="/dashboard-assets/dashboard-daily.svg" alt="Daily Challenge" className="block h-full w-full object-cover" /></div><div className="absolute left-8 right-8 top-[232px] bottom-0 rounded-t-[70px] bg-[#fffaf0] px-2 pt-7 sm:pt-8"><h2 className="text-[34px] font-black leading-[0.95] sm:text-[38px]">Daily<br />Challenge</h2><p className="mt-4 text-[17px] font-bold text-[#55708b]">📋 &nbsp;10 Questions • Earn XP</p><div className="absolute bottom-5 left-2 right-2 rounded-full bg-[#ffad16] px-6 py-3.5 text-center text-[21px] font-black text-white shadow-md">Start →</div></div></Link>
               <Link href="/training" className="group relative h-auto min-h-[500px] overflow-hidden rounded-[32px] border-2 border-[#43bdf4] bg-[#e4f6ff] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[500px] md:min-h-0"><div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-[#219eea]"><img src="/dashboard-assets/dashboard-training.svg" alt="Math Training" className="block h-full w-full object-contain px-2 py-1" /></div><div className="absolute left-8 right-8 top-[232px] bottom-0 rounded-t-[70px] bg-[#e8f7ff] px-2 pt-7 sm:pt-8"><h2 className="text-[38px] font-black leading-none">Training</h2><p className="mt-4 text-[18px] font-bold text-[#55708b]">Practice your skills</p><div className="absolute bottom-5 left-2 right-2 rounded-full bg-[#197fe9] px-6 py-3.5 text-center text-[21px] font-black text-white shadow-md">Practice →</div></div></Link>
-              <Link href="/peer-challenge" className="group relative h-auto min-h-[500px] overflow-hidden rounded-[32px] border-2 border-[#ffab8d] bg-[#fff0e9] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[500px] md:min-h-0"><div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-[#ff855f"><img src="/dashboard-assets/dashboard-peer.svg" alt="Peer Challenge" className="block h-full w-full object-cover" /></div><div className="absolute left-8 right-8 top-[232px] bottom-0 rounded-t-[70px] bg-[#fff3ef] px-2 pt-7 sm:pt-8"><h2 className="text-[34px] font-black leading-none sm:text-[36px]">Peer Challenge</h2><p className="mt-4 text-[18px] font-bold text-[#55708b]">Challenge a friend</p><div className="absolute bottom-5 left-2 right-2 rounded-full bg-[#ff6035] px-6 py-3.5 text-center text-[21px] font-black text-white shadow-md">Play →</div></div></Link>
+              <Link href="/peer-challenge" className="group relative h-auto min-h-[500px] overflow-hidden rounded-[32px] border-2 border-[#ffab8d] bg-[#fff0e9] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[500px] md:min-h-0"><div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-[#ff855f]"><img src="/dashboard-assets/dashboard-peer.svg" alt="Peer Challenge" className="block h-full w-full object-cover" /></div><div className="absolute left-8 right-8 top-[232px] bottom-0 rounded-t-[70px] bg-[#fff3ef] px-2 pt-7 sm:pt-8"><h2 className="text-[34px] font-black leading-none sm:text-[36px]">Peer Challenge</h2><p className="mt-4 text-[18px] font-bold text-[#55708b]">Challenge a friend</p><div className="absolute bottom-5 left-2 right-2 rounded-full bg-[#ff6035] px-6 py-3.5 text-center text-[21px] font-black text-white shadow-md">Play →</div></div></Link>
             </div>
           </div>
         </section>
@@ -100,6 +111,16 @@ export default function DashboardPage() {
         <Link href="/rewards" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><Gift size={20} />Rewards</Link>
         <Link href="/progress" className="grid place-items-center gap-1 rounded-xl py-2 text-xs font-black text-slate-500"><BarChart3 size={20} />Progress</Link>
       </nav>
+
+      {settingsOpen && (
+        <div className="fixed inset-0 z-[70] grid place-items-center bg-[#062c54]/45 p-4 backdrop-blur-[3px]" onClick={() => !loggingOut && setSettingsOpen(false)}>
+          <div className="w-full max-w-[360px] rounded-[28px] bg-white p-5 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-center gap-3"><div className="grid h-11 w-11 place-items-center rounded-2xl bg-[#eaf4ff] text-[#197bdc]"><Settings size={22} /></div><div><h2 className="text-xl font-black text-[#083d78]">Settings</h2><p className="text-sm font-semibold text-[#7189a0]">Account options</p></div></div>
+            <button type="button" onClick={handleLogout} disabled={loggingOut} className="mt-5 flex w-full items-center gap-3 rounded-2xl border border-[#ffd7d7] bg-[#fff5f5] px-4 py-3.5 text-left font-black text-[#d43d3d] transition hover:bg-[#ffeaea] disabled:opacity-60"><LogOut size={21} />{loggingOut ? "Logging out…" : "Log Out"}</button>
+            <button type="button" onClick={() => setSettingsOpen(false)} disabled={loggingOut} className="mt-2.5 w-full rounded-2xl px-4 py-3 text-sm font-black text-[#6a8097] transition hover:bg-[#f3f7fa]">Cancel</button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
