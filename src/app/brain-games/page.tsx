@@ -15,7 +15,7 @@ type Zone = {
 const zones: Zone[] = [
   {
     id: "memory",
-    label: "Memory — Explore Memory Games",
+    label: "Brain Boost — Explore Brain Boost Games",
     href: "/brain-games/memory",
     x: "10%",
     y: "30%",
@@ -24,7 +24,7 @@ const zones: Zone[] = [
   },
   {
     id: "flexibility",
-    label: "Flexibility — Explore Flexibility Games",
+    label: "Brain Twist — Explore Brain Twist Games",
     href: "/brain-games/flexibility",
     x: "37%",
     y: "34%",
@@ -33,7 +33,7 @@ const zones: Zone[] = [
   },
   {
     id: "speed",
-    label: "Speed — Explore Speed Games",
+    label: "Speed Rush — Explore Speed Rush Games",
     href: "/brain-games/speed",
     x: "68%",
     y: "29%",
@@ -42,7 +42,7 @@ const zones: Zone[] = [
   },
   {
     id: "attention",
-    label: "Attention — Explore Attention Games",
+    label: "Spot On! — Explore Spot On! Games",
     href: "/brain-games/attention",
     x: "10%",
     y: "52%",
@@ -51,7 +51,7 @@ const zones: Zone[] = [
   },
   {
     id: "problem-solving",
-    label: "Problem Solving — Explore Problem Solving Games",
+    label: "Puzzle Power — Explore Puzzle Power Games",
     href: "/brain-games/problem-solving",
     x: "37%",
     y: "61%",
@@ -60,7 +60,7 @@ const zones: Zone[] = [
   },
   {
     id: "adventure",
-    label: "Adventure — Explore Adventure Games",
+    label: "Brain Quest — Explore Brain Quest Games",
     href: "/brain-games/adventure",
     x: "68%",
     y: "52%",
