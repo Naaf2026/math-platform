@@ -7,12 +7,12 @@ import { createClient } from "@/lib/supabase/client";
 
 type Zone = { id: string; label: string; href: string; x: string; y: string; width: string; height: string };
 const zones: Zone[] = [
-  { id: "memory", label: "Brain Boost", href: "/brain-games/memory", x: "7%", y: "28%", width: "27%", height: "22%" },
-  { id: "flexibility", label: "Brain Twist", href: "/brain-games/flexibility", x: "35%", y: "28%", width: "28%", height: "22%" },
-  { id: "speed", label: "Speed Rush", href: "/brain-games/speed", x: "64%", y: "28%", width: "29%", height: "22%" },
-  { id: "attention", label: "Spot On!", href: "/brain-games/attention", x: "7%", y: "55%", width: "27%", height: "22%" },
-  { id: "problem-solving", label: "Puzzle Power", href: "/brain-games/problem-solving", x: "35%", y: "55%", width: "28%", height: "22%" },
-  { id: "adventure", label: "Brain Quest", href: "/brain-games/adventure", x: "64%", y: "55%", width: "29%", height: "22%" },
+  { id: "memory", label: "Brain Boost", href: "/brain-games/memory", x: "10%", y: "30%", width: "31%", height: "19%" },
+  { id: "flexibility", label: "Brain Twist", href: "/brain-games/flexibility", x: "37%", y: "34%", width: "27%", height: "20%" },
+  { id: "speed", label: "Speed Rush", href: "/brain-games/speed", x: "68%", y: "29%", width: "25%", height: "20%" },
+  { id: "attention", label: "Spot On!", href: "/brain-games/attention", x: "10%", y: "52%", width: "30%", height: "22%" },
+  { id: "problem-solving", label: "Puzzle Power", href: "/brain-games/problem-solving", x: "37%", y: "61%", width: "29%", height: "21%" },
+  { id: "adventure", label: "Brain Quest", href: "/brain-games/adventure", x: "68%", y: "52%", width: "27%", height: "22%" },
 ];
 const mobileCards = [
   ["memory", "Brain Boost", "🧠", "/brain-games/memory", "/assets/brain-games-cards/memory-tiles.png"],
@@ -42,8 +42,8 @@ export default function BrainGamesPage() {
 
   return <main className="min-h-screen overflow-x-hidden bg-[#05b8d8]">
     <section className="relative min-h-screen overflow-hidden px-3 pb-5 pt-3 md:hidden">
-      <img src="/assets/brain-games/mind-quest-map.svg" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center" />
-      <div className="absolute inset-0 bg-slate-950/15" aria-hidden="true" />
+      <img src="/assets/brain-games/brain-games-map.webp" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center" />
+      <div className="absolute inset-0 bg-slate-950/20" aria-hidden="true" />
       <div className="relative z-10 mx-auto max-w-md">
         <div className="mb-3 flex items-center justify-between rounded-2xl border border-white/60 bg-[#062b57]/85 px-3 py-2 text-white shadow-xl backdrop-blur-md">
           <Link href="/dashboard" aria-label="Home" className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-white/20 px-2.5 text-[10px] font-black text-white ring-1 ring-white/30 transition active:scale-95"><House size={14} /> Home</Link>
@@ -62,9 +62,10 @@ export default function BrainGamesPage() {
     </section>
 
     <section className="relative mx-auto hidden w-full max-w-[1800px] md:block"><div className="relative aspect-[1672/940] w-full">
-      <img src="/assets/brain-games/mind-quest-map.svg" alt="Mind Quest Maldives-inspired island world" className="absolute inset-0 h-full w-full object-cover" />
+      <img src="/assets/brain-games/brain-games-map.webp" alt="Mind Quest Maldives-inspired island world" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute left-1/2 top-[4%] z-20 -translate-x-1/2 text-center drop-shadow-lg"><div className="text-4xl font-black tracking-wide text-white sm:text-5xl lg:text-6xl">MIND QUEST</div><div className="mt-1 text-sm font-extrabold text-white/95 sm:text-base">PLAY • LEARN • GROW</div></div>
       <div className="absolute right-[2%] top-[2.5%] z-30 flex flex-wrap items-center justify-end gap-2 rounded-2xl border border-white/50 bg-[#062b57]/85 px-3 py-2 text-white shadow-xl backdrop-blur-md sm:rounded-full sm:px-4"><span className="flex items-center gap-1.5 text-sm font-black"><Clock3 size={15} /> {brainTime === null ? "--:--" : formatTime(brainTime)}</span><span className="text-[10px] font-bold text-white/75 sm:text-xs">Mind Time</span><span className="h-4 w-px bg-white/25" /><span className="text-sm font-black">✨ {mindSparks === null ? "—" : mindSparks}</span>{freePlayAvailable && <span className="hidden rounded-full bg-white/15 px-2 py-1 text-[10px] font-extrabold sm:inline">🎁 Free Play</span>}</div>
-      {zones.map(zone => <Link key={zone.id} href={zone.href} aria-label={zone.label} className="group absolute z-10 rounded-[24px] focus:outline-none focus-visible:ring-4 focus-visible:ring-white/90" style={{ left: zone.x, top: zone.y, width: zone.width, height: zone.height }}><span className="absolute inset-1 rounded-[22px] border-2 border-transparent transition-all duration-200 group-hover:border-white/70 group-hover:bg-white/10 group-hover:shadow-[0_0_30px_rgba(255,255,255,.28)]" /></Link>)}
+      {zones.map(zone => <Link key={zone.id} href={zone.href} aria-label={zone.label} className="group absolute z-10 rounded-[24px] focus:outline-none focus-visible:ring-4 focus-visible:ring-white/90" style={{ left: zone.x, top: zone.y, width: zone.width, height: zone.height }}><span className="absolute inset-1 rounded-[22px] border-2 border-transparent transition-all duration-200 group-hover:border-white/70 group-hover:bg-white/10 group-hover:shadow-[0_0_30px_rgba(255,255,255,.28)]" /><span className="absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#062b57]/90 px-4 py-2 text-xs font-extrabold text-white opacity-0 shadow-xl backdrop-blur transition-all duration-200 group-hover:translate-y-1 group-hover:opacity-100">{zone.label}</span></Link>)}
       <Link href="/dashboard" aria-label="Home" className="absolute bottom-[3.5%] left-[1.5%] z-20 inline-flex h-[5%] min-h-9 w-auto min-w-9 items-center justify-center gap-1.5 rounded-full border-2 border-white/80 bg-[#062b57]/80 px-3 text-white shadow-lg backdrop-blur transition hover:scale-105 hover:bg-[#062b57]"><House size={15} /><span className="text-[10px] font-black uppercase tracking-wide">Home</span></Link>
     </div></section>
   </main>;
