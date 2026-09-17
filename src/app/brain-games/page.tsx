@@ -43,9 +43,9 @@ export default function BrainGamesPage() {
               <p className="brain-games-rules-kicker">FAHI VISSNUN • BRAIN GAMES</p>
               <h2 id="brain-games-rules-title">Rules of Brain Games</h2>
               <ol>
-                <li><span>1</span><p>Brain Games are open from <b>8:00 a.m. to 6:00 p.m.</b> every day.</p></li>
-                <li><span>2</span><p>You can play for a maximum of <b>25 minutes in a day.</b></p></li>
-                <li><span>3</span><p>Each game needs <b>1 Mind Spark per day</b> to unlock.</p></li>
+                <li><span>1</span><p>Mind Games are open from <b>10:00 a.m. to 8:00 p.m.</b> every day.</p></li>
+                <li><span>2</span><p>You can play for a maximum of <b>30 minutes in a day.</b></p></li>
+                <li><span>3</span><p>Each game needs <b>3 Mind Sparks per day</b> to unlock.</p></li>
               </ol>
               <p className="brain-games-rules-note">(Earn Mind Sparks from Homework, Daily Bonus and Daily Challenge)</p>
               <div className="brain-games-rules-actions">
