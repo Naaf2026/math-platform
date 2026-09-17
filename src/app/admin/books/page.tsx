@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, BookOpen, CheckCircle2, FileText, Plus, RefreshCw, Search, ShieldCheck, Sparkles, Upload, X, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -33,21 +33,40 @@ export default function AdminBooksPage(){
  useEffect(()=>{void load()},[]);
 
  function reset(){setTitle("");setSubject("Mathematics");setGrade("5");setMinAge("");setMaxAge("");setYear(String(new Date().getFullYear()));setPublisher("");setCurriculumId("");setNewCurriculum("");setDescription("");setFile(null);setShowForm(false);}
+ function describeError(err:unknown){
+  if(!err)return "Unknown error.";
+  if(typeof err==="string")return err;
+  const e=err as {message?:string;code?:string;details?:string;hint?:string;name?:string};
+  const parts=[e.message,e.code?`code ${e.code}`:null,e.details,e.hint].filter(Boolean);
+  return parts.join(" — ")||e.name||"Unknown error.";
+ }
  async function addBook(e:FormEvent){
   e.preventDefault();if(!supabase)return;
   if(!title.trim()){setNotice("Book title is required.");return;}if(!file){setNotice("Please select a PDF book.");return;}if(file.type!=="application/pdf"){setNotice("Only PDF files are supported.");return;}if(file.size>50*1024*1024){setNotice("Maximum PDF size is 50 MB.");return;}
   setBusy(true);setNotice("Uploading book…");
+  let uploadedPath:string|null=null;
   try{
    let cid=curriculumId||null;
    if(!cid&&newCurriculum.trim()){
-    const{data,error}=await supabase.from("curriculums").insert({name:newCurriculum.trim(),active:true}).select("id").single();if(error)throw error;cid=data.id;
+    setNotice("Creating curriculum…");
+    const{data,error}=await supabase.from("curriculums").insert({name:newCurriculum.trim(),active:true}).select("id").single();
+    if(error)throw new Error(`Curriculum creation failed: ${describeError(error)}`);cid=data.id;
    }
-   const safe=file.name.replace(/[^a-zA-Z0-9._-]+/g,"-");const path=`${grade}/${crypto.randomUUID()}-${safe}`;
-   const{error:ue}=await supabase.storage.from("curriculum-books").upload(path,file,{contentType:"application/pdf",upsert:false});if(ue)throw ue;
+   const safe=file.name.replace(/[^a-zA-Z0-9._-]+/g,"-");
+   const path=`${grade}/${crypto.randomUUID()}-${safe}`;
+   uploadedPath=path;
+   setNotice("Uploading PDF to secure book storage…");
+   const{error:ue}=await supabase.storage.from("curriculum-books").upload(path,file,{contentType:"application/pdf",upsert:false});
+   if(ue)throw new Error(`PDF upload failed: ${describeError(ue)}`);
+   setNotice("Saving book record…");
    const{error:be}=await supabase.from("books").insert({curriculum_id:cid,title:title.trim(),subject,grade:Number(grade),min_age:minAge?Number(minAge):null,max_age:maxAge?Number(maxAge):null,academic_year:year?Number(year):null,publisher:publisher.trim()||null,description:description.trim()||null,file_path:path,file_name:file.name,file_size:file.size,processing_status:"pending",is_active:true});
-   if(be){await supabase.storage.from("curriculum-books").remove([path]);throw be;}
+   if(be)throw new Error(`Book record creation failed: ${describeError(be)}`);
+   uploadedPath=null;
    setNotice("Book added successfully. It is ready for indexing.");reset();await load();
-  }catch(err){setNotice(err instanceof Error?err.message:"Unable to add book.");}finally{setBusy(false)}
+  }catch(err){
+   if(uploadedPath)await supabase.storage.from("curriculum-books").remove([uploadedPath]);
+   setNotice(describeError(err));
+  }finally{setBusy(false)}
  }
  async function processBook(book:Book){
   if(!supabase)return;
@@ -82,8 +101,9 @@ export default function AdminBooksPage(){
   <section className="mt-6 rounded-3xl bg-gradient-to-r from-violet-50 to-cyan-50 p-6 ring-1 ring-violet-100"><div className="flex gap-4"><Sparkles className="shrink-0 text-violet-600"/><div><h2 className="font-black text-[#071b3a]">Book-to-AI pipeline</h2><p className="mt-1 text-sm leading-6 text-slate-600">Upload → Gemini reads the PDF → chapters → sections → learning objectives → AI Question Builder → validation → adaptive question bank.</p></div></div></section>
  </div></main>;
 }
-function Gate({status}:{status:string}){return <main className="min-h-screen bg-slate-50 p-6"><div className="mx-auto mt-24 max-w-xl rounded-[2rem] bg-white p-10 text-center shadow-xl"><ShieldCheck className="mx-auto text-violet-600" size={48}/><h1 className="mt-4 text-2xl font-black text-[#071b3a]">Book Library</h1><p className="mt-3 text-sm text-slate-500">{status}</p><Link href="/admin" className="mt-6 inline-flex rounded-2xl bg-violet-600 px-5 py-3 font-black text-white">Admin dashboard</Link></div></main>}
-function Field({label,children}:{label:string;children:React.ReactNode}){return <label className="block"><span className="mb-2 block text-xs font-black uppercase tracking-wider text-slate-500">{label}</span>{children}</label>}
-function Meta({l,v}:{l:string;v:string}){return <div className="rounded-xl bg-slate-50 p-3"><p className="text-[10px] font-black uppercase tracking-wider text-slate-400">{l}</p><p className="mt-1 truncate font-bold text-slate-600">{v}</p></div>}
-function Count({l,n}:{l:string;n:number}){return <div className="rounded-xl bg-emerald-50 p-2 text-center"><p className="text-lg font-black text-emerald-700">{n}</p><p className="text-[9px] font-black uppercase text-emerald-600">{l}</p></div>}
-function fmt(n:number|null){if(!n)return "Size unavailable";return n<1048576?`${Math.round(n/1024)} KB`:`${(n/1048576).toFixed(1)} MB`}
+
+function Field({label,children}:{label:string;children:ReactNode}){return <label className="block"><span className="mb-1.5 block text-xs font-black uppercase tracking-wider text-slate-500">{label}</span>{children}</label>}
+function Meta({l,v}:{l:string;v:string}){return <div className="rounded-xl bg-slate-50 p-3"><p className="font-black uppercase tracking-wider text-slate-400">{l}</p><p className="mt-1 truncate font-bold text-slate-700">{v}</p></div>}
+function Count({l,n}:{l:string;n:number}){return <div className="rounded-xl bg-emerald-50 p-3 text-center"><p className="text-lg font-black text-emerald-700">{n}</p><p className="text-[10px] font-black uppercase text-emerald-600">{l}</p></div>}
+function fmt(n:number|null){if(!n)return "—";return `${(n/1024/1024).toFixed(1)} MB`}
+function Gate({status}:{status:string}){return <main className="grid min-h-screen place-items-center bg-slate-50 p-6"><div className="max-w-lg rounded-3xl bg-white p-8 text-center shadow-xl"><ShieldCheck className="mx-auto text-violet-600" size={42}/><h1 className="mt-4 text-2xl font-black text-[#071b3a]">Book Library</h1><p className="mt-2 text-sm leading-6 text-slate-500">{status}</p></div></main>}
