@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, Flame, Home, Star } from "lucide-react";
+import { ArrowLeft, Brain, Flame, Home, Star } from "lucide-react";
 
 const challenges = [
   { title: "Brain Boost", href: "/brain-games/memory", position: "challenge-one" },
@@ -21,7 +21,7 @@ export default function BrainGamesPage() {
       <div className="brain-games-shade" />
       <header className="brain-games-header">
         <Link href="/dashboard" className="brain-games-home"><ArrowLeft size={18} /> Home</Link>
-        <div className="brain-games-logo"><span>F</span> FAHI VISSNUN <small>Math Learning Platform</small></div>
+        <div className="brain-games-logo"><span><Brain size={19} strokeWidth={2.5} /></span> FAHI VISSNUN <small>Math Learning Platform</small></div>
         <div className="brain-games-stats"><span><Flame size={17} fill="currentColor" /> 3</span><span><Star size={17} fill="currentColor" /> 120</span><Home size={18} /></div>
       </header>
       <section className="brain-games-content">
@@ -38,7 +38,7 @@ export default function BrainGamesPage() {
       {selectedChallenge && (
         <div className="brain-games-rules-backdrop" role="presentation" onClick={() => setSelectedChallenge(null)}>
           <section className="brain-games-rules" role="dialog" aria-modal="true" aria-labelledby="brain-games-rules-title" onClick={(event) => event.stopPropagation()}>
-            <div className="brain-games-rules-art" aria-hidden="true"><span>F</span><i>✦</i><b>✦</b></div>
+            <div className="brain-games-rules-art" aria-hidden="true"><span><Brain size={62} strokeWidth={2.2} /></span><i>✦</i><b>✦</b></div>
             <div className="brain-games-rules-copy">
               <p className="brain-games-rules-kicker">FAHI VISSNUN - MIND GAMES</p>
               <h2 id="brain-games-rules-title">Rules of Main Games</h2>
