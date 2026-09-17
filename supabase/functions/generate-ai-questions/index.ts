@@ -82,7 +82,7 @@ async function generateWithOpenAI(model: string, openaiKey: string, prompt: stri
         model,
         input: [{ role: 'user', content: [{ type: 'input_text', text: prompt }] }],
         temperature: 0.4,
-        text: { format: { type: 'json_schema', name: 'curriculum_questions', strict: true, schema: responseSchema } }
+        text: { format: { type: 'json_schema', name: 'curriculum_questions', strict: false, schema: responseSchema } }
       }),
     });
     const raw = await response.text();
