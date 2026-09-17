@@ -41,13 +41,13 @@ export default function BrainGamesPage() {
             <div className="brain-games-rules-art" aria-hidden="true"><span>F</span><i>✦</i><b>✦</b></div>
             <div className="brain-games-rules-copy">
               <p className="brain-games-rules-kicker">FAHI VISSNUN • BRAIN GAMES</p>
-              <h2 id="brain-games-rules-title">Ready for {selectedChallenge.title}?</h2>
-              <p className="brain-games-rules-intro">A quick challenge to make your thinking stronger.</p>
+              <h2 id="brain-games-rules-title">Rules of Brain Games</h2>
               <ol>
-                <li><span>1</span> Take your time and read each challenge carefully.</li>
-                <li><span>2</span> Earn points by answering as accurately as you can.</li>
-                <li><span>3</span> You can replay the game whenever you want.</li>
+                <li><span>1</span><p>Brain Games are open from <b>8:00 a.m. to 6:00 p.m.</b> every day.</p></li>
+                <li><span>2</span><p>You can play for a maximum of <b>25 minutes in a day.</b></p></li>
+                <li><span>3</span><p>Each game needs <b>1 Mind Spark per day</b> to unlock.</p></li>
               </ol>
+              <p className="brain-games-rules-note">(Earn Mind Sparks from Homework, Daily Bonus and Daily Challenge)</p>
               <div className="brain-games-rules-actions">
                 <button type="button" className="brain-games-rules-cancel" onClick={() => setSelectedChallenge(null)}>Back to map</button>
                 <Link href={selectedChallenge.href} className="brain-games-rules-start">Start game <span>→</span></Link>
