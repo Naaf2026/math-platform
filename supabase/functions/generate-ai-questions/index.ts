@@ -81,7 +81,6 @@ async function generateWithOpenAI(model: string, openaiKey: string, prompt: stri
       body: JSON.stringify({
         model,
         input: [{ role: 'user', content: [{ type: 'input_text', text: prompt }] }],
-        temperature: 0.4,
         text: { format: { type: 'json_schema', name: 'curriculum_questions', strict: false, schema: responseSchema } }
       }),
     });
