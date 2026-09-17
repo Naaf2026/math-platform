@@ -40,8 +40,8 @@ export default function BrainGamesPage() {
           <section className="brain-games-rules" role="dialog" aria-modal="true" aria-labelledby="brain-games-rules-title" onClick={(event) => event.stopPropagation()}>
             <div className="brain-games-rules-art" aria-hidden="true"><span>F</span><i>✦</i><b>✦</b></div>
             <div className="brain-games-rules-copy">
-              <p className="brain-games-rules-kicker">FAHI VISSNUN • BRAIN GAMES</p>
-              <h2 id="brain-games-rules-title">Rules of Brain Games</h2>
+              <p className="brain-games-rules-kicker">FAHI VISSNUN - MIND GAMES</p>
+              <h2 id="brain-games-rules-title">Rules of Main Games</h2>
               <ol>
                 <li><span>1</span><p>Mind Games are open from <b>10:00 a.m. to 8:00 p.m.</b> every day.</p></li>
                 <li><span>2</span><p>You can play for a maximum of <b>30 minutes in a day.</b></p></li>
