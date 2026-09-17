@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { ArrowLeft, Flame, Home, Star } from "lucide-react";
 
 const challenges = [
@@ -11,6 +14,8 @@ const challenges = [
 ];
 
 export default function BrainGamesPage() {
+  const [selectedChallenge, setSelectedChallenge] = useState<(typeof challenges)[number] | null>(null);
+
   return (
     <main className="brain-games-page">
       <div className="brain-games-shade" />
@@ -26,10 +31,31 @@ export default function BrainGamesPage() {
         <div className="brain-games-sparkles" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
         <div className="brain-games-image">
           {challenges.map((challenge) => (
-            <Link key={challenge.title} href={challenge.href} className={`brain-games-zone ${challenge.position}`} aria-label={`Play ${challenge.title}`} />
+            <button key={challenge.title} type="button" className={`brain-games-zone ${challenge.position}`} aria-label={`Play ${challenge.title}`} onClick={() => setSelectedChallenge(challenge)} />
           ))}
         </div>
       </section>
+      {selectedChallenge && (
+        <div className="brain-games-rules-backdrop" role="presentation" onClick={() => setSelectedChallenge(null)}>
+          <section className="brain-games-rules" role="dialog" aria-modal="true" aria-labelledby="brain-games-rules-title" onClick={(event) => event.stopPropagation()}>
+            <div className="brain-games-rules-art" aria-hidden="true"><span>F</span><i>✦</i><b>✦</b></div>
+            <div className="brain-games-rules-copy">
+              <p className="brain-games-rules-kicker">FAHI VISSNUN • BRAIN GAMES</p>
+              <h2 id="brain-games-rules-title">Ready for {selectedChallenge.title}?</h2>
+              <p className="brain-games-rules-intro">A quick challenge to make your thinking stronger.</p>
+              <ol>
+                <li><span>1</span> Take your time and read each challenge carefully.</li>
+                <li><span>2</span> Earn points by answering as accurately as you can.</li>
+                <li><span>3</span> You can replay the game whenever you want.</li>
+              </ol>
+              <div className="brain-games-rules-actions">
+                <button type="button" className="brain-games-rules-cancel" onClick={() => setSelectedChallenge(null)}>Back to map</button>
+                <Link href={selectedChallenge.href} className="brain-games-rules-start">Start game <span>→</span></Link>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   );
 }
