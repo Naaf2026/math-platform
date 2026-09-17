@@ -100,6 +100,44 @@ async function generateWithOpenAI(model: string, openaiKey: string, prompt: stri
   throw new Error(`OpenAI API request failed: ${lastDetail}`);
 }
 
+function normalizeGeneratedQuestion(q: any, book: any, chapter: any, objective: any) {
+  const rawOptions = Array.isArray(q.options) ? q.options : [];
+  const options = rawOptions
+    .map((option: any) => typeof option === 'string' ? option.trim() : String(option?.text ?? '').trim())
+    .filter(Boolean);
+
+  const rawAnswer = typeof q.correct_answer === 'object' && q.correct_answer !== null
+    ? q.correct_answer.value
+    : q.correct_answer;
+  const answerValue = String(rawAnswer ?? '').trim();
+
+  // OpenAI may return the option id (A/B/C...) as the correct answer.
+  // The existing platform validator compares the answer against option text,
+  // so convert an option id to its corresponding option text before saving.
+  let answer = answerValue;
+  if (Array.isArray(q.options) && answerValue) {
+    const matchingOption = q.options.find((option: any) =>
+      option && typeof option === 'object' && String(option.id ?? '').trim().toLowerCase() === answerValue.toLowerCase()
+    );
+    if (matchingOption?.text) answer = String(matchingOption.text).trim();
+  }
+
+  return {
+    topic: String(q.topic ?? objective?.title ?? chapter?.title ?? book.subject),
+    skill: String(q.skill ?? objective?.skill_code ?? 'curriculum'),
+    difficulty: q.difficulty,
+    question_type: q.question_type,
+    prompt: String(q.prompt ?? '').trim(),
+    options,
+    correct_answer: { value: answer },
+    explanation: String(q.explanation ?? '').trim(),
+    hint: String(q.hint ?? '').trim(),
+    interaction_config: q.interaction_config ?? {},
+    source_reference: q.source_reference ?? { book: book.title, chapter: chapter?.title ?? null },
+    ai_confidence: Number(q.ai_confidence ?? 0.7),
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'POST required' }, 405);
@@ -157,7 +195,7 @@ Deno.serve(async (req) => {
     }
 
     const context = [`BOOK: ${book.title}`,`SUBJECT: ${book.subject}`,`GRADE: ${grade}`,`TARGET AGE: ${age ?? `${book.min_age ?? ''}-${book.max_age ?? ''}`}`,`ACADEMIC YEAR: ${book.academic_year ?? 'not specified'}`,`CHAPTER: ${chapter?.title ?? 'not specified'}`,`LEARNING OBJECTIVE: ${objective?.title ?? 'not specified'}`,`OBJECTIVE DESCRIPTION: ${objective?.description ?? ''}`,`SKILL CODE: ${objective?.skill_code ?? ''}`,`COGNITIVE LEVEL: ${objective?.cognitive_level ?? ''}`,`CHAPTER CONTENT:\n${chapter?.content ?? ''}`,`SECTIONS:\n${sections.map(s => `[pages ${s.page_start ?? '?'}-${s.page_end ?? '?'}] ${s.title ?? ''}\n${s.content}`).join('\n\n')}`].join('\n');
-    const prompt = `You are the FAHI VISSNUN Curriculum Question Builder. Generate original questions using ONLY the supplied curriculum/book context. Do not invent facts outside the supplied content. Target grade ${grade}, age ${age ?? 'appropriate for the grade'}, subject ${book.subject}. Requested difficulty: ${difficulty}. Requested question types: ${questionTypes.join(', ')}. Generate exactly ${count} questions when enough source context exists. Every question must have one defensible answer, age-appropriate language, plausible distractors, a concise explanation and useful hint. For interactive types, populate interaction_config with data required by the renderer. Include source_reference with book title, chapter and page information when available. Avoid duplicates and near-duplicates. Return only JSON matching the schema.\n\n${context}`;
+    const prompt = `You are the FAHI VISSNUN Curriculum Question Builder. Generate original questions using ONLY the supplied curriculum/book context. Do not invent facts outside the supplied content. Target grade ${grade}, age ${age ?? 'appropriate for the grade'}, subject ${book.subject}. Requested difficulty: ${difficulty}. Requested question types: ${questionTypes.join(', ')}. Generate exactly ${count} questions when enough source context exists. Every question must have one defensible answer, age-appropriate language, plausible distractors, a concise explanation and useful hint. For multiple-choice questions, each option must have a unique id and text, and correct_answer.value must be either the exact option id or the exact option text. For interactive types, populate interaction_config with data required by the renderer. Include source_reference with book title, chapter and page information when available. Avoid duplicates and near-duplicates. Return only JSON matching the schema.\n\n${context}`;
 
     const model = provider === 'openai' ? openaiModel : geminiModel;
     const { data: job, error: jobError } = await admin.from('ai_generation_jobs').insert({ requested_by: user.id, book_id: book.id, chapter_id: chapter?.id ?? null, learning_objective_id: objective?.id ?? null, grade, age, subject: book.subject, difficulty, question_types: questionTypes, requested_count: count, status: 'processing', model }).select('id').single();
@@ -167,8 +205,23 @@ Deno.serve(async (req) => {
     try {
       const result = provider === 'openai' ? await generateWithOpenAI(model, openaiKey!, prompt) : await generateWithGemini(model, geminiKey!, prompt);
       const generated = Array.isArray(result?.questions) ? result.questions : [];
-      const rows = generated.slice(0, count).map((q: any) => ({ generation_job_id: job.id, book_id: book.id, chapter_id: chapter?.id ?? null, learning_objective_id: objective?.id ?? null, grade, age_min: book.min_age, age_max: book.max_age, subject: book.subject, topic: String(q.topic ?? objective?.title ?? chapter?.title ?? book.subject), skill: String(q.skill ?? objective?.skill_code ?? 'curriculum'), difficulty: q.difficulty, question_type: q.question_type, prompt: q.prompt, options: q.options ?? [], correct_answer: q.correct_answer ?? { value: '' }, explanation: q.explanation ?? '', hint: q.hint ?? '', interaction_config: q.interaction_config ?? {}, source_reference: q.source_reference ?? { book: book.title, chapter: chapter?.title ?? null }, ai_confidence: Number(q.ai_confidence ?? 0.7), validation_status: 'pending', validation_errors: [] }));
-      const validRows = rows.filter((q: any) => q.prompt && QUESTION_TYPES.includes(q.question_type) && DIFFICULTIES.includes(q.difficulty) && q.correct_answer?.value !== undefined);
+      const rows = generated.slice(0, count).map((q: any) => {
+        const normalized = normalizeGeneratedQuestion(q, book, chapter, objective);
+        return {
+          generation_job_id: job.id,
+          book_id: book.id,
+          chapter_id: chapter?.id ?? null,
+          learning_objective_id: objective?.id ?? null,
+          grade,
+          age_min: book.min_age,
+          age_max: book.max_age,
+          subject: book.subject,
+          ...normalized,
+          validation_status: 'pending',
+          validation_errors: []
+        };
+      });
+      const validRows = rows.filter((q: any) => q.prompt && QUESTION_TYPES.includes(q.question_type) && DIFFICULTIES.includes(q.difficulty) && q.correct_answer?.value !== undefined && String(q.correct_answer.value).trim());
       if (!validRows.length) throw new Error(`${provider} generated no valid questions (${generated.length} returned)`);
       const insert = await admin.from('ai_generated_questions').insert(validRows);
       if (insert.error) throw new Error(`Question insert failed: ${describeError(insert.error)}`);
