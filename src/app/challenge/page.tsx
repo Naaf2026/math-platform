@@ -68,15 +68,13 @@ export default function Challenge() {
       return;
     }
 
-    // learning_questions.options is stored as objects such as { id: "a", text: "..." }.
-    // Normalize the API shape once so the rest of the challenge can work with stable ids/text.
     const normalized = data.map((item: any) => ({
       ...item,
       options: Array.isArray(item.options)
-        ? item.options.map((option: any, index: number) => {
+        ? item.options.map((option: any, optionIndex: number) => {
             if (option && typeof option === "object") {
               return {
-                id: String(option.id ?? String.fromCharCode(97 + index)),
+                id: String(option.id ?? String.fromCharCode(97 + optionIndex)),
                 text: String(option.text ?? option.label ?? option.value ?? ""),
               };
             }
@@ -91,6 +89,15 @@ export default function Challenge() {
     setLoading(false);
   }
 
+  function shuffle(items: Q[]) {
+    const result = [...items];
+    for (let i = result.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+
   function startChallenge(selectedStage: ChallengeStage) {
     const aliases: Record<ChallengeStage, string[]> = {
       0: ["easy", "elementary", "beginner", "foundation"],
@@ -98,9 +105,18 @@ export default function Challenge() {
       2: ["hard", "advanced", "proficiency"],
       3: ["expert", "master", "challenge"],
     };
+
     const wanted = aliases[selectedStage];
     const matching = pool.filter((item) => wanted.some((term) => item.difficulty?.toLowerCase().includes(term)));
-    const chosen = (matching.length >= 5 ? matching : pool).slice(0, 10);
+    const other = pool.filter((item) => !matching.some((candidate) => candidate.id === item.id));
+
+    // Always prefer the selected proficiency level. If there are fewer than 10
+    // questions at that level, fill the remaining slots with other questions
+    // rather than falling back to the first questions in the pool. This prevents
+    // Change Level from showing the exact same question set again.
+    const selected = shuffle(matching).slice(0, 10);
+    const chosen = [...selected, ...shuffle(other).slice(0, Math.max(0, 10 - selected.length))];
+
     setStage(selectedStage);
     setQuestions(chosen);
     setIndex(0); setDraft(""); setSubmitted(false); setResultCorrect(null); setBuilt(0);
@@ -176,4 +192,4 @@ export default function Challenge() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) { return <div className="rounded-2xl bg-slate-50 p-4"><div className="text-xs font-black uppercase tracking-wider text-slate-400">{label}</div><div className="mt-1 text-2xl font-black text-slate-800">{value}</div></div>; }
+function Stat({ label, value }: { label: string; value: string }) { return <div className="rounded-2xl bg-slate-50 p-4"><div className="text-xs font-black uppercase tracking-wider text-slate-400">{label}</div><div className="mt-1 text-2xl font-black text-slate-800">{value}</div></div>; 
