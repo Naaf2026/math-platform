@@ -20,6 +20,55 @@ const responseSchema = {
 function json(data: unknown, status = 200) { return new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }); }
 function describeError(error: unknown): string { if (error instanceof Error) return error.message; if (typeof error === 'string') return error; try { return JSON.stringify(error); } catch { return String(error); } }
 
+function isDailyQuotaError(status: number, detail: string) {
+  const text = detail.toLowerCase();
+  return status === 429 && (
+    text.includes('quota exceeded') ||
+    text.includes('per day') ||
+    text.includes('requestsperday') ||
+    text.includes('generate_content_free_tier_requests') ||
+    text.includes('daily quota')
+  );
+}
+
+function isRetryableGeminiError(status: number, detail: string) {
+  if (status === 429) return !isDailyQuotaError(status, detail);
+  return status === 500 || status === 502 || status === 503 || status === 504;
+}
+
+async function generateWithGemini(model: string, geminiKey: string, prompt: string) {
+  const maxAttempts = 3;
+  let lastDetail = '';
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(geminiKey)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', responseJsonSchema: responseSchema, temperature: 0.4 } }),
+    });
+
+    const raw = await response.text();
+    if (response.ok) return JSON.parse(raw);
+
+    lastDetail = raw.slice(0, 1600);
+
+    if (isDailyQuotaError(response.status, lastDetail)) {
+      throw new Error(`Gemini daily quota exceeded for ${model}. The project's free-tier daily generation limit has been reached. Wait for the quota to reset or increase the Gemini API quota/billing tier. Original error: ${lastDetail}`);
+    }
+
+    if (!isRetryableGeminiError(response.status, lastDetail) || attempt === maxAttempts) {
+      throw new Error(`Gemini API error ${response.status}: ${lastDetail}`);
+    }
+
+    const retryAfter = Number(response.headers.get('retry-after'));
+    const baseDelay = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1000 * (2 ** (attempt - 1));
+    const jitter = Math.floor(Math.random() * 500);
+    await new Promise(resolve => setTimeout(resolve, Math.min(baseDelay + jitter, 10000)));
+  }
+
+  throw new Error(`Gemini API request failed: ${lastDetail}`);
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'POST required' }, 405);
@@ -75,9 +124,8 @@ Deno.serve(async (req) => {
     jobId = job.id;
 
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(geminiKey)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', responseJsonSchema: responseSchema, temperature: 0.4 } }) });
-      if (!response.ok) throw new Error(`Gemini API error ${response.status}: ${(await response.text()).slice(0, 1200)}`);
-      const result = await response.json(), text = result?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text ?? '').join('') ?? '';
+      const result = await generateWithGemini(model, geminiKey, prompt);
+      const text = result?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text ?? '').join('') ?? '';
       if (!text) throw new Error(`Gemini returned no structured content: ${JSON.stringify(result).slice(0, 1200)}`);
       const parsed = JSON.parse(text), generated = Array.isArray(parsed.questions) ? parsed.questions : [];
       const rows = generated.slice(0, count).map((q: any) => ({ generation_job_id: job.id, book_id: book.id, chapter_id: chapter?.id ?? null, learning_objective_id: objective?.id ?? null, grade, age_min: book.min_age, age_max: book.max_age, subject: book.subject, topic: String(q.topic ?? objective?.title ?? chapter?.title ?? book.subject), skill: String(q.skill ?? objective?.skill_code ?? 'curriculum'), difficulty: q.difficulty, question_type: q.question_type, prompt: q.prompt, options: q.options ?? [], correct_answer: q.correct_answer ?? { value: '' }, explanation: q.explanation ?? '', hint: q.hint ?? '', interaction_config: q.interaction_config ?? {}, source_reference: q.source_reference ?? { book: book.title, chapter: chapter?.title ?? null }, ai_confidence: Number(q.ai_confidence ?? 0.7), validation_status: 'pending', validation_errors: [] }));
