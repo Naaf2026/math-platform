@@ -66,11 +66,68 @@ const extractionSchema = {
           template_name: { type: 'string' },
           question_type: { type: 'string' },
           template_text: { type: 'string' },
-          variables: { type: 'object', additionalProperties: true },
-          answer_rules: { type: 'object', additionalProperties: true },
-          illustration_config: { type: 'object', additionalProperties: true },
-          interaction_config: { type: 'object', additionalProperties: true },
-          example_values: { type: 'object', additionalProperties: true },
+          // Dynamic JSON is represented as key/value entries because OpenAI strict
+          // JSON schemas do not allow arbitrary object properties.
+          variables: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                key: { type: 'string' },
+                value: { type: 'string' },
+              },
+              required: ['key', 'value'],
+              additionalProperties: false,
+            },
+          },
+          answer_rules: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                key: { type: 'string' },
+                value: { type: 'string' },
+              },
+              required: ['key', 'value'],
+              additionalProperties: false,
+            },
+          },
+          illustration_config: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                key: { type: 'string' },
+                value: { type: 'string' },
+              },
+              required: ['key', 'value'],
+              additionalProperties: false,
+            },
+          },
+          interaction_config: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                key: { type: 'string' },
+                value: { type: 'string' },
+              },
+              required: ['key', 'value'],
+              additionalProperties: false,
+            },
+          },
+          example_values: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                key: { type: 'string' },
+                value: { type: 'string' },
+              },
+              required: ['key', 'value'],
+              additionalProperties: false,
+            },
+          },
           source_excerpt: { type: 'string' },
         },
         required: ['chapter_number','source_page_start','source_page_end','template_name','question_type','template_text','variables','answer_rules','illustration_config','interaction_config','example_values','source_excerpt'],
@@ -87,6 +144,19 @@ function json(data: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
+}
+
+function restoreStructuredObject(value: unknown): Record<string, unknown> {
+  if (!Array.isArray(value)) return {};
+  const out: Record<string, unknown> = {};
+  for (const entry of value) {
+    if (!entry || typeof entry !== 'object') continue;
+    const key = String((entry as any).key ?? '').trim();
+    if (!key) continue;
+    const raw = String((entry as any).value ?? '');
+    try { out[key] = JSON.parse(raw); } catch { out[key] = raw; }
+  }
+  return out;
 }
 
 function describeError(error: unknown): string {
@@ -132,7 +202,9 @@ IMPORTANT:
 - Preserve mathematical meaning, notation, examples, and age-appropriate pedagogy.
 - Identify recurring question/activity patterns, not just topics.
 - For each question template, describe the underlying pattern so new values can be generated without copying the original question.
-- Capture illustration and interaction requirements as structured JSON. Do not use emoji as a substitute for textbook visuals.
+- Capture illustration and interaction requirements as structured JSON.
+- Because the response uses a strict schema, variables, answer_rules, illustration_config, interaction_config, and example_values must be returned as arrays of {key, value}; each value must be a JSON-encoded string representing the intended value (for example, \"3\", \"\\\"number_line\\\"\", or \"[1,2,3]\").
+- Do not use emoji as a substitute for textbook visuals.
 - For number-line activities, describe start/end/step/movement data rather than combining multiple mathematical symbols into one visual cell.
 - For place-value activities, describe hundreds/tens/ones counts and the required student inputs.
 - For geometry, describe shapes, counts, measurements, labels, and relationships needed by a renderer.
@@ -324,11 +396,11 @@ Deno.serve(async (req) => {
           template_name: String(t.template_name).trim(),
           question_type: String(t.question_type).trim(),
           template_text: String(t.template_text).trim(),
-          variables: t.variables ?? {},
-          answer_rules: t.answer_rules ?? {},
-          illustration_config: t.illustration_config ?? {},
-          interaction_config: t.interaction_config ?? {},
-          example_values: t.example_values ?? {},
+          variables: restoreStructuredObject(t.variables),
+          answer_rules: restoreStructuredObject(t.answer_rules),
+          illustration_config: restoreStructuredObject(t.illustration_config),
+          interaction_config: restoreStructuredObject(t.interaction_config),
+          example_values: restoreStructuredObject(t.example_values),
           source_excerpt: String(t.source_excerpt ?? '').slice(0, 3000),
           active: true,
         };
