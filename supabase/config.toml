@@ -6,3 +6,6 @@ verify_jwt = true
 
 [functions.generate-ai-questions]
 verify_jwt = true
+
+[functions.generate-daily-challenge]
+verify_jwt = true
