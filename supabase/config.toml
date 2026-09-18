@@ -9,3 +9,6 @@ verify_jwt = true
 
 [functions.generate-daily-challenge]
 verify_jwt = true
+
+[functions.process-book-openai]
+verify_jwt = true
