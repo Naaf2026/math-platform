@@ -226,7 +226,6 @@ Academic year: ${book.academic_year ?? 'not specified'}`;
         { type: 'input_text', text: prompt },
       ],
     }],
-    temperature: 0.1,
     text: {
       format: {
         type: 'json_schema',
