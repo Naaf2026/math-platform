@@ -6,7 +6,7 @@ import { ArrowLeft, BookOpen, CheckCircle2, FileText, Plus, RefreshCw, Search, S
 import { createClient } from "@/lib/supabase/client";
 import { getUserRole } from "@/app/auth/role-router";
 
-type Book={id:string;title:string;subject:string;grade:number;min_age:number|null;max_age:number|null;academic_year:number|null;publisher:string|null;description:string|null;file_name:string|null;file_size:number|null;processing_status:string;processing_error?:string|null;indexed_at?:string|null;indexed_chapter_count?:number;indexed_section_count?:number;indexed_objective_count?:number;is_active:boolean;created_at:string;curriculum?:{name:string}|null};
+type Book={id:string;title:string;subject:string;grade:number;min_age:number|null;max_age:number|null;academic_year:number|null;publisher:string|null;description:string|null;file_path?:string|null;file_name:string|null;file_size:number|null;processing_status:string;processing_error?:string|null;indexed_at?:string|null;indexed_chapter_count?:number;indexed_section_count?:number;indexed_objective_count?:number;is_active:boolean;created_at:string;curriculum?:{name:string}|null};
 type Curriculum={id:string;name:string};
 const input="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100";
 
@@ -24,7 +24,7 @@ export default function AdminBooksPage(){
   const role=await getUserRole(supabase,user.id);
   if(role!=="admin"){setStatus("Administrator access is required.");return;}
   const[{data:b,error:be},{data:c,error:ce}]=await Promise.all([
-   supabase.from("books").select("id,title,subject,grade,min_age,max_age,academic_year,publisher,description,file_name,file_size,processing_status,processing_error,indexed_at,indexed_chapter_count,indexed_section_count,indexed_objective_count,is_active,created_at,curriculum:curriculums(name)").eq("is_active",true).order("created_at",{ascending:false}),
+   supabase.from("books").select("id,title,subject,grade,min_age,max_age,academic_year,publisher,description,file_path,file_name,file_size,processing_status,processing_error,indexed_at,indexed_chapter_count,indexed_section_count,indexed_objective_count,is_active,created_at,curriculum:curriculums(name)").eq("is_active",true).order("created_at",{ascending:false}),
    supabase.from("curriculums").select("id,name").eq("active",true).order("name")
   ]);
   if(be){setStatus(be.message);return;}if(ce){setStatus(ce.message);return;}
@@ -100,9 +100,9 @@ export default function AdminBooksPage(){
   try{
    const{error}=await supabase.from("books").delete().eq("id",book.id);
    if(error)throw new Error(`Book deletion failed: ${describeError(error)}`);
-   if(book.file_name){
-    // The database row stores the original filename; fetch the actual storage path before deletion when available.
-    // Storage cleanup is attempted using the grade folder and filename pattern used by uploads.
+   if(book.file_path){
+    const{error:se}=await supabase.storage.from("curriculum-books").remove([book.file_path]);
+    if(se)setNotice(`Book record deleted, but PDF cleanup failed: ${describeError(se)}`);
    }
    setNotice(`“${book.title}” was permanently deleted.`);await load();
   }catch(err){setNotice(describeError(err));}finally{setBusy(false)}
