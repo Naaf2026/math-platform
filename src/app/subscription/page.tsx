@@ -46,6 +46,8 @@ export default function SubscriptionPage() {
   const [message, setMessage] = useState("");
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [subscriptionTrialEnds, setSubscriptionTrialEnds] = useState<string | null>(null);
+  const [showUpgradeConfirm, setShowUpgradeConfirm] = useState(false);
+  const [upgradeRequesting, setUpgradeRequesting] = useState(false);
 
   async function load() {
     const supabase = createClient();
@@ -74,6 +76,25 @@ export default function SubscriptionPage() {
   const remaining = daysLeft(trialEnds);
   const trialing = subscriptionStatus === "trialing" && remaining > 0;
   const active = subscriptionStatus === "active";
+  async function requestUpgrade() {
+    setUpgradeRequesting(true);
+    setMessage("");
+    const supabase = createClient();
+    if (!supabase) {
+      setMessage("Please log in first.");
+      setUpgradeRequesting(false);
+      return;
+    }
+    const { error } = await supabase.rpc("request_premium_upgrade");
+    if (error) {
+      setMessage(error.message || "We could not send the request.");
+    } else {
+      setMessage("Your parent has been notified. Please ask them to review the request and complete the Premium payment.");
+      setShowUpgradeConfirm(false);
+    }
+    setUpgradeRequesting(false);
+  }
+
   async function startTrial() {
     setStarting(true);
     setMessage("");
@@ -103,6 +124,25 @@ export default function SubscriptionPage() {
 
         {message && <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-[#cfe6f7] bg-white px-5 py-4 text-center font-bold shadow-sm">{message}</div>}
 
+        {showUpgradeConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4">
+            <div className="w-full max-w-md rounded-[28px] bg-white p-7 shadow-2xl">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#fff1c2]">
+                <Crown size={28} className="text-[#e3a100]" />
+              </div>
+              <h3 className="mt-5 text-center text-2xl font-black text-[#083d78]">Request Premium upgrade?</h3>
+              <p className="mt-3 text-center font-semibold leading-6 text-[#6685a4]">
+                Your parent will receive a notification in their notification center asking them to review your request and complete the MVR 150 monthly Premium payment.
+              </p>
+              {trialing && <p className="mt-3 rounded-xl bg-[#eef9ff] px-4 py-3 text-center text-sm font-bold text-[#197fe9]">Your current trial will continue until it ends.</p>}
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <button onClick={() => setShowUpgradeConfirm(false)} disabled={upgradeRequesting} className="rounded-2xl border-2 border-[#dcecf6] px-5 py-3 font-black text-[#6685a4]">Cancel</button>
+                <button onClick={requestUpgrade} disabled={upgradeRequesting} className="rounded-2xl bg-[#197fe9] px-5 py-3 font-black text-white disabled:opacity-60">{upgradeRequesting ? "Sending…" : "Yes, notify my parent"}</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           <article className="rounded-[30px] border-2 border-[#cfe6f7] bg-white p-6 shadow-lg sm:p-8">
             <div className="flex items-center justify-between">
@@ -127,8 +167,12 @@ export default function SubscriptionPage() {
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               {premiumFeatures.map((feature) => <div key={feature} className="flex items-start gap-2 rounded-xl bg-[#fffaf0] px-3 py-2.5 text-sm font-bold"><Check size={17} className="mt-0.5 shrink-0 text-[#13a56f]" />{feature}</div>)}
             </div>
-            <button disabled={trialing || active} className="mt-7 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#20265b] px-5 py-4 font-black text-white shadow-lg disabled:opacity-60">
-              <Zap size={18} className="text-[#ffd34e]" fill="currentColor" /> {trialing ? "Upgrade after trial" : active ? "Premium Active" : "Subscribe for MVR 150/month"}
+            <button
+              onClick={() => setShowUpgradeConfirm(true)}
+              disabled={active || upgradeRequesting}
+              className="mt-7 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#20265b] px-5 py-4 font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#171b49] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Zap size={18} className="text-[#ffd34e]" fill="currentColor" /> {active ? "Premium Active" : trialing ? "Upgrade after trial" : "Upgrade now"}
             </button>
             <p className="mt-3 text-center text-xs font-semibold text-[#7b819f]">Payment checkout will be connected after the Maldives payment provider is selected.</p>
           </article>
