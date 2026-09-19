@@ -216,7 +216,19 @@ export default function Challenge() {
     const result = await supabase.rpc("submit_learning_answer", { p_question_id: current.id, p_selected_answer: normalizedAnswer });
     data = result.data;
     submitError = result.error;
-    if (submitError) { setError(submitError.message || "Your answer could not be saved."); setSaving(false); return; }
+    if (submitError) {
+      const message = String(submitError.message || "");
+      const limitMatch = message.match(/daily_limit_reached[:\\s]+(\\d+)/i);
+      if (message.toLowerCase().includes("subscription_limit") && limitMatch) {
+        setChallengeDailyLimit(Number(limitMatch[1]));
+        setChallengeLimitReached(true);
+        setSaving(false);
+        return;
+      }
+      setError(message || "Your answer could not be saved.");
+      setSaving(false);
+      return;
+    }
     const saved = data?.[0];
     const isCorrect = localCorrect === true ? true : Boolean(saved?.is_correct);
     setDraft(normalizedAnswer);
