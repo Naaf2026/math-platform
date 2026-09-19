@@ -46,6 +46,14 @@ export default function LearnerLoginModal({ open, onClose }: Props) {
         return;
       }
 
+      const { data: accessState, error: accessError } = await supabase.rpc("get_learner_access_state", { p_learner_id: data.user.id });
+      if (accessError || accessState?.access !== "enabled") {
+        await supabase.auth.signOut();
+        setLoading(false);
+        setMessage("Your access has ended. Please ask your parent to complete the monthly payment to restore access.");
+        return;
+      }
+
       const role = await getUserRole(supabase, data.user.id);
       if (role !== "student") {
         await supabase.auth.signOut();
