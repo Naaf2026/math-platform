@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Bell, BarChart3, Gamepad2, GraduationCap, Home, LogOut, Trophy, Gift, LogIn, Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import LearnerLoginModal from "@/components/auth/LearnerLoginModal";
+import LearnerAccessNotice from "@/components/subscription/LearnerAccessNotice";
 
 type Profile = { full_name: string | null; grade: string | null; xp: number; current_streak: number };
 type MindStatus = { balance: number; remaining_seconds: number };
@@ -117,6 +118,7 @@ export default function DashboardPage() {
       </nav>}
 
       <LearnerLoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      {!loggedOut && <LearnerAccessNotice />}
     </main>
   );
 }
