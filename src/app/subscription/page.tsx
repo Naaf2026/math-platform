@@ -48,6 +48,7 @@ export default function SubscriptionPage() {
   const [subscriptionTrialEnds, setSubscriptionTrialEnds] = useState<string | null>(null);
   const [showUpgradeConfirm, setShowUpgradeConfirm] = useState(false);
   const [upgradeRequesting, setUpgradeRequesting] = useState(false);
+  const [upgradeRequested, setUpgradeRequested] = useState(false);
 
   async function load() {
     const supabase = createClient();
@@ -89,8 +90,9 @@ export default function SubscriptionPage() {
     if (error) {
       setMessage(error.message || "We could not send the request.");
     } else {
-      setMessage("Your parent has been notified. Please ask them to review the request and complete the Premium payment.");
+      setMessage("");
       setShowUpgradeConfirm(false);
+      setUpgradeRequested(true);
     }
     setUpgradeRequesting(false);
   }
