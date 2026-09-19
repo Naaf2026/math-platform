@@ -172,7 +172,7 @@ export default function SubscriptionPage() {
               disabled={active || upgradeRequesting}
               className="mt-7 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#20265b] px-5 py-4 font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#171b49] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <Zap size={18} className="text-[#ffd34e]" fill="currentColor" /> {active ? "Premium Active" : trialing ? "Upgrade after trial" : "Upgrade now"}
+              <Zap size={18} className="text-[#ffd34e]" fill="currentColor" /> {active ? "Premium Active" : "Upgrade Now!!"}
             </button>
             <p className="mt-3 text-center text-xs font-semibold text-[#7b819f]">Payment checkout will be connected after the Maldives payment provider is selected.</p>
           </article>
