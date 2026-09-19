@@ -126,6 +126,24 @@ export default function SubscriptionPage() {
 
         {message && <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-[#cfe6f7] bg-white px-5 py-4 text-center font-bold shadow-sm">{message}</div>}
 
+        {upgradeRequested && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4">
+            <div className="w-full max-w-md rounded-[28px] bg-white p-7 text-center shadow-2xl">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#e8fff4]">
+                <Check size={32} className="text-[#13a56f]" />
+              </div>
+              <h3 className="mt-5 text-2xl font-black text-[#083d78]">Parent Notified! 🎉</h3>
+              <p className="mt-3 font-semibold leading-6 text-[#6685a4]">
+                Your parent has been notified about your Premium upgrade request.
+              </p>
+              <p className="mt-2 text-sm font-semibold leading-5 text-[#6685a4]">
+                Please ask your parent to open their notification center and complete the MVR 150 monthly payment.
+              </p>
+              <button onClick={() => setUpgradeRequested(false)} className="mt-6 w-full rounded-2xl bg-[#197fe9] px-5 py-3 font-black text-white">Got it! 🎉</button>
+            </div>
+          </div>
+        )}
+
         {showUpgradeConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4">
             <div className="w-full max-w-md rounded-[28px] bg-white p-7 shadow-2xl">
