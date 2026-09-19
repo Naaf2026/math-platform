@@ -24,13 +24,14 @@ const trialFeatures = [
 ];
 
 const premiumFeatures = [
-  "Unlimited math practice",
-  "50 AI questions/day",
+  "Daily math practice",
   "20 visual questions/day",
   "10 Brain Games/day",
+  "Peer Challenge",
   "Full textbook practice",
   "Advanced analytics",
   "Exam preparation",
+  "Work sheet download",
   "XP, badges, rewards & Mind Sparks",
 ];
 
