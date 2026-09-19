@@ -45,8 +45,8 @@ export default function ParentUpgradePage() {
   async function submit(learnerId: string) {
     const supabase = createClient();
     const file = files[learnerId];
-    if (!supabase || !file) { setMessage("Please attach the bank transfer slip."); return; }
-    if (file.size > 5 * 1024 * 1024) { setMessage("The slip must be 5 MB or smaller."); return; }
+    if (!supabase || !file) { setMessage("Please upload the bank transfer slip before submitting."); return; }
+    if (file.size > 5 * 1024 * 1024) { setMessage("The bank slip must be 5 MB or smaller."); return; }
     setBusy(learnerId); setMessage("");
     const { data: auth } = await supabase.auth.getUser();
     if (!auth.user) return;
@@ -78,10 +78,10 @@ export default function ParentUpgradePage() {
 
       {settings && <section className="mt-6 rounded-[28px] border border-[#cfe4f2] bg-white p-6 shadow-lg">
         <div className="flex items-center gap-3"><CreditCard className="text-[#197fe9]"/><h2 className="text-2xl font-black">Make the bank transfer</h2></div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-2xl bg-[#f5fbff] p-4"><p className="text-xs font-black uppercase text-slate-500">Account name</p><p className="mt-1 font-black">{settings.account_name}</p></div>
           <div className="rounded-2xl bg-[#f5fbff] p-4"><p className="text-xs font-black uppercase text-slate-500">Bank</p><p className="mt-1 font-black">{settings.bank_name || "Our bank account"}</p></div>
-          <div className="rounded-2xl bg-[#fff8d9] p-4"><p className="text-xs font-black uppercase text-slate-500">Account number</p><p className="mt-1 break-all text-xl font-black">{settings.account_number}</p></div>
+          <div className="rounded-2xl bg-[#fff8d9] p-4"><p className="text-xs font-black uppercase text-slate-500">Account number</p><p className="mt-1 break-all text-xl font-black">{settings.account_number}</p></div><div className="rounded-2xl bg-[#eaf8ee] p-4"><p className="text-xs font-black uppercase text-slate-500">Payment</p><p className="mt-1 text-xl font-black">MVR 150 / month</p></div>
         </div>
         <p className="mt-4 text-sm font-semibold text-slate-600">{settings.instructions}</p>
       </section>}
@@ -97,12 +97,12 @@ export default function ParentUpgradePage() {
               {latest?.status === "pending" ? <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-2 text-sm font-black text-amber-700"><Clock3 size={16}/> Payment under review</span> :
                latest?.status === "approved" ? <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-sm font-black text-emerald-700"><CheckCircle2 size={16}/> Approved</span> : null}
             </div>
-            <div className="mt-5 grid gap-4 md:grid-cols-[1fr_1fr_auto]">
-              <input value={refs[learner.learner_id] || ""} onChange={e => setRefs(v => ({...v,[learner.learner_id]:e.target.value}))} placeholder="Bank transfer reference (optional)" className="rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-[#197fe9]"/>
-              <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 font-bold text-slate-600"><FileUp size={19}/><span className="min-w-0 truncate">{files[learner.learner_id]?.name || "Attach transfer slip"}</span><input type="file" className="hidden" accept=".pdf,image/jpeg,image/png,image/webp" onChange={e => setFiles(v => ({...v,[learner.learner_id]:e.target.files?.[0] || null}))}/></label>
+            <div className="mt-5 rounded-2xl bg-[#f7fbff] p-4"><p className="text-sm font-black text-[#083d78]">Payment for {learner.name}</p><p className="mt-1 text-xs font-semibold text-slate-500">Transfer MVR 150 to the account above, then provide your transfer reference and upload the bank slip.</p></div><div className="mt-4 grid gap-4 md:grid-cols-[1fr_1fr_auto]">
+              <input value={refs[learner.learner_id] || ""} onChange={e => setRefs(v => ({...v,[learner.learner_id]:e.target.value}))} placeholder="Bank transfer reference (recommended)" className="rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-[#197fe9]"/>
+              <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 font-bold text-slate-600"><FileUp size={19}/><span className="min-w-0 truncate">{files[learner.learner_id]?.name || "Upload bank transfer slip"}</span><input type="file" className="hidden" accept=".pdf,image/jpeg,image/png,image/webp" onChange={e => setFiles(v => ({...v,[learner.learner_id]:e.target.files?.[0] || null}))}/></label>
               <button onClick={() => submit(learner.learner_id)} disabled={busy===learner.learner_id || latest?.status==="pending"} className="rounded-xl bg-[#197fe9] px-5 py-3 font-black text-white disabled:opacity-50">{busy===learner.learner_id ? <Loader2 className="animate-spin"/> : "Submit payment"}</button>
             </div>
-            <p className="mt-3 text-xs font-semibold text-slate-400">MVR 150 · 1 month full access · Admin approval is required after bank verification.</p>
+            <p className="mt-3 text-xs font-semibold text-slate-400">MVR 150 · 1 month Premium access · Bank transfer verification and admin approval are required.</p>
           </article>
         })}
         {!learners.length && <div className="rounded-3xl bg-white p-10 text-center font-bold text-slate-500">No learners are linked to this parent account yet.</div>}
