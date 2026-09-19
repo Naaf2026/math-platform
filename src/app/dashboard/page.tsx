@@ -33,7 +33,7 @@ export default function DashboardPage() {
       const { data: auth } = await supabase.auth.getUser();
       if (!mounted) return;
       if (!auth.user) { setProfile(null); setLoading(false); return; }
-      const [{ data }, { data: mindData }, { data: entitlements }, { data: usage }, { data: dailyChallengeUsage }] = await Promise.all([
+      const [{ data }, { data: mindData }, { data: entitlements }, { data: usage }, { data: dailyChallengeAccess }] = await Promise.all([
         supabase.from("profiles").select("full_name,grade,xp,current_streak").eq("id", auth.user.id).maybeSingle(),
         supabase.rpc("get_mind_spark_status"),
         supabase.rpc("get_my_entitlements"),
@@ -44,13 +44,7 @@ export default function DashboardPage() {
           .eq("usage_date", new Date().toISOString().slice(0, 10))
           .eq("feature_key", "math_practice")
           .maybeSingle(),
-        supabase
-          .from("subscription_usage")
-          .select("usage_count")
-          .eq("user_id", auth.user.id)
-          .eq("usage_date", new Date().toISOString().slice(0, 10))
-          .eq("feature_key", "daily_challenge")
-          .maybeSingle()
+        supabase.rpc("get_daily_challenge_access_state").maybeSingle()
       ]);
       if (!mounted) return;
       setProfile(data ?? { full_name: auth.user.user_metadata?.full_name ?? "Student", grade: null, xp: 0, current_streak: 0 });
@@ -65,8 +59,10 @@ export default function DashboardPage() {
         (item: { feature_key?: string }) => item.feature_key === "daily_challenge"
       );
       const resolvedDailyLimit = dailyEntitlement?.daily_limit == null ? null : Number(dailyEntitlement.daily_limit);
-      setDailyChallengeLimit(resolvedDailyLimit);
-      setDailyChallengeUsed(Number(dailyChallengeUsage?.usage_count ?? 0));
+      setDailyChallengeLimit(
+        dailyChallengeAccess?.daily_limit == null ? null : Number(dailyChallengeAccess.daily_limit)
+      );
+      setDailyChallengeUsed(Number(dailyChallengeAccess?.used_today ?? 0));
       if (mindData) {
         const status = Array.isArray(mindData) ? mindData[0] : mindData;
         setMind({ balance: Number(status?.balance ?? 0), remaining_seconds: Number(status?.remaining_seconds ?? 0) });
