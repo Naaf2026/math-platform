@@ -31,13 +31,28 @@ export default function DashboardPage() {
       const { data: auth } = await supabase.auth.getUser();
       if (!mounted) return;
       if (!auth.user) { setProfile(null); setLoading(false); return; }
-      const [{ data }, { data: mindData }] = await Promise.all([
+      const [{ data }, { data: mindData }, { data: entitlements }, { data: usage }] = await Promise.all([
         supabase.from("profiles").select("full_name,grade,xp,current_streak").eq("id", auth.user.id).maybeSingle(),
-        supabase.rpc("get_mind_spark_status")
+        supabase.rpc("get_mind_spark_status"),
+        supabase.rpc("get_my_entitlements"),
+        supabase
+          .from("subscription_usage")
+          .select("usage_count")
+          .eq("user_id", auth.user.id)
+          .eq("usage_date", new Date().toISOString().slice(0, 10))
+          .eq("feature_key", "math_practice")
+          .maybeSingle()
       ]);
       if (!mounted) return;
       setProfile(data ?? { full_name: auth.user.user_metadata?.full_name ?? "Student", grade: null, xp: 0, current_streak: 0 });
-      const mathEntitlement = (Array.isArray(entitlements) ? entitlements : []).find((item: { feature_key?: string }) => item.feature_key === "math_practice");\n      setMathPracticeLimit(mathEntitlement?.daily_limit == null ? null : Number(mathEntitlement.daily_limit));\n      setMathPracticeUsed(Number(usage?.usage_count ?? 0));\n      if (mindData) {
+      const mathEntitlement = (Array.isArray(entitlements) ? entitlements : []).find(
+        (item: { feature_key?: string }) => item.feature_key === "math_practice"
+      );
+      setMathPracticeLimit(
+        mathEntitlement?.daily_limit == null ? null : Number(mathEntitlement.daily_limit)
+      );
+      setMathPracticeUsed(Number(usage?.usage_count ?? 0));
+      if (mindData) {
         const status = Array.isArray(mindData) ? mindData[0] : mindData;
         setMind({ balance: Number(status?.balance ?? 0), remaining_seconds: Number(status?.remaining_seconds ?? 0) });
       }
@@ -120,7 +135,9 @@ export default function DashboardPage() {
         </div>
       </nav>}
 
-      {showPracticeLimit && <div className="fixed inset-0 z-[100] grid place-items-center bg-[#062b52]/55 p-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="practice-limit-title"><div className="w-full max-w-md rounded-[28px] bg-white p-7 text-center shadow-2xl"><div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-[#e8f4ff] text-4xl">🎯</div><p className="mt-5 text-xs font-black uppercase tracking-[.18em] text-[#197fe9]">Daily practice complete</p><h2 id="practice-limit-title" className="mt-2 text-2xl font-black text-[#083d78]">Great work today! 🎉</h2><p className="mt-3 text-sm font-semibold leading-6 text-[#6685a4]">You have completed your {mathPracticeLimit} Math Practice questions for today. You can start practising again tomorrow when your daily limit resets.</p><div className="mt-6 grid gap-3"><button type="button" onClick={() => setShowPracticeLimit(false)} className="rounded-2xl bg-[#197fe9] px-6 py-3.5 font-black text-white shadow-md">Got it</button><button type="button" onClick={() => setShowPracticeLimit(false)} className="rounded-2xl bg-[#eef6fc] px-6 py-3 font-black text-[#083d78]">Close</button></div></div></div>}\n\n      <LearnerLoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      {showPracticeLimit && <div className="fixed inset-0 z-[100] grid place-items-center bg-[#062b52]/55 p-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="practice-limit-title"><div className="w-full max-w-md rounded-[28px] bg-white p-7 text-center shadow-2xl"><div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-[#e8f4ff] text-4xl">🎯</div><p className="mt-5 text-xs font-black uppercase tracking-[.18em] text-[#197fe9]">Daily practice complete</p><h2 id="practice-limit-title" className="mt-2 text-2xl font-black text-[#083d78]">Great work today! 🎉</h2><p className="mt-3 text-sm font-semibold leading-6 text-[#6685a4]">You have completed your {mathPracticeLimit} Math Practice questions for today. You can start practising again tomorrow when your daily limit resets.</p><div className="mt-6 grid gap-3"><button type="button" onClick={() => setShowPracticeLimit(false)} className="rounded-2xl bg-[#197fe9] px-6 py-3.5 font-black text-white shadow-md">Got it</button><button type="button" onClick={() => setShowPracticeLimit(false)} className="rounded-2xl bg-[#eef6fc] px-6 py-3 font-black text-[#083d78]">Close</button></div></div></div>}
+
+      <LearnerLoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
       {!loggedOut && <LearnerAccessNotice />}
     </main>
   );
