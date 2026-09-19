@@ -50,7 +50,7 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
       ]);
       if (rpcError) {
         const message = String(rpcError.message || "");
-        const limitMatch = message.match(/daily_limit_reached[:\\s]+(\\d+)/i);
+        const limitMatch = message.match(/daily_limit_reached[:\s]+(\d+)/i);
         if (message.toLowerCase().includes("subscription_limit") && limitMatch) {
           setOpen(false);
           setDailyLimitReached(Number(limitMatch[1]));
@@ -77,13 +77,28 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
       const supabase = await getAuthenticatedClient();
       if ((timer?.seconds_remaining ?? 0) <= 0) throw new Error("Your 30-minute Mind Time is finished for today. Come back tomorrow!");
       const { data, error: rpcError } = await supabase.rpc("start_brain_game", { p_game_key: gameKey });
-      if (rpcError) throw rpcError;
+      if (rpcError) {
+        const message = String(rpcError.message || "");
+        const limitMatch = message.match(/daily_limit_reached[:\s]+(\d+)/i);
+        if (message.toLowerCase().includes("subscription_limit") && limitMatch) {
+          setOpen(false);
+          setDailyLimitReached(Number(limitMatch[1]));
+          return;
+        }
+        throw rpcError;
+      }
       const row = (Array.isArray(data) ? data[0] : data) as StartResult | null;
       if (!row) throw new Error("The game could not be started.");
       window.localStorage.setItem("brain_game_active_session", row.session_id);
       setOpen(false); await onStarted(row);
     } catch (e: any) {
       const message = String(e?.message || "The game could not be started.");
+      const limitMatch = message.match(/daily_limit_reached[:\s]+(\d+)/i);
+      if (message.toLowerCase().includes("subscription_limit") && limitMatch) {
+        setOpen(false);
+        setDailyLimitReached(Number(limitMatch[1]));
+        return;
+      }
       setError(message.toLowerCase().includes("not authenticated") ? "Your student session has expired. Please sign in again." : message);
     } finally { setLoading(false); }
   };
