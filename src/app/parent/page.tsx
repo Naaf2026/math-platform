@@ -84,8 +84,8 @@ export default function ParentPage() {
               {learners.map((learner) => {
                 const active = learner.account_status === "active"; const selected = selectedLearner?.learner_id === learner.learner_id;
                 return <article key={learner.learner_id} className={`rounded-3xl bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg ${selected ? "ring-2 ring-violet-500" : "ring-1 ring-violet-100"}`}>
-                  <div className="flex items-center gap-4"><div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-4xl">{learner.avatar_emoji || "🧑‍🎓"}</div><div className="min-w-0"><h2 className="truncate text-xl font-black text-[#071b3a]">{learner.display_name}</h2><p className="mt-1 text-sm font-bold text-violet-600">{learner.grade || "Grade not set"}</p><span className={`mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-black ${active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{active ? "Active" : "Disabled"}</span></div></div>
-                  <div className="mt-6 grid grid-cols-3 gap-2"><MiniStat icon={<Trophy size={18} />} value={learner.xp} label="XP" tone="violet" /><MiniStat icon={<Flame size={18} />} value={learner.current_streak} label="Streak" tone="amber" /><MiniStat icon={<CalendarDays size={18} />} value={learner.best_streak} label="Best" tone="cyan" /></div>
+                  <div className="flex items-center gap-4"><div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-4xl">{learner.avatar_emoji || "🧑‍🎓"}</div><div className="min-w-0"><h2 className="truncate text-xl font-black text-[#071b3a]">{learner.display_name}</h2><p className="mt-1 text-sm font-bold text-violet-600">{learner.grade || "Grade not set"}</p><SubscriptionBadge learner={learner} /><p className="mt-1 text-[11px] font-bold text-slate-400">{active ? "Account enabled" : "Account disabled"}</p></div></div>
+                  <div className="mt-4"><SubscriptionDetails learner={learner} /></div><div className="mt-6 grid grid-cols-3 gap-2"><MiniStat icon={<Trophy size={18} />} value={learner.xp} label="XP" tone="violet" /><MiniStat icon={<Flame size={18} />} value={learner.current_streak} label="Streak" tone="amber" /><MiniStat icon={<CalendarDays size={18} />} value={learner.best_streak} label="Best" tone="cyan" /></div>
                   <div className="mt-6 flex gap-2"><Link href={`/parent?learner=${encodeURIComponent(learner.learner_id)}`} className={`inline-flex flex-1 items-center justify-center rounded-2xl px-4 py-3 text-sm font-black ${selected ? "bg-violet-600 text-white" : "bg-violet-50 text-violet-700 hover:bg-violet-100"}`}>{selected ? "Selected learner" : `Select ${learner.display_name}`}</Link><Link href={`/parent/history?learner=${encodeURIComponent(learner.learner_id)}`} className="inline-flex items-center justify-center rounded-2xl bg-slate-100 px-4 py-3 text-slate-700 hover:bg-slate-200" aria-label={`View ${learner.display_name}'s history`}><History size={18} /></Link></div>
                 </article>;
               })}
@@ -113,6 +113,42 @@ export default function ParentPage() {
       </div>
     </main>
   );
+}
+
+function SubscriptionBadge({ learner }: { learner: LearnerAccount }) {
+  const status = learner.subscription_status;
+  const trial = status === "trialing";
+  const active = status === "active";
+  const expired = status === "expired" || status === "cancelled";
+  const demo = !status || status === "demo";
+  const styles = trial
+    ? "bg-amber-50 text-amber-700 ring-1 ring-amber-100"
+    : active
+      ? "bg-blue-50 text-blue-700 ring-1 ring-blue-100"
+      : expired
+        ? "bg-red-50 text-red-700 ring-1 ring-red-100"
+        : "bg-violet-50 text-violet-700 ring-1 ring-violet-100";
+  const label = trial ? "Free Trial" : active ? "Active Subscription" : expired ? "Expired" : "Demo Access";
+  return <span className={`mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-black ${styles}`}>{label}</span>;
+}
+
+function SubscriptionDetails({ learner }: { learner: LearnerAccount }) {
+  const status = learner.subscription_status;
+  if (status === "trialing") {
+    return <div className="rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3"><div className="flex items-center justify-between gap-3"><p className="text-xs font-black uppercase tracking-wide text-amber-700">Trial access</p><span className="text-xs font-black text-amber-700">{learner.subscription_days_left} {learner.subscription_days_left === 1 ? "day" : "days"} left</span></div><p className="mt-1 text-xs font-semibold text-slate-600">Trial ends {formatDate(learner.trial_ends_at)}.</p></div>;
+  }
+  if (status === "active") {
+    return <div className="rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3"><div className="flex items-center justify-between gap-3"><p className="text-xs font-black uppercase tracking-wide text-blue-700">Monthly access</p><span className="text-xs font-black text-blue-700">{learner.subscription_days_left} {learner.subscription_days_left === 1 ? "day" : "days"} left</span></div><p className="mt-1 text-xs font-semibold text-slate-600">Active until {formatDate(learner.period_ends_at)}.</p></div>;
+  }
+  if (status === "expired" || status === "cancelled") {
+    return <div className="rounded-2xl border border-red-100 bg-red-50/70 px-4 py-3"><p className="text-xs font-black uppercase tracking-wide text-red-700">Subscription expired</p><p className="mt-1 text-xs font-semibold text-slate-600">Please complete the monthly payment to restore access.</p></div>;
+  }
+  return <div className="rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3"><p className="text-xs font-black uppercase tracking-wide text-violet-700">Demo access</p><p className="mt-1 text-xs font-semibold text-slate-600">This existing demo account keeps full access.</p></div>;
+}
+
+function formatDate(value: string | null) {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat("en-MV", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
 }
 
 function MiniStat({ icon, value, label, tone }: { icon: React.ReactNode; value: number; label: string; tone: "violet" | "amber" | "cyan" }) {
