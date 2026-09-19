@@ -1,0 +1,133 @@
+"use client";
+
+import Link from "next/link";
+import { ArrowLeft, Bell, ChevronRight, Gamepad2, Home, Trophy, Gift, BarChart3, Users, UserRound, Shuffle, Clock3, Inbox, History } from "lucide-react";
+
+const choices = [
+  {
+    title: "Challenge a Buddy",
+    description: "Choose a classmate.",
+    icon: Users,
+    emoji: "👥",
+    card: "border-[#ffab8d] bg-[#fff0e9]",
+    iconBg: "bg-[#ff855f]",
+    button: "bg-[#ff6035]",
+  },
+  {
+    title: "My Buddy",
+    description: "Find an available learner at a similar level.",
+    icon: UserRound,
+    emoji: "🤝",
+    card: "border-[#7bc9f5] bg-[#eef9ff]",
+    iconBg: "bg-[#219eea]",
+    button: "bg-[#197fe9]",
+  },
+  {
+    title: "Random Challenger",
+    description: "Get matched with a random eligible learner.",
+    icon: Shuffle,
+    emoji: "🎲",
+    card: "border-[#b8a5f5] bg-[#f5f1ff]",
+    iconBg: "bg-[#8167d9]",
+    button: "bg-[#6d55c8]",
+  },
+];
+
+export default function BuddyChallengePage() {
+  return (
+    <main className="min-h-screen overflow-x-hidden bg-[#eef9ff] text-[#083d78]">
+      <header className="sticky top-0 z-40 h-[76px] border-b border-white/10 bg-[#073b73] text-white shadow-sm lg:h-[90px]">
+        <div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12">
+          <Link href="/dashboard" className="flex min-w-0 items-center gap-3 lg:gap-4">
+            <img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[44px] w-auto max-w-[220px] object-contain lg:h-[57px] lg:max-w-none" />
+          </Link>
+          <nav className="hidden items-center gap-8 lg:flex">
+            <Link href="/dashboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Home size={25} /> Home</Link>
+            <Link href="/brain-games" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Gamepad2 size={25} /> Games</Link>
+            <Link href="/leaderboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Trophy size={25} /> Leaderboard</Link>
+            <Link href="/rewards" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><Gift size={25} /> Rewards</Link>
+            <Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold hover:text-yellow-200"><BarChart3 size={25} /> Progress</Link>
+          </nav>
+          <button aria-label="Notifications" className="relative grid h-11 w-11 place-items-center rounded-full hover:bg-white/10 sm:h-12 sm:w-12">
+            <Bell size={24} />
+            <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-red-400" />
+          </button>
+        </div>
+      </header>
+
+      <section className="mx-auto max-w-[1340px] px-4 py-7 pb-28 sm:px-6 sm:py-9 lg:px-12 lg:py-12 lg:pb-12">
+        <div className="mb-6 flex items-center gap-3">
+          <Link href="/dashboard" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#d7eaf7] bg-white text-[#197fe9] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <ArrowLeft size={21} />
+          </Link>
+          <div>
+            <p className="text-sm font-black text-[#ff6035]">MATHS CHALLENGE</p>
+            <h1 className="mt-1 text-[36px] font-black leading-none tracking-tight sm:text-[48px]">Buddy Challenge 🏆</h1>
+          </div>
+        </div>
+
+        <div className="rounded-[32px] border border-[#d7eaf7] bg-white px-5 py-7 shadow-sm sm:px-8 sm:py-9 lg:px-10">
+          <div className="text-center">
+            <div className="mx-auto grid h-20 w-20 place-items-center rounded-[24px] bg-[#fff0e9] text-4xl shadow-sm">🏆</div>
+            <h2 className="mt-5 text-2xl font-black sm:text-3xl">Challenge a learner!</h2>
+            <p className="mx-auto mt-2 max-w-2xl text-base font-semibold leading-7 text-[#6685a4] sm:text-lg">
+              Choose how you want to start your Buddy Challenge.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-3 lg:gap-6">
+            {choices.map((choice) => {
+              const Icon = choice.icon;
+              return (
+                <button
+                  key={choice.title}
+                  type="button"
+                  className={`group relative overflow-hidden rounded-[28px] border-2 p-5 text-left shadow-md transition hover:-translate-y-1 hover:shadow-xl sm:p-6 ${choice.card}`}
+                >
+                  <div className={`grid h-16 w-16 place-items-center rounded-2xl text-white shadow-md ${choice.iconBg}`}>
+                    <Icon size={30} strokeWidth={2.5} />
+                  </div>
+                  <div className="mt-5 flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-[25px] font-black leading-tight sm:text-[28px]">{choice.title}</h3>
+                      <p className="mt-3 text-[16px] font-bold leading-6 text-[#55708b]">{choice.description}</p>
+                    </div>
+                    <span className="text-3xl">{choice.emoji}</span>
+                  </div>
+                  <div className={`mt-7 flex items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-black text-white shadow-sm ${choice.button}`}>
+                    Continue <ChevronRight size={18} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-7 grid gap-3 sm:grid-cols-3">
+            <div className="flex items-center gap-3 rounded-2xl bg-[#fff8df] px-4 py-3">
+              <Clock3 size={20} className="text-[#d79500]" />
+              <div><p className="text-xs font-black uppercase tracking-wide text-[#9a741b]">Challenges today</p><p className="font-black">0 / 3</p></div>
+            </div>
+            <div className="flex items-center gap-3 rounded-2xl bg-[#eef8ff] px-4 py-3">
+              <Inbox size={20} className="text-[#197fe9]" />
+              <div><p className="text-xs font-black uppercase tracking-wide text-[#4e7b9e]">Incoming</p><p className="font-black">0</p></div>
+            </div>
+            <div className="flex items-center gap-3 rounded-2xl bg-[#f4f0ff] px-4 py-3">
+              <History size={20} className="text-[#7358c9]" />
+              <div><p className="text-xs font-black uppercase tracking-wide text-[#7358c9]">Challenge history</p><p className="font-black">View later</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#cfe4f2] bg-white/95 px-2 pb-[calc(env(safe-area-inset-bottom)+6px)] pt-2 shadow-[0_-6px_20px_rgba(8,61,120,0.10)] backdrop-blur lg:hidden" aria-label="Student navigation">
+        <div className="mx-auto grid max-w-lg grid-cols-5">
+          <Link href="/dashboard" className="flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[#197fe9]"><Home size={22} strokeWidth={2.5} /><span className="text-[11px] font-black">Home</span></Link>
+          <Link href="/brain-games" className="flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[#526f89]"><Gamepad2 size={22} strokeWidth={2.5} /><span className="text-[11px] font-black">Games</span></Link>
+          <Link href="/leaderboard" className="flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[#526f89]"><Trophy size={22} strokeWidth={2.5} /><span className="text-[11px] font-black">Leaderboard</span></Link>
+          <Link href="/rewards" className="flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[#526f89]"><Gift size={22} strokeWidth={2.5} /><span className="text-[11px] font-black">Rewards</span></Link>
+          <Link href="/progress" className="flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[#526f89]"><BarChart3 size={22} strokeWidth={2.5} /><span className="text-[11px] font-black">Progress</span></Link>
+        </div>
+      </nav>
+    </main>
+  );
+}
