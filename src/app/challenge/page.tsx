@@ -71,16 +71,14 @@ export default function Challenge() {
     if (!supabase) { setError("Your learning account is not configured yet."); setLoading(false); return; }
     const { data: authData } = await supabase.auth.getUser();
     if (!authData.user) { window.location.href = "/login"; return; }
-    const [{ data: dataEntitlements }, { data: usage }, { data: profile }] = await Promise.all([
-      supabase.rpc("get_my_entitlements"),
-      supabase.from("subscription_usage").select("usage_count").eq("user_id", authData.user.id).eq("usage_date", new Date().toISOString().slice(0, 10)).eq("feature_key", "daily_challenge").maybeSingle(),
+    const [{ data: accessState }, { data: profile }] = await Promise.all([
+      supabase.rpc("get_daily_challenge_access_state").maybeSingle(),
       supabase.from("profiles").select("xp,current_streak,best_streak").eq("id", authData.user.id).maybeSingle(),
     ]);
-    const dailyEntitlement = (Array.isArray(dataEntitlements) ? dataEntitlements : []).find((item: any) => item.feature_key === "daily_challenge");
-    const dailyLimit = dailyEntitlement?.daily_limit == null ? null : Number(dailyEntitlement.daily_limit);
-    const usedToday = Number(usage?.usage_count ?? 0);
+    const dailyLimit = accessState?.daily_limit == null ? null : Number(accessState.daily_limit);
+    const usedToday = Number(accessState?.used_today ?? 0);
     setChallengeDailyLimit(dailyLimit);
-    if (dailyLimit !== null && usedToday >= dailyLimit) {
+    if (Boolean(accessState?.blocked) || (dailyLimit !== null && usedToday >= dailyLimit)) {
       setChallengeLimitReached(true);
       setXp(profile?.xp ?? 0);
       setStreak(profile?.current_streak ?? 0);
