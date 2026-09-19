@@ -184,7 +184,6 @@ export default function SubscriptionPage() {
             <div className="absolute right-5 top-5 rounded-full bg-[#fff0a8] px-3 py-1 text-xs font-black text-[#765800]">BEST VALUE</div>
             <div className="flex items-center gap-3"><div className="rounded-2xl bg-[#fff1c2] p-3"><Crown size={28} className="text-[#e3a100]" /></div><div><p className="text-sm font-black uppercase tracking-widest text-[#a77a00]">Premium</p><h2 className="text-3xl font-black">Full Access</h2></div></div>
             <div className="mt-5 flex items-end gap-2"><span className="text-5xl font-black">MVR 150</span><span className="pb-1 font-bold text-[#6685a4]">/ month</span></div>
-            <p className="mt-2 font-semibold text-[#6685a4]">Or MVR 1,500/year — save MVR 300.</p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               {premiumFeatures.map((feature) => <div key={feature} className="flex items-start gap-2 rounded-xl bg-[#fffaf0] px-3 py-2.5 text-sm font-bold"><Check size={17} className="mt-0.5 shrink-0 text-[#13a56f]" />{feature}</div>)}
             </div>
