@@ -17,9 +17,8 @@ type Entitlement = {
 
 const trialFeatures = [
   ["Math practice", "10 questions/day"],
-  ["AI questions", "2/day"],
   ["Visual questions", "2/day"],
-  ["Brain Games", "1/day"],
+  ["Brain Games", "2/day"],
   ["Daily Challenge", "Included"],
   ["Textbook practice", "5 questions/day"],
 ];
