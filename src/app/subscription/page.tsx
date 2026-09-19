@@ -55,11 +55,14 @@ export default function SubscriptionPage() {
 
   useEffect(() => { void load(); }, []);
 
-  const trialEnds = entitlements.find((x) => x.trial_ends_at)?.trial_ends_at ?? null;
-  const trialing = entitlements.some((x) => x.subscription_status === "trialing") || Boolean(trialEnds && daysLeft(trialEnds) > 0);
-  const active = entitlements.some((x) => x.subscription_status === "active");
+  const trialEnds = entitlements.reduce<string | null>((latest, item) => {
+    if (!item.trial_ends_at) return latest;
+    if (!latest) return item.trial_ends_at;
+    return new Date(item.trial_ends_at).getTime() > new Date(latest).getTime() ? item.trial_ends_at : latest;
+  }, null);
   const remaining = daysLeft(trialEnds);
-
+  const trialing = entitlements.some((x) => x.subscription_status === "trialing") || remaining > 0;
+  const active = entitlements.some((x) => x.subscription_status === "active");
   async function startTrial() {
     setStarting(true);
     setMessage("");
