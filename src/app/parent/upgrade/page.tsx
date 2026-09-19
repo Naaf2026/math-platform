@@ -87,18 +87,6 @@ export default function ParentUpgradePage() {
         <p className="mt-3 max-w-2xl font-semibold text-white/80">Each learner is billed separately. Monthly full access is MVR 150 per learner.</p>
       </div>
 
-      {settings && <section className="mt-6 rounded-[28px] border border-[#cfe4f2] bg-white p-6 shadow-lg">
-        <div className="flex items-center gap-3"><CreditCard className="text-[#197fe9]"/><h2 className="text-2xl font-black">Make the bank transfer</h2></div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl bg-[#f5fbff] p-4"><p className="text-xs font-black uppercase text-slate-500">Account name</p><p className="mt-1 font-black">{settings.account_name}</p></div>
-          <div className="rounded-2xl bg-[#f5fbff] p-4"><p className="text-xs font-black uppercase text-slate-500">Bank</p><p className="mt-1 font-black">{settings.bank_name || "Our bank account"}</p></div>
-          <div className="rounded-2xl bg-[#fff8d9] p-4"><p className="text-xs font-black uppercase text-slate-500">Account number</p><p className="mt-1 break-all text-xl font-black">{settings.account_number}</p></div><div className="rounded-2xl bg-[#eaf8ee] p-4"><p className="text-xs font-black uppercase text-slate-500">Payment</p><p className="mt-1 text-xl font-black">MVR 150 / month</p></div>
-        </div>
-        <p className="mt-4 text-sm font-semibold text-slate-600">{settings.instructions}</p>
-      </section>}
-
-      {message && <div className="mt-5 rounded-2xl bg-white p-4 font-bold text-[#176a9c] shadow-sm">{message}</div>}
-
       <section className="mt-6 rounded-[28px] border border-[#d7eaf7] bg-white p-5 shadow-lg sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div><p className="text-xs font-black uppercase tracking-widest text-[#197fe9]">Learner subscriptions</p><h2 className="mt-1 text-2xl font-black">Access overview</h2></div>
@@ -115,7 +103,7 @@ export default function ParentUpgradePage() {
                 const latest = payments.find(p => p.learner_id === learner.learner_id);
                 const pending = latest?.status === "pending";
                 let statusText = "Checking…"; let statusClass = "bg-slate-100 text-slate-600"; let action = "Upgrade";
-                if (state?.reason === "grandfathered") { statusText = "Full access"; statusClass = "bg-emerald-50 text-emerald-700"; action = "View"; }
+                if (state?.reason === "grandfathered") { statusText = "Full access"; statusClass = "bg-emerald-50 text-emerald-700"; action = "Included"; }
                 else if (pending) { statusText = "Payment pending"; statusClass = "bg-amber-50 text-amber-700"; action = "View submission"; }
                 else if (state?.status === "trialing") { const d = state.days_left ?? 0; statusText = `Trial – ${d} day${d === 1 ? "" : "s"} left`; statusClass = "bg-blue-50 text-blue-700"; }
                 else if (state?.status === "active") { statusText = "Premium active"; statusClass = "bg-emerald-50 text-emerald-700"; action = "Renew"; }
@@ -124,13 +112,25 @@ export default function ParentUpgradePage() {
                   <td className="border-b border-slate-100 px-4 py-4"><div className="font-black text-[#083d78]">{learner.name}</div><div className="text-xs font-bold text-slate-400">{learner.username}{learner.grade ? ` · ${learner.grade}` : ""}</div></td>
                   <td className="border-b border-slate-100 px-4 py-4"><span className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${statusClass}`}>{state?.reason === "grandfathered" ? <ShieldCheck size={14}/> : pending ? <Clock3 size={14}/> : state?.status === "active" ? <CheckCircle2 size={14}/> : null}{statusText}</span></td>
                   <td className="border-b border-slate-100 px-4 py-4 font-black text-[#083d78]">MVR 150</td>
-                  <td className="border-b border-slate-100 px-4 py-4 text-right"><button onClick={() => setSelectedLearner(learner.learner_id)} className="inline-flex items-center gap-2 rounded-xl bg-[#197fe9] px-4 py-2.5 text-sm font-black text-white shadow-sm hover:opacity-90">{action === "View" ? <Eye size={16}/> : action === "Renew" ? <RefreshCw size={16}/> : null}{action}</button></td>
+                  <td className="border-b border-slate-100 px-4 py-4 text-right"><button onClick={() => setSelectedLearner(learner.learner_id)} disabled={action === "View"} className="inline-flex items-center gap-2 rounded-xl bg-[#197fe9] px-4 py-2.5 text-sm font-black text-white shadow-sm hover:opacity-90 disabled:cursor-default disabled:bg-emerald-100 disabled:text-emerald-700 disabled:shadow-none">{action === "Renew" ? <RefreshCw size={16}/> : action === "Included" ? <ShieldCheck size={16}/> : <Eye size={16}/>} {action}</button></td>
                 </tr>;
               })}
             </tbody>
           </table>
         </div>
       </section>
+
+      {settings && <section className="mt-6 rounded-[28px] border border-[#cfe4f2] bg-white p-6 shadow-lg">
+        <div className="flex items-center gap-3"><CreditCard className="text-[#197fe9]"/><h2 className="text-2xl font-black">Make the bank transfer</h2></div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl bg-[#f5fbff] p-4"><p className="text-xs font-black uppercase text-slate-500">Account name</p><p className="mt-1 font-black">{settings.account_name}</p></div>
+          <div className="rounded-2xl bg-[#f5fbff] p-4"><p className="text-xs font-black uppercase text-slate-500">Bank</p><p className="mt-1 font-black">{settings.bank_name || "Our bank account"}</p></div>
+          <div className="rounded-2xl bg-[#fff8d9] p-4"><p className="text-xs font-black uppercase text-slate-500">Account number</p><p className="mt-1 break-all text-xl font-black">{settings.account_number}</p></div><div className="rounded-2xl bg-[#eaf8ee] p-4"><p className="text-xs font-black uppercase text-slate-500">Payment</p><p className="mt-1 text-xl font-black">MVR 150 / month</p></div>
+        </div>
+        <p className="mt-4 text-sm font-semibold text-slate-600">{settings.instructions}</p>
+      </section>}
+
+      {message && <div className="mt-5 rounded-2xl bg-white p-4 font-bold text-[#176a9c] shadow-sm">{message}</div>}
 
       <section className="mt-6 space-y-5">
         {learners.filter(learner => selectedLearner === learner.learner_id).map(learner => {
