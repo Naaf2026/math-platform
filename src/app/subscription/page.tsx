@@ -44,6 +44,8 @@ export default function SubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [message, setMessage] = useState("");
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
+  const [subscriptionTrialEnds, setSubscriptionTrialEnds] = useState<string | null>(null);
 
   async function load() {
     const supabase = createClient();
@@ -53,16 +55,25 @@ export default function SubscriptionPage() {
     setLoading(false);
   }
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    void load();
+    const supabase = createClient();
+    if (!supabase) return;
+    void supabase.rpc("get_my_subscription_status").then(({ data }) => {
+      const row = Array.isArray(data) ? data[0] : data;
+      setSubscriptionStatus(row?.subscription_status ?? null);
+      setSubscriptionTrialEnds(row?.trial_ends_at ?? null);
+    });
+  }, []);
 
-  const trialEnds = entitlements.reduce<string | null>((latest, item) => {
+  const trialEnds = subscriptionTrialEnds ?? entitlements.reduce<string | null>((latest, item) => {
     if (!item.trial_ends_at) return latest;
     if (!latest) return item.trial_ends_at;
     return new Date(item.trial_ends_at).getTime() > new Date(latest).getTime() ? item.trial_ends_at : latest;
   }, null);
   const remaining = daysLeft(trialEnds);
-  const trialing = entitlements.some((x) => x.subscription_status === "trialing") || remaining > 0;
-  const active = entitlements.some((x) => x.subscription_status === "active");
+  const trialing = subscriptionStatus === "trialing" && remaining > 0;
+  const active = subscriptionStatus === "active";
   async function startTrial() {
     setStarting(true);
     setMessage("");
