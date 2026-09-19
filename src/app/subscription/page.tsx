@@ -194,7 +194,6 @@ export default function SubscriptionPage() {
             >
               <Zap size={18} className="text-[#ffd34e]" fill="currentColor" /> {active ? "Premium Active" : "Upgrade Now!!"}
             </button>
-            <p className="mt-3 text-center text-xs font-semibold text-[#7b819f]">Payment checkout will be connected after the Maldives payment provider is selected.</p>
           </article>
         </div>
       </section>
