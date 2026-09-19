@@ -66,8 +66,8 @@ export default function TrainingPracticePage() {
     const { data, error: submitError } = await supabase.rpc("submit_learning_answer", { p_question_id: q.id, p_selected_answer: value });
     if (submitError) {
       const message = String(submitError.message || "");
-      const match = message.match(/subscription_limit[^:]*:daily_limit_reached:(\d+)/i);
-      if (match) {
+      const match = message.match(/daily_limit_reached[:\s]+(\d+)/i);
+      if (message.toLowerCase().includes("subscription_limit") && match) {
         setSelected(null);
         setLimitReached(Number(match[1]));
         setSaving(false);
