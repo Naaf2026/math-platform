@@ -108,7 +108,7 @@ export default function ParentUpgradePage() {
                 let statusText = "Checking…"; let statusClass = "bg-slate-100 text-slate-600"; let action = "Upgrade";
                 if (state?.error) { statusText = "Status unavailable"; statusClass = "bg-red-50 text-red-700"; action = "Retry"; }
                 if (state?.reason === "grandfathered") { statusText = "Full access"; statusClass = "bg-emerald-50 text-emerald-700"; action = "Included"; }
-                else if (pending) { statusText = "Payment pending"; statusClass = "bg-amber-50 text-amber-700"; action = "View submission"; }
+                else if (pending) { statusText = "Payment under review"; statusClass = "bg-amber-50 text-amber-700"; action = "View submission"; }
                 else if (state?.status === "trialing") { const d = state.days_left ?? 0; statusText = `Trial – ${d} day${d === 1 ? "" : "s"} left`; statusClass = "bg-blue-50 text-blue-700"; }
                 else if (state?.status === "active") { statusText = "Premium active"; statusClass = "bg-emerald-50 text-emerald-700"; action = "Renew"; }
                 else if (state?.status === "expired" || state?.payment_required) { statusText = "Access disabled"; statusClass = "bg-red-50 text-red-700"; }
