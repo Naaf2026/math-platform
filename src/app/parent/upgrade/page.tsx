@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 type Learner = { learner_id: string; username: string; name: string; grade: string | null };
 type Setting = { account_name: string; bank_name: string; account_number: string; instructions: string };
 type Payment = { id: string; learner_id: string; status: string; amount_mvr: number; submitted_at: string; slip_path: string | null; review_note: string | null };
-type AccessState = { access: string; status?: string; days_left?: number; payment_required?: boolean; reason?: string };
+type AccessState = { access: string; status?: string; days_left?: number; payment_required?: boolean; reason?: string; error?: string };
 
 export default function ParentUpgradePage() {
   const [learners, setLearners] = useState<Learner[]>([]);
@@ -41,7 +41,10 @@ export default function ParentUpgradePage() {
     setLearners(learnerList);
     if (learnerList.length) {
       const states = await Promise.all(learnerList.map(async learner => {
-        const { data } = await supabase.rpc("get_learner_access_state", { p_learner_id: learner.learner_id });
+        const { data, error } = await supabase.rpc("get_learner_access_state", { p_learner_id: learner.learner_id });
+        if (error) {
+          return [learner.learner_id, { access: "unknown", error: error.message } as AccessState] as const;
+        }
         return [learner.learner_id, (data ?? { access: "disabled" }) as AccessState] as const;
       }));
       setAccessStates(Object.fromEntries(states));
@@ -103,6 +106,7 @@ export default function ParentUpgradePage() {
                 const latest = payments.find(p => p.learner_id === learner.learner_id);
                 const pending = latest?.status === "pending";
                 let statusText = "Checking…"; let statusClass = "bg-slate-100 text-slate-600"; let action = "Upgrade";
+                if (state?.error) { statusText = "Status unavailable"; statusClass = "bg-red-50 text-red-700"; action = "Retry"; }
                 if (state?.reason === "grandfathered") { statusText = "Full access"; statusClass = "bg-emerald-50 text-emerald-700"; action = "Included"; }
                 else if (pending) { statusText = "Payment pending"; statusClass = "bg-amber-50 text-amber-700"; action = "View submission"; }
                 else if (state?.status === "trialing") { const d = state.days_left ?? 0; statusText = `Trial – ${d} day${d === 1 ? "" : "s"} left`; statusClass = "bg-blue-50 text-blue-700"; }
@@ -112,7 +116,7 @@ export default function ParentUpgradePage() {
                   <td className="border-b border-slate-100 px-4 py-4"><div className="font-black text-[#083d78]">{learner.name}</div><div className="text-xs font-bold text-slate-400">{learner.username}{learner.grade ? ` · ${learner.grade}` : ""}</div></td>
                   <td className="border-b border-slate-100 px-4 py-4"><span className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${statusClass}`}>{state?.reason === "grandfathered" ? <ShieldCheck size={14}/> : pending ? <Clock3 size={14}/> : state?.status === "active" ? <CheckCircle2 size={14}/> : null}{statusText}</span></td>
                   <td className="border-b border-slate-100 px-4 py-4 font-black text-[#083d78]">MVR 150</td>
-                  <td className="border-b border-slate-100 px-4 py-4 text-right"><button onClick={() => setSelectedLearner(learner.learner_id)} disabled={action === "View"} className="inline-flex items-center gap-2 rounded-xl bg-[#197fe9] px-4 py-2.5 text-sm font-black text-white shadow-sm hover:opacity-90 disabled:cursor-default disabled:bg-emerald-100 disabled:text-emerald-700 disabled:shadow-none">{action === "Renew" ? <RefreshCw size={16}/> : action === "Included" ? <ShieldCheck size={16}/> : <Eye size={16}/>} {action}</button></td>
+                  <td className="border-b border-slate-100 px-4 py-4 text-right"><button onClick={() => { if (action === "Retry") { void load(); } else { setSelectedLearner(learner.learner_id); } }} disabled={action === "View"} className="inline-flex items-center gap-2 rounded-xl bg-[#197fe9] px-4 py-2.5 text-sm font-black text-white shadow-sm hover:opacity-90 disabled:cursor-default disabled:bg-emerald-100 disabled:text-emerald-700 disabled:shadow-none">{action === "Renew" ? <RefreshCw size={16}/> : action === "Included" ? <ShieldCheck size={16}/> : <Eye size={16}/>} {action}</button></td>
                 </tr>;
               })}
             </tbody>
