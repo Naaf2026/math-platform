@@ -55,10 +55,9 @@ export default function SubscriptionPage() {
 
   useEffect(() => { void load(); }, []);
 
-  const status = entitlements[0]?.subscription_status ?? "free";
   const trialEnds = entitlements.find((x) => x.trial_ends_at)?.trial_ends_at ?? null;
-  const trialing = status === "trialing";
-  const active = status === "active";
+  const trialing = entitlements.some((x) => x.subscription_status === "trialing");
+  const active = entitlements.some((x) => x.subscription_status === "active");
   const remaining = daysLeft(trialEnds);
 
   async function startTrial() {
