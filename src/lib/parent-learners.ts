@@ -11,6 +11,10 @@ export type LearnerAccount = {
   current_streak: number;
   best_streak: number;
   created_at: string;
+  subscription_status: "trialing" | "active" | "expired" | "cancelled" | "demo" | string;
+  trial_ends_at: string | null;
+  period_ends_at: string | null;
+  subscription_days_left: number;
 };
 
 async function invokeWithDetailedError<T>(supabase: ReturnType<typeof createClient>, functionName: string, body: unknown) {
