@@ -103,8 +103,8 @@ export default function SubscriptionPage() {
     const supabase = createClient();
     if (!supabase) { setMessage("Please log in first."); setStarting(false); return; }
     const { error } = await supabase.rpc("start_premium_trial");
-    if (error) setMessage(error.message.includes("already") ? "Your 7-day trial has already been used." : error.message);
-    else { setMessage("Your 7-day Premium trial is now active!"); await load(); }
+    if (error) setMessage(error.message.includes("already") ? "Your 3-day trial has already been used." : error.message);
+    else { setMessage("Your 3-day Premium trial is now active!"); await load(); }
     setStarting(false);
   }
 
@@ -121,7 +121,7 @@ export default function SubscriptionPage() {
         <div className="text-center">
           <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-[#fff4cf] px-4 py-2 text-sm font-black text-[#8b6a00]"><Sparkles size={16} /> Learn more. Practise more. Master maths.</div>
           <h1 className="mt-5 text-4xl font-black tracking-tight sm:text-5xl">Choose your learning plan</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg font-semibold leading-7 text-[#6685a4]">Try Premium for 7 days with sensible daily limits, then continue for just MVR 150/month.</p>
+          <p className="mx-auto mt-4 max-w-2xl text-lg font-semibold leading-7 text-[#6685a4]">Try Premium for 3 days with sensible daily limits, then continue for just MVR 150/month.</p>
         </div>
 
         {message && <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-[#cfe6f7] bg-white px-5 py-4 text-center font-bold shadow-sm">{message}</div>}
@@ -166,15 +166,15 @@ export default function SubscriptionPage() {
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           <article className="rounded-[30px] border-2 border-[#cfe6f7] bg-white p-6 shadow-lg sm:p-8">
             <div className="flex items-center justify-between">
-              <div><p className="text-sm font-black uppercase tracking-widest text-[#6685a4]">Start here</p><h2 className="mt-2 text-3xl font-black">7-Day Trial</h2></div>
+              <div><p className="text-sm font-black uppercase tracking-widest text-[#6685a4]">Start here</p><h2 className="mt-2 text-3xl font-black">3-Day Trial</h2></div>
               <div className="rounded-2xl bg-[#eaf7ff] p-3"><Clock3 size={28} className="text-[#197fe9]" /></div>
             </div>
-            <p className="mt-4 text-2xl font-black">MVR 0 <span className="text-sm text-[#6685a4]">for 7 days</span></p>
+            <p className="mt-4 text-2xl font-black">MVR 0 <span className="text-sm text-[#6685a4]">for 3 days</span></p>
             <div className="mt-6 space-y-3">
               {trialFeatures.map(([name, limit]) => <div key={name} className="flex items-center justify-between gap-4 rounded-xl bg-[#f6fbff] px-4 py-3"><span className="font-bold">{name}</span><span className="text-sm font-black text-[#197fe9]">{limit}</span></div>)}
             </div>
             <button onClick={startTrial} disabled={starting || trialing || active} className="mt-7 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#197fe9] px-5 py-4 font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#126fce] disabled:cursor-not-allowed disabled:opacity-50">
-              {trialing ? `${remaining} day${remaining === 1 ? "" : "s"} left in your Premium Trial` : active ? "Premium Active" : starting ? "Starting trial…" : "Start 7-Day Premium Trial"}
+              {trialing ? `${remaining} day${remaining === 1 ? "" : "s"} left in your Premium Trial` : active ? "Premium Active" : starting ? "Starting trial…" : "Start 3-Day Premium Trial"}
             </button>
             {loading && <p className="mt-3 text-center text-sm font-semibold text-[#6685a4]">Checking your subscription…</p>}
           </article>
