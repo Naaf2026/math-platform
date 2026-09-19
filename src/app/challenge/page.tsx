@@ -80,13 +80,7 @@ export default function Challenge() {
     const dailyLimit = dailyEntitlement?.daily_limit == null ? null : Number(dailyEntitlement.daily_limit);
     const usedToday = Number(usage?.usage_count ?? 0);
     setChallengeDailyLimit(dailyLimit);
-    if (dailyLimit !== null && usedToday >= dailyLimit) {
-      setChallengeLimitReached(true);
-      setXp(profile?.xp ?? 0);
-      setStreak(profile?.current_streak ?? 0);
-      setLoading(false);
-      return;
-    }
+    setChallengeLimitReached(dailyLimit !== null && usedToday >= dailyLimit);
     const { data, error: questionError } = await supabase.rpc("get_adaptive_questions", { p_limit: 30 });
     if (questionError || !data?.length) {
       setError(questionError?.message || "No challenge questions are available yet.");
@@ -118,6 +112,9 @@ export default function Challenge() {
   }
 
   function startChallenge(selectedStage: ChallengeStage) {
+    if (challengeDailyLimit !== null && challengeLimitReached) {
+      return;
+    }
     const aliases: Record<ChallengeStage, string[]> = {
       0: ["easy", "elementary", "beginner", "foundation"],
       1: ["medium", "intermediate", "development"],
@@ -218,7 +215,7 @@ export default function Challenge() {
     submitError = result.error;
     if (submitError) {
       const message = String(submitError.message || "");
-      const limitMatch = message.match(/daily_limit_reached[:\\s]+(\\d+)/i);
+      const limitMatch = message.match(/daily_limit_reached[:\s]+(\d+)/i);
       if (message.toLowerCase().includes("subscription_limit") && limitMatch) {
         setChallengeDailyLimit(Number(limitMatch[1]));
         setChallengeLimitReached(true);
@@ -272,9 +269,24 @@ export default function Challenge() {
   }
 
   if (loading) return <main className="grid min-h-screen place-items-center bg-[#e7f5f8] p-6"><div className="rounded-3xl bg-white p-10 text-center shadow-2xl"><div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-cyan-100 text-4xl">🚀</div><h1 className="mt-5 text-2xl font-black">Loading Daily Challenge</h1><p className="mt-2 text-slate-500">Preparing today's maths questions...</p></div></main>;
-  if (challengeLimitReached) return <main className="grid min-h-screen place-items-center bg-[#e7f5f8] p-5"><div className="w-full max-w-md rounded-[2rem] bg-white p-8 text-center shadow-2xl"><div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-cyan-100 text-4xl">🏆</div><p className="mt-5 text-xs font-black uppercase tracking-[.18em] text-cyan-600">Daily Challenge complete</p><h1 className="mt-2 text-3xl font-black text-slate-800">Great work today! 🎉</h1><p className="mt-3 text-sm font-semibold leading-6 text-slate-500">You have completed your {challengeDailyLimit} Daily Challenge questions for today. Your Daily Challenge will be available again tomorrow when the daily limit resets.</p><Link href="/dashboard" className="mt-7 inline-flex w-full items-center justify-center rounded-2xl bg-cyan-600 px-6 py-3.5 font-black text-white shadow-lg">Go to Dashboard</Link></div></main>;
+
   if (error && !pool.length) return <main className="grid min-h-screen place-items-center bg-[#e7f5f8] p-6"><div className="rounded-3xl bg-white p-9 text-center shadow-xl"><h1 className="text-2xl font-black">Challenge unavailable</h1><p className="mt-3 text-slate-500">{error}</p><button onClick={() => { setLoading(true); setError(""); void load(); }} className="mt-6 rounded-xl bg-cyan-600 px-6 py-3 font-black text-white">Try again</button></div></main>;
-  if (!started) return <ChallengeProficiencyGate xp={xp} onStart={startChallenge} />;
+  if (!started) return (
+    <>
+      <ChallengeProficiencyGate xp={xp} onStart={startChallenge} />
+      {challengeLimitReached && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-[#062b52]/55 p-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="daily-challenge-limit-title">
+          <div className="w-full max-w-md rounded-[28px] bg-white p-8 text-center shadow-2xl">
+            <div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-cyan-100 text-4xl">🏆</div>
+            <p className="mt-5 text-xs font-black uppercase tracking-[.18em] text-cyan-600">Daily Challenge complete</p>
+            <h1 id="daily-challenge-limit-title" className="mt-2 text-3xl font-black text-slate-800">Great work today! 🎉</h1>
+            <p className="mt-3 text-sm font-semibold leading-6 text-slate-500">You have completed your {challengeDailyLimit} Daily Challenge questions for today. Your Daily Challenge will be available again tomorrow when the daily limit resets.</p>
+            <Link href="/dashboard" className="mt-7 inline-flex w-full items-center justify-center rounded-2xl bg-cyan-600 px-6 py-3.5 font-black text-white shadow-lg">Go to Dashboard</Link>
+          </div>
+        </div>
+      )}
+    </>
+  );
   if (done) return <main className="grid min-h-screen place-items-center bg-[#e7f5f8] p-6"><div className="w-full max-w-2xl rounded-[2.5rem] bg-white p-8 text-center shadow-2xl"><div className="mx-auto grid h-24 w-24 place-items-center rounded-3xl bg-yellow-100 text-yellow-500"><Trophy size={52}/></div><p className="mt-5 text-xs font-black uppercase tracking-[.2em] text-cyan-600">Daily Challenge Complete</p><h1 className="mt-2 text-4xl font-black">Amazing work! 🎉</h1><div className="mt-7 grid grid-cols-3 gap-3"><Stat label="Correct" value={`${correct}/${questions.length}`}/><Stat label="XP earned" value={`+${earned}`}/><Stat label="Streak" value={`${streak} 🔥`}/></div><div className="mt-7 flex justify-center gap-3"><button onClick={restart} className="rounded-2xl bg-cyan-600 px-6 py-3 font-black text-white">Choose Level Again</button><Link href="/dashboard" className="rounded-2xl bg-slate-100 px-6 py-3 font-black">Dashboard</Link></div></div></main>;
 
   const correctOption = current?.options.find((option) => option.id === current.answer);
