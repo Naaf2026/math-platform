@@ -39,6 +39,7 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
   const [status, setStatus] = useState<{ balance: number; free_play_available: boolean } | null>(null);
   const [timer, setTimer] = useState<TimerStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [dailyLimitReached, setDailyLimitReached] = useState<number | null>(null);
 
   const prepare = async () => {
     setError(null); setLoading(true);
@@ -47,7 +48,16 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
       const [{ data, error: rpcError }, { data: timerData, error: timerError }] = await Promise.all([
         supabase.rpc("get_mind_spark_status"), supabase.rpc("get_brain_game_timer_status"),
       ]);
-      if (rpcError) throw rpcError;
+      if (rpcError) {
+        const message = String(rpcError.message || "");
+        const limitMatch = message.match(/daily_limit_reached[:\\s]+(\\d+)/i);
+        if (message.toLowerCase().includes("subscription_limit") && limitMatch) {
+          setOpen(false);
+          setDailyLimitReached(Number(limitMatch[1]));
+          return;
+        }
+        throw rpcError;
+      }
       if (timerError) throw timerError;
       const row = Array.isArray(data) ? data[0] : data;
       const timerRow = Array.isArray(timerData) ? timerData[0] : timerData;
@@ -62,7 +72,7 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
   };
 
   const start = async () => {
-    setError(null); setLoading(true);
+    setError(null); setDailyLimitReached(null); setLoading(true);
     try {
       const supabase = await getAuthenticatedClient();
       if ((timer?.seconds_remaining ?? 0) <= 0) throw new Error("Your 30-minute Mind Time is finished for today. Come back tomorrow!");
@@ -138,5 +148,27 @@ export default function MindSparkGate({ gameKey, gameTitle, onStarted, children,
       </div>
     </div>}
     {error && !open && <div className="mt-2 rounded-xl bg-rose-50 px-3 py-2 text-center text-xs font-bold text-rose-700">{error}</div>}
+    {dailyLimitReached !== null && (
+      <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[#062b52]/55 p-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="brain-games-limit-title">
+        <div className="w-full max-w-md rounded-[30px] bg-white p-8 text-center shadow-2xl">
+          <div className="mx-auto grid h-24 w-24 place-items-center rounded-3xl bg-[#fff3cc] text-5xl">🏆</div>
+          <p className="mt-5 text-xs font-black uppercase tracking-[.18em] text-[#e39a00]">Brain Game complete</p>
+          <h2 id="brain-games-limit-title" className="mt-2 text-3xl font-black text-[#083d78]">Great work today! 🎉</h2>
+          <p className="mt-4 text-sm font-semibold leading-6 text-[#6685a4]">
+            You have completed your {dailyLimitReached} Brain Game play for today.
+          </p>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[#6685a4]">
+            Your Brain Games will be available again tomorrow when the daily limit resets.
+          </p>
+          <button
+            type="button"
+            onClick={() => setDailyLimitReached(null)}
+            className="mt-7 w-full rounded-2xl bg-[#ffad16] px-6 py-3.5 font-black text-white shadow-md"
+          >
+            Got it! 🎉
+          </button>
+        </div>
+      </div>
+    )}
   </>;
 }
