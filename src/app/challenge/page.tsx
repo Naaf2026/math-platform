@@ -80,7 +80,13 @@ export default function Challenge() {
     const dailyLimit = dailyEntitlement?.daily_limit == null ? null : Number(dailyEntitlement.daily_limit);
     const usedToday = Number(usage?.usage_count ?? 0);
     setChallengeDailyLimit(dailyLimit);
-    setChallengeLimitReached(dailyLimit !== null && usedToday >= dailyLimit);
+    if (dailyLimit !== null && usedToday >= dailyLimit) {
+      setChallengeLimitReached(true);
+      setXp(profile?.xp ?? 0);
+      setStreak(profile?.current_streak ?? 0);
+      setLoading(false);
+      return;
+    }
     const { data, error: questionError } = await supabase.rpc("get_adaptive_questions", { p_limit: 30 });
     if (questionError || !data?.length) {
       setError(questionError?.message || "No challenge questions are available yet.");
@@ -270,6 +276,7 @@ export default function Challenge() {
 
   if (loading) return <main className="grid min-h-screen place-items-center bg-[#e7f5f8] p-6"><div className="rounded-3xl bg-white p-10 text-center shadow-2xl"><div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-cyan-100 text-4xl">🚀</div><h1 className="mt-5 text-2xl font-black">Loading Daily Challenge</h1><p className="mt-2 text-slate-500">Preparing today's maths questions...</p></div></main>;
 
+  if (challengeLimitReached) return <main className="grid min-h-screen place-items-center bg-[#e7f5f8] p-5"><div className="w-full max-w-md rounded-[2rem] bg-white p-8 text-center shadow-2xl"><div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-cyan-100 text-4xl">🏆</div><p className="mt-5 text-xs font-black uppercase tracking-[.18em] text-cyan-600">🏆 Daily Challenge complete</p><h1 className="mt-2 text-3xl font-black text-slate-800">Great work today! 🎉</h1><p className="mt-3 text-sm font-semibold leading-6 text-slate-500">You have completed your {challengeDailyLimit} Daily Challenge questions for today. Your Daily Challenge will be available again tomorrow when the daily limit resets.</p><Link href="/dashboard" className="mt-7 inline-flex w-full items-center justify-center rounded-2xl bg-cyan-600 px-6 py-3.5 font-black text-white shadow-lg">Go to Dashboard</Link></div></main>;
   if (error && !pool.length) return <main className="grid min-h-screen place-items-center bg-[#e7f5f8] p-6"><div className="rounded-3xl bg-white p-9 text-center shadow-xl"><h1 className="text-2xl font-black">Challenge unavailable</h1><p className="mt-3 text-slate-500">{error}</p><button onClick={() => { setLoading(true); setError(""); void load(); }} className="mt-6 rounded-xl bg-cyan-600 px-6 py-3 font-black text-white">Try again</button></div></main>;
   if (!started) return (
     <>
