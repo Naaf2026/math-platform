@@ -101,7 +101,7 @@ export default function SubscriptionPage() {
               {trialFeatures.map(([name, limit]) => <div key={name} className="flex items-center justify-between gap-4 rounded-xl bg-[#f6fbff] px-4 py-3"><span className="font-bold">{name}</span><span className="text-sm font-black text-[#197fe9]">{limit}</span></div>)}
             </div>
             <button onClick={startTrial} disabled={starting || trialing || active} className="mt-7 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#197fe9] px-5 py-4 font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#126fce] disabled:cursor-not-allowed disabled:opacity-50">
-              {trialing ? `Premium Trial Active · ${remaining} day${remaining === 1 ? "" : "s"} left` : active ? "Premium Active" : starting ? "Starting trial…" : "Start 7-Day Premium Trial"}
+              {trialing ? `${remaining} day${remaining === 1 ? "" : "s"} left in your Premium Trial` : active ? "Premium Active" : starting ? "Starting trial…" : "Start 7-Day Premium Trial"}
             </button>
             {loading && <p className="mt-3 text-center text-sm font-semibold text-[#6685a4]">Checking your subscription…</p>}
           </article>
