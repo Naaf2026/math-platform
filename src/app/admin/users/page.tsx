@@ -43,7 +43,7 @@ export default function SubscriptionBadge({ status, endsAt }: { status: Subscrip
   return <div className="space-y-1"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-black ring-1 ${styles[status]}`}>{labels[status]}</span>{endLabel && <p className="text-[11px] font-semibold text-slate-400">Until {endLabel}</p>}</div>;
 }
 
-
+export default function AdminUsersPage() {
   const supabase = createClient();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [filter, setFilter] = useState("all");
