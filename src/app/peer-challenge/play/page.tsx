@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Check, Loader2, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import LearnerBottomNav from "@/components/learner-bottom-nav";
 
 type Q={id:string;prompt:string;options:any;answer:string;explanation:string};
 type C={id:string;challenger_id:string;challenged_id:string;status:string;question_ids:string[];expires_at:string;challenger_correct:number;challenged_correct:number;challenger_points:number;challenged_points:number;winner_id:string|null;};
@@ -28,5 +29,5 @@ export default function BuddyPlayPage(){
  {error&&<div className="mt-5 rounded-2xl bg-rose-50 p-4 font-bold text-rose-700">{error}</div>}
  {submitted?<div className="mt-6 rounded-2xl bg-emerald-50 p-5 text-center font-black text-emerald-800"><Check className="mx-auto mb-2"/>{c?.status==="completed"?"Both learners have submitted. See the final result.":"Your 5 answers are locked in. Your buddy can now complete the challenge."}</div>:<button onClick={()=>void submit()} disabled={busy||Object.keys(answers).length!==5||(!meChallenger&&c?.status==="pending")} className="mt-6 w-full rounded-full bg-[#ff6035] px-6 py-4 text-lg font-black text-white shadow-md disabled:opacity-40">{busy?"Submitting...":"Submit 5 Answers"}</button>}
  <div className="mt-5 rounded-2xl bg-white p-4 text-center text-sm font-bold text-[#6685a4]">Answers are locked after submission • 5 questions • 3 challenges per day • Available 6 AM–10 PM</div>
- </section></main>;
+ </section><LearnerBottomNav /></main>;
 }
