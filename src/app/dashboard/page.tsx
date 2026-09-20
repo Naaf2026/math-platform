@@ -30,6 +30,7 @@ export default function DashboardPage() {
   const [showDailyChallengeLimit, setShowDailyChallengeLimit] = useState(false);
   const [showVisualPremium, setShowVisualPremium] = useState(false);
   const [visualAccess, setVisualAccess] = useState<VisualAccess | null>(null);
+  const [subscriptionInfo, setSubscriptionInfo] = useState<{ status?: string; plan_name?: string; trial_ends_at?: string | null; current_period_end?: string | null } | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -39,13 +40,14 @@ export default function DashboardPage() {
       const { data: auth } = await supabase.auth.getUser();
       if (!mounted) return;
       if (!auth.user) { setProfile(null); setLoading(false); return; }
-      const [{ data }, { data: mindData }, { data: entitlements }, { data: usage }, { data: dailyChallengeAccess }, { data: visualState }] = await Promise.all([
+      const [{ data }, { data: mindData }, { data: entitlements }, { data: usage }, { data: dailyChallengeAccess }, { data: visualState }, { data: subRow }] = await Promise.all([
         supabase.from("profiles").select("full_name,grade,xp,current_streak,avatar_url,avatar_emoji").eq("id", auth.user.id).maybeSingle(),
         supabase.rpc("get_mind_spark_status"),
         supabase.rpc("get_my_entitlements"),
         supabase.from("subscription_usage").select("usage_count").eq("user_id", auth.user.id).eq("usage_date", new Date().toISOString().slice(0, 10)).eq("feature_key", "math_practice").maybeSingle(),
         supabase.rpc("get_daily_challenge_access_state").maybeSingle(),
-        supabase.rpc("get_visual_question_access").maybeSingle()
+        supabase.rpc("get_visual_question_access").maybeSingle(),
+        supabase.from("user_subscriptions").select("status,trial_ends_at,current_period_end,plan_id").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(1).maybeSingle()
       ]);
       if (!mounted) return;
       setProfile(data ?? { full_name: auth.user.user_metadata?.full_name ?? "Student", grade: null, xp: 0, current_streak: 0, avatar_url: null, avatar_emoji: "🧑‍🎓" });
@@ -57,6 +59,12 @@ export default function DashboardPage() {
       setDailyChallengeLimit(dailyChallengeAccess?.daily_limit == null ? null : Number(dailyChallengeAccess.daily_limit));
       setDailyChallengeUsed(Number(dailyChallengeAccess?.used_today ?? 0));
       setVisualAccess((Array.isArray(visualState) ? visualState[0] : visualState) as VisualAccess | null);
+      if (subRow?.plan_id) {
+        const { data: planRow } = await supabase.from("subscription_plans").select("name,slug").eq("id", subRow.plan_id).maybeSingle();
+        setSubscriptionInfo({ ...subRow, plan_name: planRow?.name ?? undefined });
+      } else {
+        setSubscriptionInfo(null);
+      }
       if (mindData) {
         const status = Array.isArray(mindData) ? mindData[0] : mindData;
         setMind({ balance: Number(status?.balance ?? 0), remaining_seconds: Number(status?.remaining_seconds ?? 0) });
@@ -90,10 +98,10 @@ export default function DashboardPage() {
   const avatarEmoji = profile?.avatar_emoji || "🧑‍🎓";
   // Use the authoritative Visual Math entitlement to determine the learner's current subscription.
   // This prevents a Premium learner from being classified as trial/free by a secondary entitlement row.
-  const isPremium = visualAccess?.subscription_status === "active" && visualAccess?.plan_name === "Premium";
-  const trialEndsAt = visualAccess?.trial_ends_at ?? null;
+  const isPremium = subscriptionInfo?.status === "active" && subscriptionInfo?.plan_name === "Premium";
+  const trialEndsAt = subscriptionInfo?.trial_ends_at ?? null;
   const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
-  const isTrial = !isPremium && visualAccess?.subscription_status === "trialing" && trialDaysLeft > 0;
+  const isTrial = !isPremium && subscriptionInfo?.status === "trialing" && trialDaysLeft > 0;
 
   const Avatar = ({ className }: { className: string }) => avatarSrc
     ? <img src={avatarSrc} alt="Learner avatar" className={`${className} object-cover`} />
