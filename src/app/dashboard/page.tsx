@@ -102,18 +102,33 @@ export default function DashboardPage() {
 
   const subscriptionStatus = normalizeStatus(subscriptionInfo?.status);
   const visualStatus = normalizeStatus(visualAccess?.subscription_status);
-  const premiumPlan = normalizePlan(subscriptionInfo?.plan_name ?? visualAccess?.plan_name);
+  const subscriptionPlan = normalizePlan(subscriptionInfo?.plan_name);
+  const visualPlan = normalizePlan(visualAccess?.plan_name);
 
-  const isPremium =
-    (subscriptionStatus === "active" && premiumPlan === "premium") ||
-    (visualStatus === "active" && premiumPlan === "premium") ||
-    (subscriptionStatus === "active" && normalizePlan(subscriptionInfo?.plan_name) === "premium") ||
-    (visualStatus === "active" && normalizePlan(visualAccess?.plan_name) === "premium");
+  // Premium is authoritative. Only classify the learner as Trial when there is
+  // no active Premium subscription/access record.
+  const hasActivePremium =
+    (subscriptionStatus === "active" && subscriptionPlan === "premium") ||
+    (visualStatus === "active" && visualPlan === "premium");
 
-  const trialEndsAt = subscriptionInfo?.trial_ends_at ?? visualAccess?.trial_ends_at ?? null;
-  const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
+  const trialEndsAt =
+    subscriptionInfo?.trial_ends_at ??
+    visualAccess?.trial_ends_at ??
+    null;
+
+  const trialDaysLeft = trialEndsAt
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(trialEndsAt).getTime() - Date.now()) / 86400000
+        )
+      )
+    : 0;
+
+  const isPremium = hasActivePremium;
+
   const isTrial =
-    !isPremium &&
+    !hasActivePremium &&
     (subscriptionStatus === "trialing" || visualStatus === "trialing") &&
     trialDaysLeft > 0;
 
