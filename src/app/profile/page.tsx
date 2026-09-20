@@ -309,7 +309,7 @@ export default function ProfilePage() {
                   {avatarUrl ? <img src={avatarUrl} alt="Your profile photo" className="h-full w-full object-cover" /> : avatarEmoji}
                 </div>
               </div>
-              <label className="absolute -bottom-2 -right-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl border-4 border-white bg-violet-600 text-white shadow-lg hover:bg-violet-700" title="Upload profile photo">
+              <label className="absolute -bottom-2 -right-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl border-4 border-white bg-violet-600 text-white shadow-lg hover:bg-violet-700" title="Change avatar or upload profile photo">
                 <Camera className="h-4 w-4" />
                 <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" disabled={avatarUploading} onChange={(e)=>{ const file=e.target.files?.[0]; if(file) void uploadAvatar(file); e.currentTarget.value=""; }} />
               </label>
@@ -318,7 +318,7 @@ export default function ProfilePage() {
               <p className="text-xs font-black uppercase tracking-[0.18em] text-violet-600">Your Avatar</p>
               <h2 className="mt-1 text-2xl font-black text-[#12204a]">Make your profile yours ✨</h2>
               <p className="mt-1 max-w-2xl text-sm font-medium leading-6 text-slate-500">Choose a fun avatar or upload your own profile photo. Your photo will also appear when classmates see you in Buddy Challenge.</p>
-              <div className="mt-4 flex flex-wrap items-center gap-2">
+              <div id="avatar-options" className="mt-4 flex flex-wrap items-center gap-2">
                 {avatarChoices.map((emoji)=><button key={emoji} type="button" onClick={()=>void chooseAvatar(emoji)} disabled={avatarSaving||avatarUploading} className={`flex h-11 w-11 items-center justify-center rounded-2xl text-xl transition hover:-translate-y-0.5 ${!avatarUrl&&avatarEmoji===emoji ? "bg-violet-100 ring-2 ring-violet-500" : "bg-slate-50 hover:bg-violet-50"} disabled:opacity-50`}>{emoji}</button>)}
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-[#12204a] px-4 py-2.5 text-xs font-black text-white shadow-md hover:bg-[#1b2f64]">
                   <Pencil className="h-3.5 w-3.5" /> {avatarUploading ? "Uploading…" : "Upload photo"}
@@ -326,6 +326,9 @@ export default function ProfilePage() {
                 </label>
               </div>
               <p className="mt-2 text-[10px] font-bold text-slate-400">JPG, PNG or WebP · maximum 2 MB</p>
+              <a href="#avatar-options" className="mt-3 inline-flex items-center gap-2 rounded-xl bg-violet-50 px-3 py-2 text-xs font-black text-violet-700 transition hover:bg-violet-100">
+                <Pencil className="h-3.5 w-3.5" /> Change Avatar
+              </a>
             </div>
           </div>
         </section>
