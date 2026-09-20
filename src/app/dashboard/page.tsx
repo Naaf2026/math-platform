@@ -8,7 +8,7 @@ import LearnerLoginModal from "@/components/auth/LearnerLoginModal";
 import LearnerAccessNotice from "@/components/subscription/LearnerAccessNotice";
 import NotificationBell from "@/components/learner-notification-bell";
 
-type Profile = { full_name: string | null; grade: string | null; xp: number; current_streak: number; avatar_url: string | null; avatar_emoji: string | null };
+type Profile = { full_name: string | null; grade: string | null; xp: number; current_streak: number; avatar_url: string | null; avatar_emoji: string | null; is_premium: boolean };
 type MindStatus = { balance: number; remaining_seconds: number };
 type VisualAccess = { enabled?: boolean; plan_name?: string; subscription_status?: string; trial_ends_at?: string | null };
 
@@ -41,7 +41,7 @@ export default function DashboardPage() {
       if (!mounted) return;
       if (!auth.user) { setProfile(null); setLoading(false); return; }
       const [{ data }, { data: mindData }, { data: entitlements }, { data: usage }, { data: dailyChallengeAccess }, { data: visualState }, { data: subRow }] = await Promise.all([
-        supabase.from("profiles").select("full_name,grade,xp,current_streak,avatar_url,avatar_emoji").eq("id", auth.user.id).maybeSingle(),
+        supabase.from("profiles").select("full_name,grade,xp,current_streak,avatar_url,avatar_emoji,is_premium").eq("id", auth.user.id).maybeSingle(),
         supabase.rpc("get_mind_spark_status"),
         supabase.rpc("get_my_entitlements"),
         supabase.from("subscription_usage").select("usage_count").eq("user_id", auth.user.id).eq("usage_date", new Date().toISOString().slice(0, 10)).eq("feature_key", "math_practice").maybeSingle(),
@@ -50,7 +50,7 @@ export default function DashboardPage() {
         supabase.from("user_subscriptions").select("status,trial_ends_at,current_period_end,plan_id").eq("user_id", auth.user.id).order("created_at", { ascending: false }).limit(1).maybeSingle()
       ]);
       if (!mounted) return;
-      setProfile(data ?? { full_name: auth.user.user_metadata?.full_name ?? "Student", grade: null, xp: 0, current_streak: 0, avatar_url: null, avatar_emoji: "🧑‍🎓" });
+      setProfile(data ?? { full_name: auth.user.user_metadata?.full_name ?? "Student", grade: null, xp: 0, current_streak: 0, avatar_url: null, avatar_emoji: "🧑‍🎓", is_premium: false });
       setEntitlements(Array.isArray(entitlements) ? entitlements : []);
       const mathEntitlement = (Array.isArray(entitlements) ? entitlements : []).find((item: { feature_key?: string }) => item.feature_key === "math_practice");
       setMathPracticeLimit(mathEntitlement?.daily_limit == null ? null : Number(mathEntitlement.daily_limit));
