@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Activity, ArrowLeft, BarChart3, BookOpenCheck, CheckCircle2, GraduationCap, Gamepad2, RefreshCw, ShieldCheck, Sparkles, Target, Trophy, Users, UserRoundCheck, Zap } from "lucide-react";
+import { Activity, ArrowLeft, BarChart3, BookOpenCheck, CheckCircle2, GraduationCap, Gamepad2, RefreshCw, ShieldCheck, Sparkles, Target, Trophy, Users, UserRoundCheck, Zap, CreditCard } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getUserRole } from "@/app/auth/role-router";
 
@@ -26,6 +26,7 @@ export default function AdminDashboardPage() {
   const [data, setData] = useState<Analytics>(empty);
   const [status, setStatus] = useState("Loading administrator dashboard…");
   const [refreshing, setRefreshing] = useState(false);
+  const [pendingPayments, setPendingPayments] = useState(0);
 
   async function load() {
     const supabase = createClient();
@@ -57,7 +58,7 @@ export default function AdminDashboardPage() {
     <div className="mx-auto max-w-7xl">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <Link href="/dashboard" className="inline-flex items-center gap-2 font-bold text-slate-600"><ArrowLeft size={18}/> Dashboard</Link>
-        <div className="flex flex-wrap gap-2"><Link href="/admin/classes" className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-violet-700 ring-1 ring-slate-200">Class Management</Link><Link href="/admin/users" className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-violet-700 ring-1 ring-slate-200">User Management</Link><Link href="/admin/mind-games" className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-violet-700 ring-1 ring-slate-200">Mind Games</Link><button onClick={() => void load()} disabled={refreshing} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 disabled:opacity-50"><RefreshCw size={16} className={refreshing ? "animate-spin" : ""}/> Refresh</button></div>
+        <div className="flex flex-wrap gap-2"><Link href="/admin/classes" className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-violet-700 ring-1 ring-slate-200">Class Management</Link><Link href="/admin/users" className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-violet-700 ring-1 ring-slate-200">User Management</Link><Link href="/admin/mind-games" className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-violet-700 ring-1 ring-slate-200">Mind Games</Link><Link href="/admin/payments" className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-black text-white shadow-sm"><CreditCard size={16}/> Payments {pendingPayments>0&&<span className="rounded-full bg-white px-2 py-0.5 text-xs text-emerald-700">{pendingPayments}</span>}</Link><button onClick={() => void load()} disabled={refreshing} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 disabled:opacity-50"><RefreshCw size={16} className={refreshing ? "animate-spin" : ""}/> Refresh</button></div>
       </header>
 
       <section className="mt-7 overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#17234f] via-violet-700 to-blue-600 p-7 text-white shadow-2xl sm:p-10">
@@ -67,7 +68,7 @@ export default function AdminDashboardPage() {
         </div>
       </section>
 
-      <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="mt-6 rounded-3xl bg-gradient-to-r from-emerald-600 to-teal-600 p-6 text-white shadow-lg shadow-emerald-100"><div className="flex flex-wrap items-center justify-between gap-5"><div className="flex items-start gap-4"><div className="rounded-2xl bg-white/15 p-3"><CreditCard size={26}/></div><div><p className="text-xs font-black uppercase tracking-wider text-emerald-100">Payments & Premium</p><h2 className="mt-1 text-2xl font-black">Payment approvals</h2><p className="mt-1 text-sm font-semibold text-emerald-50">Review parent slips and activate Premium learner access.</p></div></div><div className="flex items-center gap-4"><div className="text-right"><p className="text-3xl font-black">{pendingPayments}</p><p className="text-xs font-bold text-emerald-100">awaiting review</p></div><Link href="/admin/payments" className="rounded-2xl bg-white px-5 py-3 font-black text-emerald-700 shadow-sm">Review payments →</Link></div></div></section><section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Metric icon={<Users/>} value={data.users.students} label="Students" note={`${data.users.total} total profiles`}/>
         <Metric icon={<GraduationCap/>} value={data.users.teachers} label="Teachers" note={`${data.classes.teachers_assigned} class assignments`}/>
         <Metric icon={<BookOpenCheck/>} value={data.classes.active} label="Active classes" note={`${data.classes.enrolments} active enrolments`}/>
