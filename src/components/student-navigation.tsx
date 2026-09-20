@@ -30,7 +30,8 @@ export default function StudentNavigation() {
     <>
       <nav className="fixed inset-x-0 bottom-0 z-50 hidden border-t border-slate-200/80 bg-slate-50/95 px-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.10)] backdrop-blur-xl md:block lg:hidden" aria-label="Student navigation">
         <div className="mx-auto max-w-2xl">
-          <div className="mb-2"><StudentProfilePill mobile /></div>\n          <div className="mb-2 flex justify-center"><LogoutButton compact /></div>
+          <div className="mb-2"><StudentProfilePill mobile /></div>
+          <div className="mb-2 flex justify-center"><LogoutButton compact /></div>
           <div className="grid grid-cols-6 gap-1">
             {mobileItems.map(({ href, label, icon: Icon }) => {
               const active = isActive(pathname, href);
@@ -43,6 +44,9 @@ export default function StudentNavigation() {
       <nav className="fixed inset-y-0 left-0 z-50 hidden w-20 flex-col items-center border-r border-slate-200/80 bg-white/90 py-5 shadow-[8px_0_30px_rgba(15,23,42,0.06)] backdrop-blur-xl lg:flex" aria-label="Student navigation">
         <Link href="/dashboard" className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-500 text-lg font-black text-white shadow-lg shadow-violet-200">F</Link>
         <StudentProfilePill />
+        <div className="mt-2">
+          <LogoutButton />
+        </div>
         <div className="mt-5 flex flex-1 flex-col gap-3">
           {items.map(({ href, label, icon: Icon }) => {
             const active = isActive(pathname, href);
