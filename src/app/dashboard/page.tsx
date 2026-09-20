@@ -109,7 +109,9 @@ export default function DashboardPage() {
   // no active Premium subscription/access record.
   const hasActivePremium =
     (subscriptionStatus === "active" && subscriptionPlan === "premium") ||
-    (visualStatus === "active" && visualPlan === "premium");
+    // Visual Math Lab access is Premium-only. Do not let missing/stale plan
+    // metadata downgrade an account that already has active Premium access.
+    (visualStatus === "active" && visualAccess?.enabled === true);
 
   const trialEndsAt =
     subscriptionInfo?.trial_ends_at ??
