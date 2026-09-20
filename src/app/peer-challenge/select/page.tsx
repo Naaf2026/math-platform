@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Users, Shuffle, UserRound, Loader2, ChevronRight, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-type Candidate={id:string;display_name:string;avatar_emoji:string;grade:string;learning_level:string;class_name:string};
+type Candidate={id:string;display_name:string;avatar_emoji:string;avatar_url:string|null;grade:string;learning_level:string;class_name:string};
 
 export default function BuddySelectPage(){
  const params=useSearchParams(); const mode=params.get("mode")||"buddy";
