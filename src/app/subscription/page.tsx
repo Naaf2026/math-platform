@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, Clock3, Crown, Sparkles, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { LearnerBottomNav } from "@/components/learner-bottom-nav";
+import LearnerBottomNav from "@/components/learner-bottom-nav";
 
 type Entitlement = {
   plan_slug: string;
