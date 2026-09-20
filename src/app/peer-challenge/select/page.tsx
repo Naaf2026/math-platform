@@ -9,7 +9,7 @@ type Candidate={id:string;display_name:string;avatar_emoji:string;avatar_url:str
 
 export default function BuddySelectPage(){
  const params=useSearchParams(); const mode=params.get("mode")||"buddy";
- const [items,setItems]=useState<Candidate[]>([]); const [loading,setLoading]=useState(true); const [busy,setBusy]=useState(""); const [error,setError]=useState("");
+ const [items,setItems]=useState<Candidate[]>([]); const [loading,setLoading]=useState(true); const [busy,setBusy]=useState(""); const [error,setError]=useState(""); const [selected,setSelected]=useState<Candidate|null>(null);
  const automatic=mode==="random"||mode==="my_buddy";
  useEffect(()=>{void load()},[mode]);
 
@@ -76,10 +76,11 @@ export default function BuddySelectPage(){
     {!loading&&!automatic&&items.length>0&&<div className="mt-8 grid gap-4 sm:grid-cols-2">{items.map(p=><div key={p.id} className="flex items-center gap-4 rounded-3xl border-2 border-[#dcecf7] bg-[#f9fdff] p-4">
       <div className="grid h-16 w-16 shrink-0 overflow-hidden place-items-center rounded-2xl bg-[#e7f5ff] text-3xl">{p.avatar_url?<img src={p.avatar_url} alt={p.display_name} className="h-full w-full object-cover"/>:<span>{p.avatar_emoji||"🧑‍🎓"}</span>}</div>
       <div className="min-w-0 flex-1"><h3 className="truncate text-lg font-black">{p.display_name}</h3><p className="mt-1 text-sm font-bold text-[#6685a4]">{[p.class_name,p.grade,p.learning_level].filter(Boolean).join(" • ")}</p></div>
-      <button onClick={()=>void challenge(p.id)} disabled={!!busy} className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#ff6035] px-4 py-2.5 text-sm font-black text-white disabled:opacity-50">{busy===p.id?"Sending...":"Challenge"}<ChevronRight size={16}/></button>
+      <button onClick={()=>setSelected(p)} disabled={!!busy} className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#ff6035] px-4 py-2.5 text-sm font-black text-white disabled:opacity-50">{busy===p.id?"Sending...":"Challenge"}<ChevronRight size={16}/></button>
     </div>)}</div>}
 
     {!loading&&automatic&&error&&<Link href="/peer-challenge" className="mx-auto mt-5 flex w-fit items-center gap-2 rounded-full bg-[#197fe9] px-5 py-3 text-sm font-black text-white">Back to Buddy Challenge</Link>}
+    {selected&&<div className="fixed inset-0 z-50 grid place-items-center bg-[#073b73]/60 p-4"><div className="w-full max-w-md rounded-[32px] bg-white p-7 text-center shadow-2xl"><div className="mx-auto grid h-20 w-20 overflow-hidden place-items-center rounded-3xl bg-[#e7f5ff] text-4xl">{selected.avatar_url?<img src={selected.avatar_url} alt={selected.display_name} className="h-full w-full object-cover"/>:<span>{selected.avatar_emoji||"🧑‍🎓"}</span>}</div><h3 className="mt-4 text-2xl font-black">Challenge {selected.display_name}?</h3><p className="mt-2 font-semibold leading-6 text-[#6685a4]">You will answer 5 Mathematics questions. Your answers will be locked after you submit.</p><div className="mt-6 grid grid-cols-2 gap-3"><button onClick={()=>setSelected(null)} className="rounded-full border-2 border-slate-200 bg-white px-5 py-3 font-black text-slate-600">Cancel</button><button onClick={()=>{const p=selected;setSelected(null);void challenge(p.id)}} className="rounded-full bg-[#ff6035] px-5 py-3 font-black text-white">Start Challenge</button></div></div></div>}
    </div>
   </section>
  </main>;
