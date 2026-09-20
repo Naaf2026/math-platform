@@ -24,7 +24,7 @@ export default function DashboardPage() {
   const [mathPracticeUsed, setMathPracticeUsed] = useState(0);
   const [mathPracticeLimit, setMathPracticeLimit] = useState<number | null>(null);
   const [showPracticeLimit, setShowPracticeLimit] = useState(false);
-  const [entitlements, setEntitlements] = useState<Array<{ feature_key?: string; subscription_status?: string; trial_ends_at?: string | null; daily_limit?: number | null }>>([]);
+  const [entitlements, setEntitlements] = useState<Array<{ plan_slug?: string; plan_name?: string; feature_key?: string; enabled?: boolean; subscription_status?: string; trial_ends_at?: string | null; daily_limit?: number | null }>>([]);
   const [dailyChallengeUsed, setDailyChallengeUsed] = useState(0);
   const [dailyChallengeLimit, setDailyChallengeLimit] = useState<number | null>(null);
   const [showDailyChallengeLimit, setShowDailyChallengeLimit] = useState(false);
@@ -100,6 +100,18 @@ export default function DashboardPage() {
   const normalizeStatus = (value?: string | null) => (value ?? "").trim().toLowerCase();
   const normalizePlan = (value?: string | null) => (value ?? "").trim().toLowerCase();
 
+  // Use the server-side entitlement result as the authoritative learner access
+  // source. It correctly handles Premium, Trial, and grandfathered/full-access
+  // learners even when a direct subscription row is missing or plan metadata
+  // cannot be read from the browser due to RLS.
+  const entitlementRows = Array.isArray(entitlements) ? entitlements : [];
+  const premiumEntitlement = entitlementRows.find((item) => {
+    const plan = normalizePlan(item.plan_slug || item.plan_name);
+    return plan === "premium" || plan === "grandfathered" || plan === "full access";
+  });
+  const entitlementStatus = normalizeStatus(premiumEntitlement?.subscription_status);
+  const entitlementTrialEndsAt = premiumEntitlement?.trial_ends_at ?? null;
+
   const subscriptionStatus = normalizeStatus(subscriptionInfo?.status);
   const visualStatus = normalizeStatus(visualAccess?.subscription_status);
   const subscriptionPlan = normalizePlan(subscriptionInfo?.plan_name);
@@ -109,12 +121,15 @@ export default function DashboardPage() {
   // no active Premium subscription/access record.
   const hasActivePremium =
     (subscriptionStatus === "active" && subscriptionPlan === "premium") ||
+    (entitlementStatus === "active" && premiumEntitlement?.enabled !== false) ||
+    entitlementStatus === "grandfathered" ||
     // Visual Math Lab access is Premium-only. Do not let missing/stale plan
     // metadata downgrade an account that already has active Premium access.
     (visualStatus === "active" && visualAccess?.enabled === true);
 
   const trialEndsAt =
     subscriptionInfo?.trial_ends_at ??
+    entitlementTrialEndsAt ??
     visualAccess?.trial_ends_at ??
     null;
 
@@ -131,7 +146,7 @@ export default function DashboardPage() {
 
   const isTrial =
     !hasActivePremium &&
-    (subscriptionStatus === "trialing" || visualStatus === "trialing") &&
+    (subscriptionStatus === "trialing" || visualStatus === "trialing" || entitlementStatus === "trialing") &&
     trialDaysLeft > 0;
 
   const Avatar = ({ className }: { className: string }) => avatarSrc
