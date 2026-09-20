@@ -88,11 +88,12 @@ export default function DashboardPage() {
   const grade = gradeLabel(profile?.grade);
   const avatarSrc = profile?.avatar_url || null;
   const avatarEmoji = profile?.avatar_emoji || "🧑‍🎓";
-  const subscription = (Array.isArray(entitlements) ? entitlements : []).find((item: { subscription_status?: string }) => item.subscription_status);
-  const trialEndsAt = subscription?.trial_ends_at ?? null;
-  const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
-  const isTrial = subscription?.subscription_status === "trialing" && trialDaysLeft > 0;
+  // Use the authoritative Visual Math entitlement to determine the learner's current subscription.
+  // This prevents a Premium learner from being classified as trial/free by a secondary entitlement row.
   const isPremium = visualAccess?.subscription_status === "active" && visualAccess?.plan_name === "Premium";
+  const trialEndsAt = visualAccess?.trial_ends_at ?? null;
+  const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
+  const isTrial = !isPremium && visualAccess?.subscription_status === "trialing" && trialDaysLeft > 0;
 
   const Avatar = ({ className }: { className: string }) => avatarSrc
     ? <img src={avatarSrc} alt="Learner avatar" className={`${className} object-cover`} />
