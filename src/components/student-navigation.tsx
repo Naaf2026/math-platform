@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BookOpen, Flame, Home, Target, Trophy, GraduationCap, Medal, FileText } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { StudentProfilePill } from "@/components/student-profile";
+import LogoutButton from "@/components/logout-button";
 
 const items = [
   { href: "/dashboard", label: "Home", icon: Home },
@@ -29,7 +30,7 @@ export default function StudentNavigation() {
     <>
       <nav className="fixed inset-x-0 bottom-0 z-50 hidden border-t border-slate-200/80 bg-slate-50/95 px-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.10)] backdrop-blur-xl md:block lg:hidden" aria-label="Student navigation">
         <div className="mx-auto max-w-2xl">
-          <div className="mb-2"><StudentProfilePill mobile /></div>
+          <div className="mb-2"><StudentProfilePill mobile /></div>\n          <div className="mb-2 flex justify-center"><LogoutButton compact /></div>
           <div className="grid grid-cols-6 gap-1">
             {mobileItems.map(({ href, label, icon: Icon }) => {
               const active = isActive(pathname, href);
