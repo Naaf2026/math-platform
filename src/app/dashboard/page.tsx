@@ -44,7 +44,8 @@ export default function DashboardPage() {
         supabase.rpc("get_mind_spark_status"),
         supabase.rpc("get_my_entitlements"),
         supabase.from("subscription_usage").select("usage_count").eq("user_id", auth.user.id).eq("usage_date", new Date().toISOString().slice(0, 10)).eq("feature_key", "math_practice").maybeSingle(),
-        supabase.rpc("get_daily_challenge_access_state").maybeSingle()
+        supabase.rpc("get_daily_challenge_access_state").maybeSingle(),
+        supabase.rpc("get_visual_question_access").maybeSingle()
       ]);
       if (!mounted) return;
       setProfile(data ?? { full_name: auth.user.user_metadata?.full_name ?? "Student", grade: null, xp: 0, current_streak: 0, avatar_url: null, avatar_emoji: "🧑‍🎓" });
