@@ -71,7 +71,7 @@ export default function BuddySelectPage(){
 
     {loading&&<div className="grid place-items-center py-20"><Loader2 className="animate-spin text-[#197fe9]" size={34}/><p className="mt-4 font-bold text-[#6685a4]">{automatic?"Matching you with an eligible learner...":"Loading eligible learners..."}</p></div>}
 
-    {!loading&&!automatic&&items.length===0&&<div className="mt-8 rounded-3xl bg-[#eef8ff] p-8 text-center"><div className="text-5xl">👥</div><h3 className="mt-4 text-xl font-black">No eligible learners yet</h3><p className="mt-2 font-semibold text-[#6685a4]">Try another Buddy Challenge option later.</p></div>}
+    {!loading&&!automatic&&items.length===0&&<div className="mt-8 rounded-3xl bg-[#eef8ff] p-8 text-center"><div className="text-5xl">🏫</div><h3 className="mt-4 text-xl font-black">No classmates are available yet</h3><p className="mx-auto mt-2 max-w-lg font-semibold leading-6 text-[#6685a4]">Challenge a Buddy is for learners in your own class. Ask your teacher or school administrator to add your classmates to the class roster.</p><Link href="/peer-challenge" className="mx-auto mt-5 inline-flex items-center gap-2 rounded-full bg-[#197fe9] px-5 py-3 text-sm font-black text-white">Back to Buddy Challenge</Link></div>}
 
     {!loading&&!automatic&&items.length>0&&<div className="mt-8 grid gap-4 sm:grid-cols-2">{items.map(p=><div key={p.id} className="flex items-center gap-4 rounded-3xl border-2 border-[#dcecf7] bg-[#f9fdff] p-4">
       <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[#e7f5ff] text-3xl">{p.avatar_emoji||"🧑‍🎓"}</div>
