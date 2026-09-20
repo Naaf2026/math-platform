@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, Clock3, Crown, Sparkles, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { LearnerBottomNav } from "@/components/learner-bottom-nav";
 
 type Entitlement = {
   plan_slug: string;
@@ -110,7 +111,7 @@ export default function SubscriptionPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#eef9ff] text-[#083d78]">
+    <main className="min-h-screen bg-[#eef9ff] pb-24 text-[#083d78] lg:pb-0">
       <header className="border-b border-[#dcecf6] bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Link href="/dashboard" className="inline-flex items-center gap-2 font-black text-[#197fe9]"><ArrowLeft size={18} /> Dashboard</Link>
@@ -197,6 +198,7 @@ export default function SubscriptionPage() {
           </article>
         </div>
       </section>
+      <LearnerBottomNav />
     </main>
   );
 }
