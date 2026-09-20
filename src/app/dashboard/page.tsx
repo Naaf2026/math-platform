@@ -167,3 +167,5 @@ export default function DashboardPage() {
       {!loggedOut && <LearnerAccessNotice />}
     </main>
   );
+
+}
