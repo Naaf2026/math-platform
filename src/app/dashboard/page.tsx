@@ -9,7 +9,7 @@ import LearnerAccessNotice from "@/components/subscription/LearnerAccessNotice";
 import NotificationBell from "@/components/learner-notification-bell";
 
 type Profile = { full_name: string | null; grade: string | null; xp: number; current_streak: number; avatar_url: string | null; avatar_emoji: string | null };
-type MindStatus = { balance: number; remaining_seconds: number };
+type MindStatus = { balance: number; remaining_seconds: number };\ntype VisualAccess = { enabled?: boolean; plan_name?: string; subscription_status?: string; trial_ends_at?: string | null };
 
 function gradeLabel(value: string | null | undefined) { const match = String(value || "").match(/[1-7]/); return match ? `Grade ${match[0]}` : "Grade 3"; }
 function formatMindTime(seconds: number) { const safe = Math.max(0, Math.floor(seconds)); const minutes = Math.floor(safe / 60); const secs = safe % 60; return `${minutes}:${String(secs).padStart(2, "0")}`; }
@@ -27,7 +27,7 @@ export default function DashboardPage() {
   const [dailyChallengeUsed, setDailyChallengeUsed] = useState(0);
   const [dailyChallengeLimit, setDailyChallengeLimit] = useState<number | null>(null);
   const [showDailyChallengeLimit, setShowDailyChallengeLimit] = useState(false);
-  const [showVisualPremium, setShowVisualPremium] = useState(false);
+  const [showVisualPremium, setShowVisualPremium] = useState(false);\n  const [visualAccess, setVisualAccess] = useState<VisualAccess | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -37,7 +37,7 @@ export default function DashboardPage() {
       const { data: auth } = await supabase.auth.getUser();
       if (!mounted) return;
       if (!auth.user) { setProfile(null); setLoading(false); return; }
-      const [{ data }, { data: mindData }, { data: entitlements }, { data: usage }, { data: dailyChallengeAccess }] = await Promise.all([
+      const [{ data }, { data: mindData }, { data: entitlements }, { data: usage }, { data: dailyChallengeAccess }, { data: visualState }] = await Promise.all([
         supabase.from("profiles").select("full_name,grade,xp,current_streak,avatar_url,avatar_emoji").eq("id", auth.user.id).maybeSingle(),
         supabase.rpc("get_mind_spark_status"),
         supabase.rpc("get_my_entitlements"),
@@ -52,7 +52,7 @@ export default function DashboardPage() {
       setMathPracticeUsed(Number(usage?.usage_count ?? 0));
       const dailyEntitlement = (Array.isArray(entitlements) ? entitlements : []).find((item: { feature_key?: string }) => item.feature_key === "daily_challenge");
       setDailyChallengeLimit(dailyChallengeAccess?.daily_limit == null ? null : Number(dailyChallengeAccess.daily_limit));
-      setDailyChallengeUsed(Number(dailyChallengeAccess?.used_today ?? 0));
+      setDailyChallengeUsed(Number(dailyChallengeAccess?.used_today ?? 0));\n      setVisualAccess((Array.isArray(visualState) ? visualState[0] : visualState) as VisualAccess | null);
       if (mindData) {
         const status = Array.isArray(mindData) ? mindData[0] : mindData;
         setMind({ balance: Number(status?.balance ?? 0), remaining_seconds: Number(status?.remaining_seconds ?? 0) });
@@ -88,7 +88,7 @@ export default function DashboardPage() {
   const trialEndsAt = subscription?.trial_ends_at ?? null;
   const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
   const isTrial = subscription?.subscription_status === "trialing" && trialDaysLeft > 0;
-  const isPremium = subscription?.subscription_status === "active";
+  const isPremium = visualAccess?.subscription_status === "active" && visualAccess?.plan_name === "Premium";
 
   const Avatar = ({ className }: { className: string }) => avatarSrc
     ? <img src={avatarSrc} alt="Learner avatar" className={`${className} object-cover`} />
