@@ -96,9 +96,10 @@ export default function DashboardPage() {
   const grade = gradeLabel(profile?.grade);
   const avatarSrc = profile?.avatar_url || null;
   const avatarEmoji = profile?.avatar_emoji || "🧑‍🎓";
-  // Use the authoritative Visual Math entitlement to determine the learner's current subscription.
-  // This prevents a Premium learner from being classified as trial/free by a secondary entitlement row.
+  // Profile is the primary Premium entitlement. Subscription metadata is kept as a fallback
+  // so Premium remains visible even when plan metadata/entitlement RPCs are temporarily incomplete.
   const isPremium =
+    profile?.is_premium === true ||
     (subscriptionInfo?.status === "active" && subscriptionInfo?.plan_name === "Premium") ||
     (visualAccess?.subscription_status === "active" && visualAccess?.plan_name === "Premium");
   const trialEndsAt = subscriptionInfo?.trial_ends_at ?? visualAccess?.trial_ends_at ?? null;
