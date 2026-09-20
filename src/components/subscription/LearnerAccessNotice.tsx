@@ -33,7 +33,7 @@ export default function LearnerAccessNotice() {
       <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[#fff3cc] text-[#806a12]"><BellRing size={28}/></div>
       <h2 className="mt-5 text-center text-3xl font-black text-[#083d78]">{trial?"Your free trial is ending soon":"Your monthly access is ending soon"}</h2>
       <p className="mt-3 text-center font-semibold leading-7 text-slate-600">{notice.days===1?"You have 1 day left.":`You have ${notice.days} days left.`} {trial?"Ask your parent to upgrade so you can keep learning without interruption.":"Ask your parent to renew this learner's monthly access."}</p>
-      <Link href="/parent/upgrade" className="mt-6 block rounded-2xl bg-[#197fe9] px-5 py-3.5 text-center font-black text-white">Upgrade / Renew</Link>
+      <Link href="/subscription" className="mt-6 block rounded-2xl bg-[#197fe9] px-5 py-3.5 text-center font-black text-white">Upgrade to Premium → 👑</Link>
       <button onClick={()=>setNotice(null)} className="mt-3 w-full rounded-2xl bg-slate-100 px-5 py-3 font-black text-slate-600">Continue for now</button>
     </section>
   </div>;
