@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Users, Shuffle, UserRound, Loader2, ChevronRight, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import LearnerBottomNav from "@/components/learner-bottom-nav";
 
 type Candidate={id:string;display_name:string;avatar_emoji:string;avatar_url:string|null;grade:string;learning_level:string;class_name:string};
 
@@ -83,5 +84,5 @@ export default function BuddySelectPage(){
     {selected&&<div className="fixed inset-0 z-50 grid place-items-center bg-[#073b73]/60 p-4"><div className="w-full max-w-md rounded-[32px] bg-white p-7 text-center shadow-2xl"><div className="mx-auto grid h-20 w-20 overflow-hidden place-items-center rounded-3xl bg-[#e7f5ff] text-4xl">{selected.avatar_url?<img src={selected.avatar_url} alt={selected.display_name} className="h-full w-full object-cover"/>:<span>{selected.avatar_emoji||"🧑‍🎓"}</span>}</div><h3 className="mt-4 text-2xl font-black">Challenge {selected.display_name}?</h3><p className="mt-2 font-semibold leading-6 text-[#6685a4]">You will answer 5 Mathematics questions. Your answers will be locked after you submit.</p><div className="mt-6 grid grid-cols-2 gap-3"><button onClick={()=>setSelected(null)} className="rounded-full border-2 border-slate-200 bg-white px-5 py-3 font-black text-slate-600">Cancel</button><button onClick={()=>{const p=selected;setSelected(null);void challenge(p.id)}} className="rounded-full bg-[#ff6035] px-5 py-3 font-black text-white">Start Challenge</button></div></div></div>}
    </div>
   </section>
- </main>;
+ <LearnerBottomNav /></main>;
 }
