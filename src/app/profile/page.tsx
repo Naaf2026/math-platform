@@ -19,12 +19,16 @@ import {
   Trophy,
   UserRound,
   Zap,
+  Camera,
+  Pencil,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = {
   full_name: string | null;
+  avatar_url: string | null;
+  avatar_emoji: string | null;
   xp: number | null;
   current_streak: number | null;
   best_streak: number | null;
@@ -71,6 +75,8 @@ export default function ProfilePage() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [status, setStatus] = useState("Loading your learning world…");
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarSaving, setAvatarSaving] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -91,7 +97,7 @@ export default function ProfilePage() {
       const [{ data: profileRow }, { data: earned }, { data: attemptRows }] = await Promise.all([
         supabase
           .from("profiles")
-          .select("full_name,xp,current_streak,best_streak,grade")
+          .select("full_name,avatar_url,avatar_emoji,xp,current_streak,best_streak,grade")
           .eq("id", auth.user.id)
           .maybeSingle(),
         supabase
@@ -124,6 +130,8 @@ export default function ProfilePage() {
         setProfile(
           (profileRow as Profile | null) ?? {
             full_name: auth.user.user_metadata?.full_name ?? "Student",
+            avatar_url: null,
+            avatar_emoji: "🧑‍🎓",
             xp: 0,
             current_streak: 0,
             best_streak: 0,
@@ -142,6 +150,50 @@ export default function ProfilePage() {
     };
   }, []);
 
+  async function chooseAvatar(emoji: string) {
+    const supabase = createClient();
+    if (!supabase) return;
+    setAvatarSaving(true);
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) return;
+    const { error } = await supabase.from("profiles").update({ avatar_emoji: emoji, avatar_url: null }).eq("id", auth.user.id);
+    if (!error) setProfile((current) => current ? { ...current, avatar_emoji: emoji, avatar_url: null } : current);
+    setAvatarSaving(false);
+  }
+
+  async function uploadAvatar(file: File) {
+    const supabase = createClient();
+    if (!supabase) return;
+    if (!["image/jpeg","image/png","image/webp"].includes(file.type)) {
+      alert("Please choose a JPG, PNG or WebP image.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Please choose an image smaller than 2 MB.");
+      return;
+    }
+    setAvatarUploading(true);
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) { setAvatarUploading(false); return; }
+    const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+    const path = auth.user.id + "/profile-" + Date.now() + "." + ext;
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { contentType: file.type, upsert: false });
+    if (uploadError) {
+      alert(uploadError.message);
+      setAvatarUploading(false);
+      return;
+    }
+    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+    const { error: updateError } = await supabase.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", auth.user.id);
+    if (updateError) {
+      await supabase.storage.from("avatars").remove([path]);
+      alert(updateError.message);
+    } else {
+      setProfile((current) => current ? { ...current, avatar_url: data.publicUrl } : current);
+    }
+    setAvatarUploading(false);
+  }
+
   async function signOut() {
     const supabase = createClient();
     if (supabase) await supabase.auth.signOut();
@@ -154,6 +206,9 @@ export default function ProfilePage() {
   const xpToNext = levelProgress === 0 ? 100 : 100 - levelProgress;
   const firstName = (profile?.full_name || "Student").trim().split(/\s+/)[0] || "Student";
   const initial = firstName.charAt(0).toUpperCase();
+  const avatarUrl = profile?.avatar_url ?? null;
+  const avatarEmoji = profile?.avatar_emoji || "🧑‍🎓";
+  const avatarChoices = ["🧑‍🎓","👩‍🎓","🧒","👦","👧","🧑‍🚀","🧙","🦸","🥷","🧑‍💻","🐼","🦊"];
   const currentStreak = profile?.current_streak ?? 0;
   const bestStreak = profile?.best_streak ?? 0;
   const answered = attempts.length;
@@ -204,7 +259,7 @@ export default function ProfilePage() {
               <span className="text-sm font-black text-orange-600">{currentStreak}</span>
             </div>
             <Link href="/profile" className="flex items-center gap-2 rounded-xl bg-violet-50 px-2.5 py-2 text-sm font-black text-violet-700">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-cyan-400 text-xs text-white">{initial}</span>
+              <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-violet-600 to-cyan-400 text-xs text-white">{avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : avatarEmoji}</span>
               <span className="hidden max-w-24 truncate sm:inline">{firstName}</span>
             </Link>
             <button onClick={signOut} aria-label="Sign out" className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><LogOut className="h-4 w-4" /></button>
@@ -246,6 +301,35 @@ export default function ProfilePage() {
       </aside>
 
       <div className="mx-auto max-w-[1240px] px-4 pb-10 pt-5 sm:px-6 lg:ml-[248px] lg:px-8 lg:pt-7">
+        <section className="mb-6 rounded-[2rem] bg-white p-6 shadow-xl shadow-indigo-100/40 ring-1 ring-slate-100 sm:p-7">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+            <div className="relative shrink-0">
+              <div className="h-28 w-28 overflow-hidden rounded-[32px] bg-gradient-to-br from-violet-500 via-cyan-400 to-blue-500 p-1 shadow-xl">
+                <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[29px] bg-[#eef7ff] text-6xl">
+                  {avatarUrl ? <img src={avatarUrl} alt="Your profile photo" className="h-full w-full object-cover" /> : avatarEmoji}
+                </div>
+              </div>
+              <label className="absolute -bottom-2 -right-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl border-4 border-white bg-violet-600 text-white shadow-lg hover:bg-violet-700" title="Upload profile photo">
+                <Camera className="h-4 w-4" />
+                <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" disabled={avatarUploading} onChange={(e)=>{ const file=e.target.files?.[0]; if(file) void uploadAvatar(file); e.currentTarget.value=""; }} />
+              </label>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-violet-600">Your Avatar</p>
+              <h2 className="mt-1 text-2xl font-black text-[#12204a]">Make your profile yours ✨</h2>
+              <p className="mt-1 max-w-2xl text-sm font-medium leading-6 text-slate-500">Choose a fun avatar or upload your own profile photo. Your photo will also appear when classmates see you in Buddy Challenge.</p>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {avatarChoices.map((emoji)=><button key={emoji} type="button" onClick={()=>void chooseAvatar(emoji)} disabled={avatarSaving||avatarUploading} className={`flex h-11 w-11 items-center justify-center rounded-2xl text-xl transition hover:-translate-y-0.5 ${!avatarUrl&&avatarEmoji===emoji ? "bg-violet-100 ring-2 ring-violet-500" : "bg-slate-50 hover:bg-violet-50"} disabled:opacity-50`}>{emoji}</button>)}
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-[#12204a] px-4 py-2.5 text-xs font-black text-white shadow-md hover:bg-[#1b2f64]">
+                  <Pencil className="h-3.5 w-3.5" /> {avatarUploading ? "Uploading…" : "Upload photo"}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" disabled={avatarUploading} onChange={(e)=>{ const file=e.target.files?.[0]; if(file) void uploadAvatar(file); e.currentTarget.value=""; }} />
+                </label>
+              </div>
+              <p className="mt-2 text-[10px] font-bold text-slate-400">JPG, PNG or WebP · maximum 2 MB</p>
+            </div>
+          </div>
+        </section>
+
         <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#35b7d9] via-[#5d7fe8] to-[#7b55d9] px-5 py-7 text-white shadow-2xl shadow-indigo-200 sm:px-8 sm:py-9">
           <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
           <div className="absolute -bottom-28 left-1/3 h-72 w-72 rounded-full bg-cyan-300/20 blur-2xl" />
