@@ -144,13 +144,23 @@ export default function DashboardPage() {
     <main className="min-h-screen overflow-x-hidden bg-[#eef9ff] text-[#083d78]">
       <header className="sticky top-0 z-40 h-[76px] border-b border-white/10 bg-[#073b73] text-white shadow-sm lg:h-[90px]">
         <div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12">
-          <Link href="/dashboard" className="flex min-w-0 items-center gap-3 lg:gap-4"><img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[44px] w-auto shrink-0 object-contain sm:h-[52px]" /><div className="hidden min-w-0 items-center gap-2 text-left md:flex"><div className="min-w-0"><div className="truncate text-lg font-black leading-none">{firstName}</div><div className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#cfe7ff]">{grade}</div></div></div></Link>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <NotificationBell />
-            {loggedOut ? <button type="button" onClick={() => setLoginOpen(true)} className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#073b73] shadow-md transition hover:scale-[1.01]"> <LogIn size={16} /> Log in </button> : <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2.5 text-sm font-black text-white ring-1 ring-white/15 transition hover:bg-white/15" disabled={loggingOut}> <LogOut size={16} /> {loggingOut ? "Logging out..." : "Log out"} </button>}
-          </div>
-        </div>
-      </header>
+          <Link href="/dashboard" className="flex min-w-0 items-center gap-3 lg:gap-4"><img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[44px] w-auto shrink-0 object-contain sm:h-[52px]" /></Link>
+          {loggedOut ? (
+            <button type="button" onClick={() => setLoginOpen(true)} className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-[#073b73] shadow-md"><LogIn size={16} /> Log in</button>
+          ) : (
+            <div className="flex items-center gap-2 sm:gap-3">
+              <nav className="hidden items-center gap-1 lg:flex">
+                <Link href="/dashboard" className="flex items-center gap-2 rounded-xl bg-white/10 px-4 py-3 text-sm font-black text-white"><Home size={19} /> Home</Link>
+                <Link href="/brain-games" className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white/90 hover:bg-white/10"><Gamepad2 size={19} /> Games</Link>
+                <Link href="/leaderboard" className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white/90 hover:bg-white/10"><Trophy size={19} /> Leaderboard</Link>
+                <Link href="/rewards" className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white/90 hover:bg-white/10"><Gift size={19} /> Rewards</Link>
+                <Link href="/progress" className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white/90 hover:bg-white/10"><BarChart3 size={19} /> Progress</Link>
+              </nav>
+              <NotificationBell />
+              <button type="button" onClick={handleLogout} className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2.5 text-sm font-black text-white ring-1 ring-white/15" disabled={loggingOut}><LogOut size={16} /> {loggingOut ? "Logging out..." : "Log out"}</button>
+            </div>
+          )}
+        </div>      </header>
 
       {loggedOut ? (
         <section className="mx-auto flex min-h-[calc(100vh-76px)] max-w-[1680px] items-center justify-center px-5 py-12 lg:min-h-[calc(100vh-90px)] lg:px-12">
@@ -162,7 +172,25 @@ export default function DashboardPage() {
           </div>
         </section>
       ) : (
-        <section className="mx-auto max-w-[1680px] px-4 pb-24 pt-6 sm:px-6 lg:px-12 lg:pt-8">
+        <div className="mx-auto flex min-h-[calc(100vh-76px)] max-w-[1680px] lg:min-h-[calc(100vh-90px)]">
+          <aside className="hidden w-[245px] shrink-0 flex-col border-r border-[#dcecf6] bg-[#f5fbff] px-6 py-8 lg:flex">
+            <div className="flex flex-col items-center text-center">
+              <div className="h-[128px] w-[128px] overflow-hidden rounded-full border-4 border-white bg-[#dff7ff] shadow-lg"><Avatar className="h-full w-full" /></div>
+              <h2 className="mt-4 text-2xl font-black">{firstName}</h2>
+              <div className="mt-1 flex items-center gap-2 text-base font-bold text-[#55708b]"><GraduationCap size={19} /> {grade}</div>
+            </div>
+            <div className="mt-6 border-t border-[#dcecf6] pt-5">
+              <div className="flex items-center gap-3 py-2"><span className="text-xl">🔥</span><p className="text-sm font-black">{profile.current_streak ?? 0} Day Streak</p></div>
+              <div className="flex items-center gap-3 py-2"><span className="text-xl">⭐</span><p className="text-sm font-black">{profile.xp ?? 0} XP</p></div>
+              <div className="flex items-center gap-3 py-2"><span className="text-xl">🏅</span><p className="text-sm font-black">12 Badges</p></div>
+            </div>
+            <div className="mt-5 space-y-2 border-t border-[#dcecf6] pt-4">
+              <div className="flex items-center justify-between rounded-xl bg-[#fff8d9] px-3 py-2"><span className="text-xs font-black text-[#806a12]">Mind Sparks</span><span className="text-sm font-black">✨ {mind.balance}</span></div>
+              <div className="flex items-center justify-between rounded-xl bg-[#eaf7ff] px-3 py-2"><span className="text-xs font-black text-[#25638d]">Mind Time</span><span className="text-sm font-black">⏱️ {formatMindTime(mind.remaining_seconds)}</span></div>
+            </div>
+            <button type="button" onClick={handleLogout} disabled={loggingOut} className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl border border-[#ffd7d7] bg-[#fff5f5] px-4 py-3 text-sm font-black text-[#d43d3d]"><LogOut size={18} />{loggingOut ? "Logging out…" : "Log Out"}</button>
+          </aside>
+          <section className="min-w-0 flex-1 px-4 pb-24 pt-6 sm:px-6 lg:px-10 lg:pt-8">
           <div className="mb-6 flex flex-col gap-4 rounded-[32px] border border-[#dfeeff] bg-white/80 p-4 shadow-[0_10px_30px_rgba(8,61,120,0.06)] backdrop-blur-sm sm:p-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
               <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-[22px] bg-[#eaf4ff] shadow-inner">
@@ -268,7 +296,18 @@ export default function DashboardPage() {
             </aside>
           </div>
         </section>
+        </div>
       )}
+
+      {!loggedOut && <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#cfe4f2] bg-white/95 px-2 pb-[calc(env(safe-area-inset-bottom)+6px)] pt-2 shadow-[0_-6px_20px_rgba(8,61,120,0.10)] backdrop-blur lg:hidden" aria-label="Student navigation">
+        <div className="mx-auto grid max-w-lg grid-cols-5">
+          <Link href="/dashboard" className="flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[#197fe9]"><Home size={22} strokeWidth={2.5} /><span className="text-[11px] font-black">Home</span></Link>
+          <Link href="/brain-games" className="flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[#526f89]"><Gamepad2 size={22} strokeWidth={2.5} /><span className="text-[11px] font-black">Games</span></Link>
+          <Link href="/leaderboard" className="flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[#526f89]"><Trophy size={22} strokeWidth={2.5} /><span className="text-[11px] font-black">Leaderboard</span></Link>
+          <Link href="/rewards" className="flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[#526f89]"><Gift size={22} strokeWidth={2.5} /><span className="text-[11px] font-black">Rewards</span></Link>
+          <Link href="/progress" className="flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[#526f89]"><BarChart3 size={22} strokeWidth={2.5} /><span className="text-[11px] font-black">Progress</span></Link>
+        </div>
+      </nav>}
 
       {showVisualPremium && <div className="fixed inset-0 z-[100] grid place-items-center bg-[#062b52]/55 p-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="visual-premium-title"><div className="w-full max-w-md rounded-[30px] bg-white p-7 text-center shadow-2xl"><p className="text-xs font-black uppercase tracking-[0.22em] text-[#6d87a5]">Premium feature</p><h2 id="visual-premium-title" className="mt-3 text-3xl font-black text-[#083d78]">Visual Math Lab</h2><p className="mt-3 text-base font-semibold leading-7 text-slate-600">Premium access is required to use the visual practice lab.</p><div className="mt-6 flex flex-col gap-3 sm:flex-row"><button type="button" onClick={() => setShowVisualPremium(false)} className="flex-1 rounded-2xl bg-slate-100 px-5 py-3 font-black text-slate-700">Close</button><Link href="/subscription" className="flex-1 rounded-2xl bg-[#735fe6] px-5 py-3 font-black text-white">Upgrade to Premium → 👑</Link></div></div></div>}
 
