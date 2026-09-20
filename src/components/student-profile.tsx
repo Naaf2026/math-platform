@@ -10,6 +10,7 @@ type Profile = {
   xp: number | null;
   current_streak: number | null;
   best_streak: number | null;
+  is_premium: boolean;
 };
 
 type StudentStats = Profile & { achievementCount: number };
@@ -37,18 +38,19 @@ function useStudentStats() {
     let mounted = true;
     const supabase = createClient();
     if (!supabase) return;
+    const client = supabase;
 
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await client.auth.getUser();
       if (!user || !mounted) return;
 
       const [{ data: profile }, { count }] = await Promise.all([
-        supabase
+        client
           .from("profiles")
-          .select("full_name,xp,current_streak,best_streak")
+          .select("*")
           .eq("id", user.id)
           .maybeSingle(),
-        supabase
+        client
           .from("student_achievements")
           .select("id", { count: "exact", head: true })
           .eq("student_id", user.id),
@@ -60,6 +62,7 @@ function useStudentStats() {
           xp: profile?.xp ?? 0,
           current_streak: profile?.current_streak ?? 0,
           best_streak: profile?.best_streak ?? 0,
+          is_premium: profile?.is_premium ?? false,
           achievementCount: count ?? 0,
         });
       }
@@ -103,6 +106,9 @@ export function StudentProfilePill({ mobile = false }: { mobile?: boolean }) {
           <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-200">
             <div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400" style={{ width: `${Math.max(4, percent)}%` }} />
           </div>
+          <p className={`mt-1 text-[10px] font-black ${stats.is_premium ? "text-amber-600" : "text-violet-600"}`}>
+            {stats.is_premium ? "Premium 👑" : "Upgrade to Premium → 👑"}
+          </p>
         </div>
         <div className="hidden items-center gap-1 text-[10px] font-black text-orange-500 xs:flex sm:flex">
           <Flame className="h-3.5 w-3.5" /> {stats.current_streak ?? 0}
@@ -112,7 +118,7 @@ export function StudentProfilePill({ mobile = false }: { mobile?: boolean }) {
   }
 
   return (
-    <Link href="/profile" className="group hidden w-16 flex-col items-center gap-1 rounded-2xl p-1.5 transition hover:bg-violet-50 lg:flex" title="Open student profile" aria-label="Open student profile">
+    <Link href="/profile" className="group hidden w-16 flex-col items-center gap-1 rounded-2xl p-1.5 transition hover:bg-violet-50 lg:flex" title={stats.is_premium ? "Premium 👑" : "Upgrade to Premium → 👑"} aria-label={stats.is_premium ? "Premium 👑" : "Upgrade to Premium → 👑"}>
       <div className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-500 to-cyan-400 text-base font-black text-white shadow-lg shadow-violet-200 ring-2 ring-white">
         {initial}
         <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-white bg-yellow-400 px-1 text-[10px] font-black text-slate-900 shadow-sm">{level}</span>
@@ -146,6 +152,9 @@ export default function StudentProfile({ compact = false }: { compact?: boolean 
               <span className="rounded-full bg-yellow-300 px-3 py-1 text-xs font-black text-slate-900">LEVEL {level}</span>
               <span className="text-sm font-bold text-white/80">{xp.toLocaleString()} XP</span>
             </div>
+            <p className={`mt-2 text-sm font-black ${stats.is_premium ? "text-yellow-300" : "text-white"}`}>
+              {stats.is_premium ? "Premium 👑" : "Upgrade to Premium → 👑"}
+            </p>
           </div>
           <Sparkles className="hidden h-8 w-8 text-yellow-300 sm:block" />
         </div>
