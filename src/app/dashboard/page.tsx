@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, BarChart3, Gamepad2, GraduationCap, Home, LogOut, Trophy, Gift, LogIn, Crown } from "lucide-react";
+import { BarChart3, Gamepad2, GraduationCap, Home, LogOut, Trophy, Gift, LogIn, Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import LearnerLoginModal from "@/components/auth/LearnerLoginModal";
 import LearnerAccessNotice from "@/components/subscription/LearnerAccessNotice";
