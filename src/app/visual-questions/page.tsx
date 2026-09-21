@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Crown, Eye, LockKeyhole, Sparkles, Trophy } from "lucide-react";
+import { ArrowLeft, Crown, Eye, LockKeyhole, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import InteractiveQuestionEngine from "@/components/interactive-question-engine";
 import LearnerBottomNav from "@/components/learner-bottom-nav";
@@ -19,18 +19,40 @@ export default function VisualQuestionsPage(){
  const [error,setError]=useState(""); const [earned,setEarned]=useState(0); const [correct,setCorrect]=useState(0); const [finished,setFinished]=useState(false);
 
  useEffect(()=>{void load();},[]);
+ async function withTimeout<T>(promise:Promise<T>,ms=12000):Promise<T>{
+  return await Promise.race([
+   promise,
+   new Promise<T>((_,reject)=>window.setTimeout(()=>reject(new Error("The learning service took too long to respond. Please try again.")),ms))
+  ]);
+ }
  async function load(){
+  setLoading(true);setError("");
   const supabase=createClient(); if(!supabase){setError("Learning account is not configured.");setLoading(false);return;}
-  const {data:auth}=await supabase.auth.getUser(); if(!auth.user){window.location.href="/login";return;}
-  const {data:a,error:ae}=await supabase.rpc("get_visual_question_access");
-  if(ae){setError(ae.message);setLoading(false);return;}
-  const state=(Array.isArray(a)?a[0]:a) as Access|undefined; setAccess(state??null);
-  if(!state?.enabled){setLoading(false);return;}
-  const remaining=state.daily_limit===null?20:Math.max(0,state.daily_limit-(state.used_today||0));
-  if(remaining<=0){setLoading(false);return;}
-  const {data:q,error:qe}=await supabase.rpc("get_visual_questions",{p_limit:Math.min(20,remaining)});
-  if(qe){setError(qe.message);setLoading(false);return;}
-  setQuestions((q??[]) as Question[]);setLoading(false);
+  try{
+   const {data:auth}=await withTimeout(supabase.auth.getUser());
+   if(!auth.user){window.location.href="/login";return;}
+   let a:any=null; let ae:any=null;
+   for(let attempt=0;attempt<2;attempt++){
+    const result=await withTimeout(supabase.rpc("get_visual_question_access"));
+    a=result.data; ae=result.error;
+    if(!ae)break;
+   }
+   if(ae)throw new Error(ae.message);
+   const state=(Array.isArray(a)?a[0]:a) as Access|undefined; setAccess(state??null);
+   if(!state?.enabled){setLoading(false);return;}
+   const remaining=state.daily_limit===null?20:Math.max(0,state.daily_limit-(state.used_today||0));
+   if(remaining<=0){setLoading(false);return;}
+   let q:any=null; let qe:any=null;
+   for(let attempt=0;attempt<2;attempt++){
+    const result=await withTimeout(supabase.rpc("get_visual_questions",{p_limit:Math.min(20,remaining)}));
+    q=result.data; qe=result.error;
+    if(!qe)break;
+   }
+   if(qe)throw new Error(qe.message);
+   setQuestions((q??[]) as Question[]);setLoading(false);
+  }catch(e){
+   setError(e instanceof Error?e.message:"Unable to load Visual Questions right now.");setLoading(false);
+  }
  }
  function answer(value:string){
   if(selected!==null)return; setSelected(value);
@@ -43,7 +65,7 @@ export default function VisualQuestionsPage(){
  }
  const used=access?.used_today??0; const limit=access?.daily_limit??20; const remaining=limit===null?null:Math.max(0,limit-used);
  if(loading)return <main className="min-h-screen bg-[#eef9ff] grid place-items-center p-6"><div className="rounded-[2rem] bg-white p-10 text-center shadow-xl"><div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-sky-100 text-3xl">👀</div><h1 className="mt-5 text-2xl font-black text-[#083d78]">Preparing Visual Questions</h1><p className="mt-2 text-sm font-bold text-[#6685a4]">Loading your visual maths adventure…</p></div></main>;
- if(error)return <main className="min-h-screen bg-[#eef9ff] grid place-items-center p-6"><div className="max-w-md rounded-[2rem] bg-white p-9 text-center shadow-xl"><h1 className="text-2xl font-black text-[#083d78]">Visual Questions are not ready</h1><p className="mt-3 text-sm font-semibold text-[#6685a4]">{error}</p><Link href="/dashboard" className="mt-6 inline-flex rounded-2xl bg-[#197fe9] px-6 py-3 font-black text-white">Back to Dashboard</Link></div></main>;
+ if(error)return <main className="min-h-screen bg-[#eef9ff] grid place-items-center p-6"><div className="max-w-md rounded-[2rem] bg-white p-9 text-center shadow-xl"><h1 className="text-2xl font-black text-[#083d78]">Visual Questions are not ready</h1><p className="mt-3 text-sm font-semibold text-[#6685a4]">{error}</p><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center"><button onClick={()=>void load()} className="rounded-2xl bg-[#197fe9] px-6 py-3 font-black text-white">Try Again</button><Link href="/dashboard" className="rounded-2xl bg-slate-100 px-6 py-3 font-black text-slate-700">Back to Dashboard</Link></div></div></main>;
  if(!access?.enabled)return <Locked plan={access?.plan_name??"Free"}/>;
  if((access.daily_limit!==null&&used>=access.daily_limit)||!questions.length)return <Limit used={used} limit={access.daily_limit}/>;
  if(finished)return <main className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-violet-50 pb-24 lg:pb-0"><div className="mx-auto flex min-h-[85vh] max-w-2xl items-center justify-center p-5"><div className="w-full rounded-[2.5rem] bg-white p-8 text-center shadow-2xl sm:p-12"><div className="mx-auto grid h-24 w-24 place-items-center rounded-3xl bg-yellow-100 text-yellow-500"><Trophy size={52}/></div><p className="mt-6 text-xs font-black uppercase tracking-[.2em] text-sky-600">Visual session complete</p><h1 className="mt-2 text-4xl font-black text-[#083d78]">Amazing work! 🎉</h1><div className="mt-7 grid grid-cols-3 gap-3"><Stat label="Correct" value={`${correct}/${questions.length}`}/><Stat label="XP earned" value={`+${earned}`}/><Stat label="Used today" value={limit===null?`${used+questions.length}`: `${Math.min(limit,used+questions.length)}/${limit}`}/></div><div className="mt-7 flex flex-col gap-3 sm:flex-row"><Link href="/dashboard" className="flex-1 rounded-2xl bg-[#197fe9] px-6 py-3 font-black text-white">Back to Dashboard</Link><button onClick={()=>window.location.reload()} className="flex-1 rounded-2xl bg-slate-100 px-6 py-3 font-black text-slate-700">Play Again</button></div></div></div><LearnerBottomNav/></main>;
