@@ -28,7 +28,8 @@ export default function DashboardPage() {
   const [dailyChallengeUsed, setDailyChallengeUsed] = useState(0);
   const [dailyChallengeLimit, setDailyChallengeLimit] = useState<number | null>(null);
   const [showDailyChallengeLimit, setShowDailyChallengeLimit] = useState(false);
-  const [showVisualPremium, setShowVisualPremium] = useState(false);\n  const [showVisualStart, setShowVisualStart] = useState(false);
+  const [showVisualPremium, setShowVisualPremium] = useState(false);
+  const [showVisualStart, setShowVisualStart] = useState(false);
   const [visualAccess, setVisualAccess] = useState<VisualAccess | null>(null);
   const [subscriptionInfo, setSubscriptionInfo] = useState<{ status?: string; plan_name?: string; trial_ends_at?: string | null; current_period_end?: string | null } | null>(null);
 
