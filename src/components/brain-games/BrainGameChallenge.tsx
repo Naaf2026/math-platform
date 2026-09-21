@@ -24,9 +24,9 @@ function makeQuestions(game:BrainGame):Q[]{
   return {prompt:`${i+1}. ${prompt}`,choices:choices.sort(()=>r()-.5),answer};
  });
 }
-export default function BrainGameChallenge({game,nextId}:{game:BrainGame;nextId:string|null}){
+export default function BrainGameChallenge({game,categoryGameIds}:{game:BrainGame;categoryGameIds:string[]}){
  const questions=useMemo(()=>makeQuestions(game),[game]); const [index,setIndex]=useState(0),[score,setScore]=useState(0),[done,setDone]=useState(false),[picked,setPicked]=useState<number|null>(null);
- const q=questions[index];
+ const q=questions[index];\n const completed=typeof window!=="undefined"?JSON.parse(localStorage.getItem(`mind-games-completed:${game.category}`)||"[]") as string[]:[];\n const nextId=categoryGameIds.find(id=>id!==game.id&&!completed.includes(id))??null;
  function choose(v:number){if(picked!==null)return;setPicked(v);if(v===q.answer)setScore(s=>s+1);setTimeout(()=>{if(index===questions.length-1){setDone(true);const key=`mind-games-completed:${game.category}`;const old=JSON.parse(localStorage.getItem(key)||"[]") as string[];localStorage.setItem(key,JSON.stringify(Array.from(new Set([...old,game.id]))));}else{setIndex(i=>i+1);setPicked(null)}},550)}
  return <main className="min-h-screen bg-gradient-to-b from-sky-50 to-white p-4 text-[#17395f] sm:p-7"><div className="mx-auto max-w-2xl">
   <Link href={`/brain-games/${game.category}`} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black shadow"><ArrowLeft size={16}/> {game.title}</Link>
