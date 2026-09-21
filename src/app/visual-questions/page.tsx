@@ -54,6 +54,7 @@ export default function VisualQuestionsPage(){
    const state=(Array.isArray(a)?a[0]:a) as Access|undefined; setAccess(state??null);
    if(!state?.enabled){setLoading(false);return;}
    const remaining=state.daily_limit===null?20:Math.max(0,state.daily_limit-(state.used_today||0));
+   if(state.daily_limit!==null && remaining<=0){setQuestions([]);setLoading(false);return;}
    let q:any=null; let qe:any=null;
    for(let attempt=0;attempt<2;attempt++){
     const result=await withTimeout(supabase.rpc("get_visual_questions",{p_limit:Math.min(20,remaining),p_exclude_ids:[]}));
