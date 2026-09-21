@@ -41,15 +41,27 @@ export default function VisualQuestionsPage(){
    const state=(Array.isArray(a)?a[0]:a) as Access|undefined; setAccess(state??null);
    if(!state?.enabled){setLoading(false);return;}
    const remaining=state.daily_limit===null?20:Math.max(0,state.daily_limit-(state.used_today||0));
+   const seenKey="math-platform-visual-question-history-v1";
+   let seen:string[]=[];
+   try{seen=JSON.parse(window.localStorage.getItem(seenKey)||"[]");if(!Array.isArray(seen))seen=[];}catch{seen=[]}
    if(remaining<=0){setLoading(false);return;}
    let q:any=null; let qe:any=null;
    for(let attempt=0;attempt<2;attempt++){
-    const result=await withTimeout(supabase.rpc("get_visual_questions",{p_limit:Math.min(20,remaining)}));
+    const result=await withTimeout(supabase.rpc("get_visual_questions",{p_limit:Math.min(20,remaining),p_exclude_ids:seen}));
     q=result.data; qe=result.error;
     if(!qe)break;
    }
    if(qe)throw new Error(qe.message);
-   setQuestions((q??[]) as Question[]);setLoading(false);
+   let selectedQuestions=(q??[]) as Question[];
+   if(!selectedQuestions.length && seen.length){
+    try{window.localStorage.removeItem(seenKey);}catch{}
+    const retry=await withTimeout(supabase.rpc("get_visual_questions",{p_limit:Math.min(20,remaining),p_exclude_ids:[]}));
+    if(retry.error)throw new Error(retry.error.message);
+    selectedQuestions=(retry.data??[]) as Question[];
+   }
+   setQuestions(selectedQuestions);
+   try{const ids=selectedQuestions.map(item=>item.id);window.localStorage.setItem(seenKey,JSON.stringify(Array.from(new Set([...seen,...ids])).slice(-100)));}catch{}
+   setLoading(false);
   }catch(e){
    setError(e instanceof Error?e.message:"Unable to load Visual Questions right now.");setLoading(false);
   }
