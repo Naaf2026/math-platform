@@ -13,7 +13,10 @@ function VisualView({question,selected,disabled,onAnswer,onRetry}:P){
  const kind=String(c.kind||"").toLowerCase();
  const nums=Array.isArray(c.numbers)?c.numbers:[];
  const values=Array.isArray(c.values)?c.values:[];
- const groups=Array.isArray(c.groups)?c.groups:[];\n const baseTenRows=Array.isArray(c.rows)?c.rows:[];\n const baseTenNumber=kind==="base_ten_table"&&baseTenRows[0]?Number(baseTenRows[0].hundreds||0)*100+Number(baseTenRows[0].tens||0)*10+Number(baseTenRows[0].ones||0):null;\n const visualQuestion=baseTenNumber!==null&&Number.isFinite(baseTenNumber)?{...question,answer:String(baseTenNumber),options:Array.from(new Set([String(baseTenNumber),String(Math.max(0,baseTenNumber-11)),String(baseTenNumber+11),String(baseTenNumber+10)])).slice(0,4)}:question;
+ const groups=Array.isArray(c.groups)?c.groups:[];
+ const baseTenRows=Array.isArray(c.rows)?c.rows:[];
+ const baseTenNumber=kind==="base_ten_table"&&baseTenRows[0]?Number(baseTenRows[0].hundreds||0)*100+Number(baseTenRows[0].tens||0)*10+Number(baseTenRows[0].ones||0):null;
+ const visualQuestion=baseTenNumber!==null&&Number.isFinite(baseTenNumber)?{...question,answer:String(baseTenNumber),options:Array.from(new Set([String(baseTenNumber),String(Math.max(0,baseTenNumber-11)),String(baseTenNumber+11),String(baseTenNumber+10)])).slice(0,4)}:question;
  const dots=(n:number,cls:string)=> <div className="grid grid-cols-5 gap-2">{Array.from({length:Math.max(0,n)}).map((_,i)=><span key={i} className={`h-7 w-7 rounded-full shadow-sm ring-1 ring-black/5 ${cls}`}/>)}</div>;
  return <Box>
   <div className="mb-5 overflow-hidden rounded-[1.75rem] border-2 border-sky-100 bg-gradient-to-br from-sky-50 via-white to-violet-50">
