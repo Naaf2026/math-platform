@@ -80,14 +80,18 @@ export default function VisualQuestionsPage(){
   if(ok){
    setCorrect(v=>v+1);setEarned(v=>v+(q.points??10));
    if(advanceTimer.current!==null)window.clearTimeout(advanceTimer.current);
+   const currentIndex=index;
    advanceTimer.current=window.setTimeout(()=>{
     advanceTimer.current=null;
+    if(currentIndex>=questions.length-1){
+      setFinished(true);
+      setSelected(null);
+      return;
+    }
+    setIndex(currentIndex+1);
     setSelected(null);
-    setIndex(prev=>{
-      if(prev>=questions.length-1){setFinished(true);return prev;}
-      return prev+1;
-    });
-   },1000);
+    setRetryVersion(v=>v+1);
+   },1200);
   }else{
    // Stay on an incorrect question until the learner explicitly retries.
    if(advanceTimer.current!==null){window.clearTimeout(advanceTimer.current);advanceTimer.current=null;}
