@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Crown, Eye, LockKeyhole, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -16,9 +16,9 @@ type Access = {enabled:boolean;daily_limit:number|null;used_today:number;plan_na
 export default function VisualQuestionsPage(){
  const [access,setAccess]=useState<Access|null>(null); const [questions,setQuestions]=useState<Question[]>([]);
  const [index,setIndex]=useState(0); const [selected,setSelected]=useState<string|null>(null); const [loading,setLoading]=useState(true);
- const [error,setError]=useState(""); const [earned,setEarned]=useState(0); const [correct,setCorrect]=useState(0); const [finished,setFinished]=useState(false);
+ const [error,setError]=useState(""); const [earned,setEarned]=useState(0);\n const advanceTimer=useRef<number|null>(null); const [correct,setCorrect]=useState(0); const [finished,setFinished]=useState(false);
 
- useEffect(()=>{void load();},[]);
+ useEffect(()=>{void load(); return ()=>{if(advanceTimer.current!==null)window.clearTimeout(advanceTimer.current);};},[]);\n useEffect(()=>{\n  const retry=()=>{\n   if(advanceTimer.current!==null){window.clearTimeout(advanceTimer.current);advanceTimer.current=null;}\n   setSelected(null);\n  };\n  window.addEventListener("fv:retry-question",retry);\n  return ()=>window.removeEventListener("fv:retry-question",retry);\n },[]);
  async function withTimeout<T>(promise:Promise<T>,ms=12000):Promise<T>{
   return await Promise.race([
    promise,
@@ -65,7 +65,7 @@ export default function VisualQuestionsPage(){
   if(q.question_type==="visual_table"){try{const expected=JSON.parse(q.answer);const expectedNumber=Array.isArray(expected)&&expected[0]?.numberFormed!=null?String(expected[0].numberFormed):q.answer;ok=value.trim()===expectedNumber.trim();}catch{ok=value.trim().toLowerCase()===q.answer.trim().toLowerCase();}}
   else ok=value.trim().toLowerCase()===q.answer.trim().toLowerCase();
   if(ok){setCorrect(v=>v+1);setEarned(v=>v+(q.points??10));}
-  window.setTimeout(()=>{if(index>=questions.length-1)setFinished(true);else{setIndex(v=>v+1);setSelected(null);}},1100);
+  if(advanceTimer.current!==null)window.clearTimeout(advanceTimer.current);\n  advanceTimer.current=window.setTimeout(()=>{\n   advanceTimer.current=null;\n   if(index>=questions.length-1)setFinished(true);\n   else{setIndex(v=>v+1);setSelected(null);}\n  },1400);
  }
  const used=access?.used_today??0; const limit=access?.daily_limit??20; const remaining=limit===null?null:Math.max(0,limit-used);
  if(loading)return <main className="min-h-screen bg-[#eef9ff] grid place-items-center p-6"><div className="rounded-[2rem] bg-white p-10 text-center shadow-xl"><div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-sky-100 text-3xl">👀</div><h1 className="mt-5 text-2xl font-black text-[#083d78]">Preparing Visual Questions</h1><p className="mt-2 text-sm font-bold text-[#6685a4]">Loading your visual maths adventure…</p></div></main>;
