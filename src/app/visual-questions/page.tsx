@@ -64,8 +64,18 @@ export default function VisualQuestionsPage(){
   let ok=false;
   if(q.question_type==="visual_table"){try{const expected=JSON.parse(q.answer);const expectedNumber=Array.isArray(expected)&&expected[0]?.numberFormed!=null?String(expected[0].numberFormed):q.answer;ok=value.trim()===expectedNumber.trim();}catch{ok=value.trim().toLowerCase()===q.answer.trim().toLowerCase();}}
   else ok=value.trim().toLowerCase()===q.answer.trim().toLowerCase();
-  if(ok){setCorrect(v=>v+1);setEarned(v=>v+(q.points??10));}
-  if(advanceTimer.current!==null)window.clearTimeout(advanceTimer.current);\n  advanceTimer.current=window.setTimeout(()=>{\n   advanceTimer.current=null;\n   if(index>=questions.length-1)setFinished(true);\n   else{setIndex(v=>v+1);setSelected(null);}\n  },1400);
+  if(ok){
+   setCorrect(v=>v+1);setEarned(v=>v+(q.points??10));
+   if(advanceTimer.current!==null)window.clearTimeout(advanceTimer.current);
+   advanceTimer.current=window.setTimeout(()=>{
+    advanceTimer.current=null;
+    if(index>=questions.length-1)setFinished(true);
+    else{setIndex(v=>v+1);setSelected(null);}
+   },1400);
+  }else{
+   // Stay on an incorrect question until the learner explicitly retries.
+   if(advanceTimer.current!==null){window.clearTimeout(advanceTimer.current);advanceTimer.current=null;}
+  }
  }
  const used=access?.used_today??0; const limit=access?.daily_limit??20; const remaining=limit===null?null:Math.max(0,limit-used);
  if(loading)return <main className="min-h-screen bg-[#eef9ff] grid place-items-center p-6"><div className="rounded-[2rem] bg-white p-10 text-center shadow-xl"><div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-sky-100 text-3xl">👀</div><h1 className="mt-5 text-2xl font-black text-[#083d78]">Preparing Visual Questions</h1><p className="mt-2 text-sm font-bold text-[#6685a4]">Loading your visual maths adventure…</p></div></main>;
