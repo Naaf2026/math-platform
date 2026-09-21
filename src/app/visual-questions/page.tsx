@@ -82,9 +82,12 @@ export default function VisualQuestionsPage(){
    if(advanceTimer.current!==null)window.clearTimeout(advanceTimer.current);
    advanceTimer.current=window.setTimeout(()=>{
     advanceTimer.current=null;
-    if(index>=questions.length-1)setFinished(true);
-    else{setIndex(v=>v+1);setSelected(null);}
-   },1400);
+    setSelected(null);
+    setIndex(prev=>{
+      if(prev>=questions.length-1){setFinished(true);return prev;}
+      return prev+1;
+    });
+   },1000);
   }else{
    // Stay on an incorrect question until the learner explicitly retries.
    if(advanceTimer.current!==null){window.clearTimeout(advanceTimer.current);advanceTimer.current=null;}
