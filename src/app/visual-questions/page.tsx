@@ -18,7 +18,7 @@ export default function VisualQuestionsPage(){
  const [index,setIndex]=useState(0); const [selected,setSelected]=useState<string|null>(null); const [loading,setLoading]=useState(true);
  const [error,setError]=useState(""); const [earned,setEarned]=useState(0);\n const advanceTimer=useRef<number|null>(null); const [correct,setCorrect]=useState(0); const [finished,setFinished]=useState(false);
 
- useEffect(()=>{void load(); return ()=>{if(advanceTimer.current!==null)window.clearTimeout(advanceTimer.current);};},[]);\n useEffect(()=>{\n  const retry=()=>{\n   if(advanceTimer.current!==null){window.clearTimeout(advanceTimer.current);advanceTimer.current=null;}\n   setSelected(null);\n  };\n  window.addEventListener("fv:retry-question",retry);\n  return ()=>window.removeEventListener("fv:retry-question",retry);\n },[]);
+ useEffect(()=>{void load(); return ()=>{if(advanceTimer.current!==null)window.clearTimeout(advanceTimer.current);};},[]);\n useEffect(()=>{\n  const retry=(event:Event)=>{\n   const detail=(event as CustomEvent<{id?:string}>).detail;\n   const currentId=questions[index]?.id;\n   if(detail?.id && currentId && detail.id!==currentId)return;\n   if(advanceTimer.current!==null){window.clearTimeout(advanceTimer.current);advanceTimer.current=null;}\n   setSelected(null);\n  };\n  window.addEventListener("fv:retry-question",retry);\n  return ()=>window.removeEventListener("fv:retry-question",retry);\n },[]);
  async function withTimeout<T>(promise:Promise<T>,ms=12000):Promise<T>{
   return await Promise.race([
    promise,
