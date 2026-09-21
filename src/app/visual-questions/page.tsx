@@ -41,26 +41,18 @@ export default function VisualQuestionsPage(){
    const state=(Array.isArray(a)?a[0]:a) as Access|undefined; setAccess(state??null);
    if(!state?.enabled){setLoading(false);return;}
    const remaining=state.daily_limit===null?20:Math.max(0,state.daily_limit-(state.used_today||0));
-   const seenKey="math-platform-visual-question-history-v1";
-   let seen:string[]=[];
-   try{seen=JSON.parse(window.localStorage.getItem(seenKey)||"[]");if(!Array.isArray(seen))seen=[];}catch{seen=[]}
-   if(remaining<=0){setLoading(false);return;}
    let q:any=null; let qe:any=null;
    for(let attempt=0;attempt<2;attempt++){
-    const result=await withTimeout(supabase.rpc("get_visual_questions",{p_limit:Math.min(20,remaining),p_exclude_ids:seen}));
+    const result=await withTimeout(supabase.rpc("get_visual_questions",{p_limit:Math.min(20,remaining),p_exclude_ids:[]}));
     q=result.data; qe=result.error;
     if(!qe)break;
    }
    if(qe)throw new Error(qe.message);
-   let selectedQuestions=(q??[]) as Question[];
-   if(!selectedQuestions.length && seen.length){
-    try{window.localStorage.removeItem(seenKey);}catch{}
-    const retry=await withTimeout(supabase.rpc("get_visual_questions",{p_limit:Math.min(20,remaining),p_exclude_ids:[]}));
-    if(retry.error)throw new Error(retry.error.message);
-    selectedQuestions=(retry.data??[]) as Question[];
-   }
+   const selectedQuestions=(Array.isArray(q)?q:[]).filter((item:any)=>item && typeof item.id==="string" && typeof item.prompt==="string" && typeof item.answer==="string") as Question[];
+   if(!selectedQuestions.length)throw new Error("There are no Grade 2 Visual Lab questions available right now.");
+   const record=await withTimeout(supabase.rpc("record_visual_questions",{p_question_ids:selectedQuestions.map(item=>item.id)}));
+   if(record.error)throw new Error(record.error.message);
    setQuestions(selectedQuestions);
-   try{const ids=selectedQuestions.map(item=>item.id);window.localStorage.setItem(seenKey,JSON.stringify(Array.from(new Set([...seen,...ids])).slice(-100)));}catch{}
    setLoading(false);
   }catch(e){
    setError(e instanceof Error?e.message:"Unable to load Visual Questions right now.");setLoading(false);
