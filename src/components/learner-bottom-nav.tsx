@@ -13,14 +13,5 @@ export default function LearnerBottomNav() {
       <Link href="/profile" className="flex flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[#526f89]"><GraduationCap size={22} strokeWidth={2.5}/><span className="text-[11px] font-black">Profile</span></Link>
     </div>
   </nav>
-  <nav className="hidden bg-[#0b477f] text-white lg:block" aria-label="Student navigation desktop">
-    <div className="mx-auto flex max-w-6xl items-center justify-between px-4">
-      <Link href="/dashboard" className="flex items-center gap-3 px-3 py-5 text-lg font-black transition hover:bg-white/10"><Home size={26} strokeWidth={2.5}/><span>Home</span></Link>
-      <Link href="/brain-games" className="flex items-center gap-3 px-3 py-5 text-lg font-black transition hover:bg-white/10"><Gamepad2 size={26} strokeWidth={2.5}/><span>Games</span></Link>
-      <Link href="/leaderboard" className="flex items-center gap-3 px-3 py-5 text-lg font-black transition hover:bg-white/10"><Trophy size={26} strokeWidth={2.5}/><span>Leaderboard</span></Link>
-      <Link href="/rewards" className="flex items-center gap-3 px-3 py-5 text-lg font-black transition hover:bg-white/10"><Gift size={26} strokeWidth={2.5}/><span>Rewards</span></Link>
-      <Link href="/progress" className="flex items-center gap-3 px-3 py-5 text-lg font-black transition hover:bg-white/10"><BarChart3 size={26} strokeWidth={2.5}/><span>Progress</span></Link>
-      <Link href="/profile" className="flex items-center gap-3 px-3 py-5 text-lg font-black transition hover:bg-white/10"><GraduationCap size={26} strokeWidth={2.5}/><span>Profile</span></Link>
-    </div>
-  </nav></>;
+</>;
 }
