@@ -62,7 +62,7 @@ export default function VisualQuestionsPage(){
   if(selected!==null)return; setSelected(value);
   const q=questions[index]; if(!q)return;
   let ok=false;
-  if(q.question_type==="visual_table"){try{const got=JSON.parse(value);const expected=JSON.parse(q.answer);ok=JSON.stringify(got)===JSON.stringify(expected);}catch{}}
+  if(q.question_type==="visual_table"){try{const expected=JSON.parse(q.answer);const expectedNumber=Array.isArray(expected)&&expected[0]?.numberFormed!=null?String(expected[0].numberFormed):q.answer;ok=value.trim()===expectedNumber.trim();}catch{ok=value.trim().toLowerCase()===q.answer.trim().toLowerCase();}}
   else ok=value.trim().toLowerCase()===q.answer.trim().toLowerCase();
   if(ok){setCorrect(v=>v+1);setEarned(v=>v+(q.points??10));}
   window.setTimeout(()=>{if(index>=questions.length-1)setFinished(true);else{setIndex(v=>v+1);setSelected(null);}},1100);
