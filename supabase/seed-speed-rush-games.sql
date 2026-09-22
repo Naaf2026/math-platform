@@ -1,0 +1,35 @@
+-- Register the 30 Speed Rush adventures. Keep existing pricing on repeat runs.
+INSERT INTO public.brain_game_catalog (game_key,title,play_cost,completion_reward_min,completion_reward_max,active)
+VALUES
+('speed-01','Rocket Addition',3,0,6,true),
+('speed-02','Submarine Subtraction',3,0,6,true),
+('speed-03','Banana Bonds',3,0,6,true),
+('speed-04','Pizza Doubles',3,0,6,true),
+('speed-05','Penguin Halves',3,0,6,true),
+('speed-06','Cloud Count',3,0,6,true),
+('speed-07','Balloon Order',3,0,6,true),
+('speed-08','Comet Countdown',3,0,6,true),
+('speed-09','Frog Skip',3,0,6,true),
+('speed-10','Train Tens',3,0,6,true),
+('speed-11','Robot Compare',3,0,6,true),
+('speed-12','Odd Treasure',3,0,6,true),
+('speed-13','Even Bees',3,0,6,true),
+('speed-14','Colour Dash',3,0,6,true),
+('speed-15','Shape Safari',3,0,6,true),
+('speed-16','Star Twins',3,0,6,true),
+('speed-17','Fruit Memory',3,0,6,true),
+('speed-18','Drum Beats',3,0,6,true),
+('speed-19','Firefly Flash',3,0,6,true),
+('speed-20','Pattern Pop',3,0,6,true),
+('speed-21','Missing Carriage',3,0,6,true),
+('speed-22','Rainbow Sort',3,0,6,true),
+('speed-23','Coin Catcher',3,0,6,true),
+('speed-24','Clock Sprint',3,0,6,true),
+('speed-25','Fraction Feast',3,0,6,true),
+('speed-26','Monster Measure',3,0,6,true),
+('speed-27','Domino Dash',3,0,6,true),
+('speed-28','Bridge Builder',3,0,6,true),
+('speed-29','Arrow Adventure',3,0,6,true),
+('speed-30','Meteor Mix',3,0,6,true)
+ON CONFLICT (game_key) DO NOTHING;
+
