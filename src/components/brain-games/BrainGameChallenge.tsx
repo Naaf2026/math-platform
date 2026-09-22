@@ -7,21 +7,59 @@ import type { BrainGame } from "@/lib/brain-games/catalog";
 type Q={prompt:string;choices:number[];answer:number};
 function rng(seed:number){let x=seed||1;return()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296}}
 function makeQuestions(game:BrainGame):Q[]{
+ const gameNo=Number(game.id.split("-").pop())||1;
  const seed=[...game.id].reduce((a,c)=>a+c.charCodeAt(0),0),r=rng(seed);
- return Array.from({length:5},(_,i)=>{const a=2+Math.floor(r()*18),b=1+Math.floor(r()*12);let answer:number,prompt:string;
-  switch(game.mechanic){
-   case "subtraction": answer=a+b; prompt=`${answer} − ${b} = ?`; break;
-   case "multiply": answer=(2+Math.floor(r()*8))*(2+Math.floor(r()*6)); prompt=`Which answer equals ${answer}?`; break;
-   case "odd-even": answer=(a%2===0)?0:1; prompt=`Is ${a} even or odd? (0 = even, 1 = odd)`; break;
-   case "compare": answer=Math.max(a,b); prompt=`Choose the greater number: ${a} or ${b}`; break;
-   case "missing": answer=a; prompt=`? + ${b} = ${a+b}`; break;
-   case "pattern": answer=a+6; prompt=`Continue: ${a}, ${a+2}, ${a+4}, ?`; break;
-   case "reverse": answer=a; prompt=`Put back the starting number: ${a+5} − 5 = ?`; break;
-   default: answer=a+b; prompt=`${a} + ${b} = ?`;
+ return Array.from({length:5},(_,i)=>{
+  const a=2+Math.floor(r()*18),b=1+Math.floor(r()*12),step=2+(gameNo%4);
+  let answer:number,prompt:string;
+  if(game.category==="memory"){
+   switch(gameNo){
+    case 1: answer=a+b; prompt=`Remember this pair: ${a} and ${b}. What is their total?`; break;
+    case 2: answer=a; prompt=`Flash recall: keep ${a}, ${b}, ${a+b} in mind. Which was the FIRST number?`; break;
+    case 3: answer=b; prompt=`Hidden numbers: ${a} • ${b} • ${a+b}. Which number was in the MIDDLE?`; break;
+    case 4: answer=a+2*step; prompt=`What's missing? ${a}, ${a+step}, ?, ${a+3*step}`; break;
+    case 5: answer=a; prompt=`Number Echo: remember ${a} → ${b} → ${a+b}. Which number started the echo?`; break;
+    case 6: answer=a+b; prompt=`Equation Recall: remember ${a} + ${b}. What was its answer?`; break;
+    case 7: answer=a+3*step; prompt=`Pattern Memory: ${a}, ${a+step}, ${a+2*step}, ?`; break;
+    case 8: answer=b; prompt=`Quick Peek: ${a} | ${b} | ${a+b}. Recall the centre number.`; break;
+    case 9: answer=a; prompt=`Pair Power: pair ${a} with ${a+b}. If the second is ${a+b}, what was its partner?`; break;
+    case 10: answer=a+3; prompt=`Memory Ladder: ${a}, ${a+1}, ${a+2}, ?`; break;
+    case 11: answer=a+b; prompt=`Number Snapshot: snapshot [${a}, ${b}, ${a+b}]. Recall the largest number.`; break;
+    case 12: answer=(gameNo+i)%4+1; prompt=`Shape Recall code: Circle=1, Square=2, Triangle=3, Star=4. Remember code ${(gameNo+i)%4+1}. Which code was shown?`; break;
+    case 13: answer=b; prompt=`Sequence Keeper: ${a} → ${b} → ${a+b}. Which number came second?`; break;
+    case 14: answer=a+b; prompt=`Math Match: remember ${a} and ${b}. Choose their matching total.`; break;
+    case 15: answer=b; prompt=`Missing Pair: pair [${a}, ${b}] was shown. You can still see ${a}. Which number is missing?`; break;
+    case 16: answer=(a%9)+1; prompt=`Memory Grid: remember highlighted cell ${(a%9)+1} in a 1–9 grid. Which cell was it?`; break;
+    case 17: answer=a; prompt=`Recall Rush: ${a}, ${b}, ${a+b}. Quickly recall the first number!`; break;
+    case 18: answer=(a*10+b)%100; prompt=`Number Vault: code digits are ${a%10} then ${b%10}. Enter the two-digit code.`; answer=(a%10)*10+(b%10); break;
+    case 19: answer=a+b; prompt=`Equation Cards: card A says ${a} + ${b}. Recall its answer.`; break;
+    case 20: answer=a+2*step; prompt=`Pattern Vault: remember ${a}, ${a+step}, ${a+2*step}. What was the third number?`; break;
+    case 21: answer=a+3; prompt=`Memory Steps: start at ${a}, then +1, +1, +1. Where do you finish?`; break;
+    case 22: answer=a+b; prompt=`Hidden Total: remember ${a} and ${b}; now give their hidden total.`; break;
+    case 23: answer=a+b; prompt=`Flash Equation: ${a} + ${b} flashed on screen. Recall the result.`; break;
+    case 24: answer=a; prompt=`Recall Order: ${a}, ${b}, ${a+b}. Which number was first?`; break;
+    case 25: answer=a+b+gameNo%3; prompt=`Math Memory Mix: remember ${a} + ${b}, then add ${gameNo%3}. Result?`; break;
+    case 26: answer=a+2*step; prompt=`Number Trail: ${a} → ${a+step} → ${a+2*step}. Where did the trail end?`; break;
+    case 27: answer=b; prompt=`Memory Switch: first [${a}, ${b}], then positions switch. Which number moves to the FIRST position?`; break;
+    case 28: answer=a+3*step; prompt=`Secret Sequence: ${a}, ${a+step}, ${a+2*step}, ?`; break;
+    case 29: answer=a+b; prompt=`Brain Snapshot: snapshot has ${a}, ${b}, ${a+b}. Recall the highest value.`; break;
+    default: answer=a+b; prompt=`Memory Master: remember ${a} and ${b}; combine them. What total do you recall?`;
+   }
+  } else {
+   switch(game.mechanic){
+    case "subtraction": answer=a+b; prompt=`${answer} − ${b} = ?`; break;
+    case "multiply": answer=(2+Math.floor(r()*8))*(2+Math.floor(r()*6)); prompt=`Which answer equals ${answer}?`; break;
+    case "odd-even": answer=(a%2===0)?0:1; prompt=`Is ${a} even or odd? (0 = even, 1 = odd)`; break;
+    case "compare": answer=Math.max(a,b); prompt=`Choose the greater number: ${a} or ${b}`; break;
+    case "missing": answer=a; prompt=`? + ${b} = ${a+b}`; break;
+    case "pattern": answer=a+6; prompt=`Continue: ${a}, ${a+2}, ${a+4}, ?`; break;
+    case "reverse": answer=a; prompt=`Put back the starting number: ${a+5} − 5 = ?`; break;
+    default: answer=a+b; prompt=`${a} + ${b} = ?`;
+   }
   }
-  const choices=[answer,answer+1,Math.max(0,answer-1),answer+2].filter((v,j,x)=>x.indexOf(v)===j).slice(0,4);
-  while(choices.length<4) choices.push(answer+choices.length+3);
-  return {prompt:`${i+1}. ${prompt}`,choices:choices.sort(()=>r()-.5),answer};
+  const pool=[answer,answer+1,Math.max(0,answer-1),answer+2,answer+3].filter((v,j,x)=>x.indexOf(v)===j);
+  const choices=pool.slice(0,4).sort(()=>r()-.5);
+  return {prompt:`${i+1}. ${prompt}`,choices,answer};
  });
 }
 export default function BrainGameChallenge({game,categoryGameIds}:{game:BrainGame;categoryGameIds:string[]}){
