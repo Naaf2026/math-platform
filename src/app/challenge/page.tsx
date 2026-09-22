@@ -50,6 +50,7 @@ export default function Challenge() {
   const [visualAnswers, setVisualAnswers] = useState<Record<string, VisualAnswer>>({});
   const [challengeLimitReached, setChallengeLimitReached] = useState(false);
   const [challengeDailyLimit, setChallengeDailyLimit] = useState<number | null>(null);
+  const [celebration, setCelebration] = useState<string | null>(null);
 
   const current = questions[index];
   const isManipulative = current?.question_type === "manipulatives";
@@ -239,6 +240,9 @@ export default function Challenge() {
     setSubmitted(true);
     setCompleted((items) => items.includes(current.id) ? items : [...items, current.id]);
     if (isCorrect) {
+      const cheers = ["Brilliant!","Great job!","You got it!","Excellent!","Amazing!"];
+      setCelebration(cheers[correct % cheers.length]);
+      window.setTimeout(() => setCelebration(null), 1200);
       const amount = Number(saved?.xp_awarded || 0);
       setCorrect((value) => value + 1);
       setEarned((value) => value + amount);
@@ -303,7 +307,7 @@ export default function Challenge() {
   if (isOrdering && orderedIds.length === 0) initializeOrder();
 
   return (
-    <main className="min-h-screen bg-[#d8eef2] text-slate-800">
+    <main className="relative min-h-screen bg-[#d8eef2] text-slate-800">{celebration&&<div className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center bg-cyan-950/10 backdrop-blur-[1px]"><div className="mx-5 w-full max-w-sm rounded-[2rem] border-4 border-white bg-gradient-to-br from-yellow-100 via-white to-cyan-100 p-7 text-center shadow-2xl"><div className="text-6xl animate-bounce">⭐</div><div className="mt-3 text-3xl font-black text-slate-800">{celebration}</div><div className="mt-1 text-base font-black text-emerald-600">✓ Correct answer!</div></div></div>}
       <header className="sticky top-0 z-50 bg-[#13b7d2] text-white shadow-md"><div className="mx-auto flex h-16 max-w-[1500px] items-center justify-between px-4 sm:px-7"><Link href="/dashboard" className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2 font-black"><ArrowLeft size={18}/>Back</Link><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl bg-white text-xl font-black text-cyan-600">FV</div><span className="hidden text-lg font-black sm:inline">FAHI VISSNUN MATHS</span></div><div className="flex items-center gap-2"><span className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-black">⚡ {xp} XP</span><span className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-black">🔥 {streak}</span><span className="hidden rounded-full bg-white/20 px-3 py-1.5 text-xs font-black sm:inline">{challengeStages[stage].name}</span></div></div></header>
       <div className="mx-auto flex max-w-[1500px]">
         <aside className="hidden w-[250px] shrink-0 border-r border-slate-300 bg-white md:block"><div className="border-b border-slate-200 bg-slate-50 px-5 py-4"><div className="text-xs font-black text-slate-500">PROFICIENCY</div><div className="mt-1 flex items-center justify-between"><span className="font-black">{challengeStages[stage].name}</span><span className="text-sm font-black text-slate-500">{completed.length} / {questions.length}</span></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-cyan-500" style={{width:`${questions.length ? completed.length / questions.length * 100 : 0}%`}}/></div></div><div className="py-2">{questions.map((question,n)=>{const isCurrent=n===index;const isDone=completed.includes(question.id);return <button key={question.id} onClick={()=>resetQuestion(n)} className={`flex w-full items-center gap-3 border-b border-slate-100 px-4 py-3 text-left transition ${isCurrent?"bg-cyan-50":"hover:bg-slate-50"}`}><span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 text-sm font-black ${isDone?"border-emerald-400 bg-emerald-400 text-white":isCurrent?"border-cyan-500 bg-cyan-500 text-white":"border-cyan-300 bg-white text-cyan-600"}`}>{isDone?<Check size={17}/>:n+1}</span><span className="min-w-0"><span className="block text-sm font-black">Question {n+1}</span><span className="block truncate text-[11px] text-slate-400">{question.skill||question.difficulty}</span><span className="text-[11px] font-bold text-slate-400">⚡ {n<5?1:n<8?2:3}</span></span></button>})}</div></aside>
