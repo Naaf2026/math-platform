@@ -165,14 +165,7 @@ export default function DashboardPage() {
   </button>
 
   <Link href="/revision" className="order-4 group relative h-auto min-h-[500px] overflow-hidden rounded-[32px] border-2 border-[#67c9a5] bg-[#eafbf4] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:col-start-2 md:row-start-2 md:h-[500px] md:min-h-0">
-    <div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-gradient-to-br from-[#5cc69f] via-[#79d8b5] to-[#a8ecd4]">
-      <div className="relative flex h-full items-center justify-center px-4">
-        <div className="relative grid h-36 w-36 place-items-center rounded-[36px] bg-white shadow-xl">
-          <span className="text-[76px]" aria-hidden="true">📝</span>
-          <span className="absolute -right-4 -top-4 grid h-14 w-14 place-items-center rounded-full bg-[#fff0a8] text-3xl shadow-lg" aria-hidden="true">✓</span>
-        </div>
-      </div>
-    </div>
+    <div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-[#a6dcf6]"><img src="/dashboard-assets/dashboard-revision.webp" alt="Boy studying for revision" className="block h-full w-full object-cover object-center" /></div>
     <div className="absolute left-8 right-8 top-[232px] bottom-0 rounded-t-[70px] bg-[#f4fffa] px-2 pt-7 sm:pt-8">
       <h2 className="text-[38px] font-black leading-none text-[#183b68]">Revision</h2>
       <p className="mt-4 text-[18px] font-bold text-[#55708b]">Review mistakes and try again</p>
