@@ -1,98 +1,50 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, ChevronLeft, ChevronRight, RotateCcw, X } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
-type RevisionQuestion = {
-  id: number;
-  prompt: string;
-  instruction: string;
-  answer: string;
-  unit?: string;
-};
-
-const sampleQuestions: RevisionQuestion[] = [
-  { id: 1, prompt: "Ming Ming and Jia Jia have pet dogs.\nJia Jia has 5 pet dogs.\nMing Ming has 3 more pet dogs than Jia Jia.\nHow many pet dogs does Ming Ming have?", instruction: "Write your answer in numerals", answer: "8", unit: "dogs" },
-  { id: 2, prompt: "There are 9 shells on the beach. 4 more shells are added.\nHow many shells are there altogether?", instruction: "Write your answer in numerals", answer: "13", unit: "shells" },
-  { id: 3, prompt: "A box has 12 pencils. 5 pencils are taken out.\nHow many pencils are left?", instruction: "Write your answer in numerals", answer: "7", unit: "pencils" },
-];
+type RevisionQuestion = { id:string; prompt:string; answer:string; explanation?:string|null; skill?:string|null; topic?:string|null; question_type?:string|null; options?:string[]|null; };
+function normalizeGrade(raw: unknown) { const m=String(raw??"").match(/(?:grade|primary)?\s*([1-7])/i); return m ? `Grade ${m[1]}` : "Grade 1"; }
 
 export default function RevisionPage() {
-  const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [checked, setChecked] = useState<Record<number, boolean>>({});
-  const [showResults, setShowResults] = useState(false);
-  const current = sampleQuestions[index];
-  const value = answers[current.id] ?? "";
-  const isCorrect = checked[current.id] && value.trim() === current.answer;
-  const isWrong = checked[current.id] && value.trim() !== current.answer;
+  const [questions,setQuestions]=useState<RevisionQuestion[]>([]);
+  const [grade,setGrade]=useState("");
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState("");
+  const [index,setIndex]=useState(0);
+  const [answers,setAnswers]=useState<Record<string,string>>({});
+  const [checked,setChecked]=useState<Record<string,boolean>>({});
+  const [showResults,setShowResults]=useState(false);
 
-  const correctCount = useMemo(() => sampleQuestions.filter(q => checked[q.id] && (answers[q.id] ?? "").trim() === q.answer).length, [answers, checked]);
-  const wrong = useMemo(() => sampleQuestions.filter(q => checked[q.id] && (answers[q.id] ?? "").trim() !== q.answer), [answers, checked]);
-
-  function checkAnswer() {
-    if (!value.trim()) return;
-    setChecked(prev => ({ ...prev, [current.id]: true }));
+  useEffect(()=>{void load();},[]);
+  async function load(){
+    const supabase=createClient(); if(!supabase){setError("Learning account is not configured.");setLoading(false);return;}
+    const {data:auth}=await supabase.auth.getUser(); if(!auth.user){window.location.href="/login";return;}
+    const {data:profile,error:profileError}=await supabase.from("profiles").select("grade").eq("id",auth.user.id).maybeSingle();
+    if(profileError){setError(profileError.message);setLoading(false);return;}
+    const studentGrade=normalizeGrade(profile?.grade); setGrade(studentGrade);
+    const {data,error:qError}=await supabase.rpc("get_training_questions_by_grade",{p_grade_level:studentGrade,p_topic_id:null,p_skill:null,p_limit:20});
+    if(qError){setError(qError.message);setLoading(false);return;}
+    const usable=((data??[]) as RevisionQuestion[]).filter(q=>q?.id&&q?.prompt&&q?.answer).filter(q=>!q.question_type||["text","number","numeric","short_answer"].includes(String(q.question_type).toLowerCase()));
+    const unique=Array.from(new Map(usable.map(q=>[q.id,q])).values()).slice(0,10);
+    setQuestions(unique); setLoading(false);
   }
 
-  function retryQuestion(id: number) {
-    const next = sampleQuestions.findIndex(q => q.id === id);
-    if (next >= 0) setIndex(next);
-    setChecked(prev => ({ ...prev, [id]: false }));
-    setAnswers(prev => ({ ...prev, [id]: "" }));
-    setShowResults(false);
-  }
+  const current=questions[index];
+  const value=current ? answers[current.id]??"" : "";
+  const isCorrect=Boolean(current&&checked[current.id]&&value.trim().toLowerCase()===current.answer.trim().toLowerCase());
+  const isWrong=Boolean(current&&checked[current.id]&&!isCorrect);
+  const correctCount=useMemo(()=>questions.filter(q=>checked[q.id]&&(answers[q.id]??"").trim().toLowerCase()===q.answer.trim().toLowerCase()).length,[questions,answers,checked]);
+  const wrong=useMemo(()=>questions.filter(q=>checked[q.id]&&(answers[q.id]??"").trim().toLowerCase()!==q.answer.trim().toLowerCase()),[questions,answers,checked]);
+  function checkAnswer(){if(!current||!value.trim())return;setChecked(p=>({...p,[current.id]:true}));}
+  function retryQuestion(id:string){const n=questions.findIndex(q=>q.id===id);if(n>=0)setIndex(n);setChecked(p=>({...p,[id]:false}));setAnswers(p=>({...p,[id]:""}));setShowResults(false);}
 
-  if (showResults) {
-    const percent = Math.round((correctCount / sampleQuestions.length) * 100);
-    return <main className="min-h-screen bg-[#3f4f91] text-[#18234f]">
-      <header className="flex h-[58px] items-center justify-between bg-[#17275f] px-4 text-white shadow-lg">
-        <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-full bg-[#3655ba] px-4 py-2 font-black"><ArrowLeft size={18}/> Back</Link>
-        <h1 className="text-lg font-black sm:text-xl">Revision</h1><span className="w-24"/>
-      </header>
-      <section className="mx-auto max-w-[1120px] px-4 py-16">
-        <div className="relative rounded-[22px] border-2 border-[#ffb323] bg-white px-6 pb-10 pt-20 shadow-[10px_10px_0_#ffad19] sm:px-12">
-          <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/3 rounded-xl border-2 border-white bg-[#65df28] px-8 py-3 text-center text-white shadow-lg">
-            <p className="text-sm font-black">TOTAL SCORE</p><div className="flex items-end gap-2"><span className="text-4xl font-black">{percent}%</span><span className="pb-1 font-bold">{correctCount} out of {sampleQuestions.length}</span></div>
-          </div>
-          {wrong.length ? <p className="mx-auto mb-10 max-w-xl rounded-xl bg-red-50 px-4 py-2 text-center font-bold text-red-500">You have {wrong.length} question{wrong.length === 1 ? "" : "s"} to revise. Select one to try again.</p> : <p className="mx-auto mb-10 max-w-xl rounded-xl bg-green-50 px-4 py-2 text-center font-bold text-green-600">Excellent! You corrected every revision question.</p>}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{sampleQuestions.map(q => { const ok = checked[q.id] && (answers[q.id] ?? "").trim() === q.answer; return <button key={q.id} onClick={() => ok ? undefined : retryQuestion(q.id)} className={`flex items-center gap-3 rounded-full border px-4 py-3 text-left font-bold ${ok ? "border-green-200 bg-green-50" : "border-red-300 bg-red-50"}`}>{ok ? <Check className="rounded-full bg-green-500 p-1 text-white" size={25}/> : <span className="grid h-7 w-7 place-items-center rounded-full bg-red-400 text-sm text-white">Q{q.id}</span>}Question {q.id}{!ok && <span className="ml-auto text-red-500">Re-try</span>}</button>})}</div>
-          <div className="mt-10 flex justify-center"><button onClick={() => wrong.length ? retryQuestion(wrong[0].id) : setShowResults(false)} className="rounded-full bg-[#ff6b00] px-14 py-3 text-xl font-black text-white shadow-md">{wrong.length ? "Try Again" : "Review Again"}</button></div>
-        </div>
-      </section>
-    </main>;
-  }
+  if(loading)return <main className="grid min-h-screen place-items-center bg-[#3f4f91]"><div className="rounded-3xl bg-white px-10 py-8 text-center shadow-2xl"><div className="text-4xl">📚</div><h1 className="mt-3 text-2xl font-black text-[#17275f]">Preparing Revision…</h1><p className="mt-2 font-bold text-slate-400">Loading questions for your grade</p></div></main>;
+  if(error||!questions.length)return <main className="grid min-h-screen place-items-center bg-[#3f4f91] p-6"><div className="max-w-lg rounded-3xl bg-white p-9 text-center shadow-2xl"><h1 className="text-2xl font-black text-[#17275f]">Revision is not ready</h1><p className="mt-3 font-semibold text-slate-500">{error||`No suitable Revision questions are published for ${grade} yet.`}</p><Link href="/dashboard" className="mt-6 inline-flex rounded-full bg-[#3655ba] px-6 py-3 font-black text-white">Back to Dashboard</Link></div></main>;
 
-  return <main className="min-h-screen bg-[#3f4f91] text-[#16234e]" style={{backgroundImage:"radial-gradient(circle at 20px 20px,rgba(255,255,255,.055) 2px,transparent 2px)",backgroundSize:"44px 44px"}}>
-    <header className="flex h-[60px] items-center justify-between bg-[#17275f] px-3 text-white shadow-lg sm:px-6">
-      <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-full bg-[#3655ba] px-4 py-2 font-black"><ArrowLeft size={18}/> Back</Link>
-      <h1 className="text-center text-lg font-black sm:text-xl">Revision</h1>
-      <button onClick={() => setShowResults(true)} className="rounded-full bg-[#3655ba] px-5 py-2 font-black">Submit</button>
-    </header>
+  if(showResults){const percent=Math.round((correctCount/questions.length)*100);return <main className="min-h-screen bg-[#3f4f91] text-[#18234f]"><header className="flex h-[58px] items-center justify-between bg-[#17275f] px-4 text-white"><Link href="/dashboard" className="inline-flex items-center gap-2 rounded-full bg-[#3655ba] px-4 py-2 font-black"><ArrowLeft size={18}/> Back</Link><h1 className="text-xl font-black">Revision • {grade}</h1><span className="w-24"/></header><section className="mx-auto max-w-[1120px] px-4 py-16"><div className="relative rounded-[22px] border-2 border-[#ffb323] bg-white px-6 pb-10 pt-20 shadow-[10px_10px_0_#ffad19] sm:px-12"><div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/3 rounded-xl border-2 border-white bg-[#65df28] px-8 py-3 text-center text-white shadow-lg"><p className="text-sm font-black">TOTAL SCORE</p><div className="flex items-end gap-2"><span className="text-4xl font-black">{percent}%</span><span className="pb-1 font-bold">{correctCount} out of {questions.length}</span></div></div>{wrong.length?<p className="mx-auto mb-10 max-w-xl rounded-xl bg-red-50 px-4 py-2 text-center font-bold text-red-500">You have {wrong.length} question{wrong.length===1?"":"s"} to revise. Select one to try again.</p>:<p className="mx-auto mb-10 max-w-xl rounded-xl bg-green-50 px-4 py-2 text-center font-bold text-green-600">Excellent! You corrected every revision question.</p>}<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{questions.map((q,i)=>{const ok=checked[q.id]&&(answers[q.id]??"").trim().toLowerCase()===q.answer.trim().toLowerCase();return <button key={q.id} onClick={()=>ok?undefined:retryQuestion(q.id)} className={`flex items-center gap-3 rounded-full border px-4 py-3 text-left font-bold ${ok?"border-green-200 bg-green-50":"border-red-300 bg-red-50"}`}>{ok?<Check className="rounded-full bg-green-500 p-1 text-white" size={25}/>:<span className="grid h-7 w-7 place-items-center rounded-full bg-red-400 text-xs text-white">Q{i+1}</span>}Question {i+1}{!ok&&<span className="ml-auto text-red-500">Re-try</span>}</button>})}</div><div className="mt-10 flex justify-center"><button onClick={()=>wrong.length?retryQuestion(wrong[0].id):setShowResults(false)} className="rounded-full bg-[#ff6b00] px-14 py-3 text-xl font-black text-white">{wrong.length?"Try Again":"Review Again"}</button></div></div></section></main>;}
 
-    <section className="mx-auto max-w-[1120px] px-3 py-6 sm:px-6">
-      <div className="relative">
-        <div aria-hidden="true" className="pointer-events-none absolute -left-[18px] top-[70px] z-20 hidden flex-col gap-[28px] sm:flex">
-          {Array.from({ length: 10 }).map((_, ring) => <span key={ring} className="block h-[10px] w-[42px] rounded-full border-[3px] border-[#68726f] bg-[#dbe4e1] shadow-[0_1px_0_rgba(255,255,255,.8)]" />)}
-        </div>
-        <div className="overflow-hidden rounded-[34px] border-[10px] border-[#f4d940] bg-[#eaf8fb] shadow-2xl">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#d7edf2] px-5 py-5 sm:px-10">
-          <div><span className="text-3xl font-black text-[#ff6900]">Question {index + 1}</span><span className="ml-3 text-sm font-bold text-slate-400">Qn ID {current.id}</span></div>
-          <div className="flex gap-2"><button disabled={index===0} onClick={() => setIndex(i => Math.max(0,i-1))} className="inline-flex items-center gap-1 rounded-full border border-[#8fd7e7] bg-white px-4 py-2 font-bold text-[#46b9d4] disabled:opacity-40"><ChevronLeft size={18}/> Previous Qn</button><button disabled={index===sampleQuestions.length-1} onClick={() => setIndex(i => Math.min(sampleQuestions.length-1,i+1))} className="inline-flex items-center gap-1 rounded-full border border-[#8fd7e7] bg-white px-4 py-2 font-bold text-[#46b9d4] disabled:opacity-40">Next <ChevronRight size={18}/></button></div>
-        </div>
-
-        <div className="min-h-[570px] bg-white px-6 py-8 sm:px-12">
-          <div className="max-w-[850px]">
-            <p className="whitespace-pre-line text-[20px] font-medium leading-[1.75] sm:text-[24px]">{current.prompt}</p>
-            <p className="mt-2 text-lg font-medium text-slate-400 sm:text-xl">{current.instruction}</p>
-            <div className="mt-12 flex items-center gap-3"><input value={value} disabled={checked[current.id]} onChange={e => setAnswers(prev => ({...prev,[current.id]:e.target.value}))} onKeyDown={e => {if(e.key==="Enter") checkAnswer();}} className={`h-14 w-44 border-2 bg-white px-4 text-2xl font-bold outline-none ${isCorrect?"border-green-500":isWrong?"border-red-400":"border-slate-400"}`} inputMode="numeric"/><span className="text-xl">{current.unit}</span></div>
-            {!checked[current.id] ? <button onClick={checkAnswer} className="mt-16 rounded-full bg-[#2bb9da] px-5 py-2.5 font-black text-white shadow">Check Answer</button> : isCorrect ? <div className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-green-50 px-5 py-4 font-black text-green-600"><Check className="rounded-full bg-green-500 p-1 text-white"/>Correct! Great work.</div> : <div className="mt-8 max-w-lg rounded-2xl border border-red-200 bg-red-50 p-5"><div className="flex items-center gap-2 font-black text-red-500"><X className="rounded-full bg-red-500 p-1 text-white"/>Not quite yet.</div><p className="mt-2 font-semibold text-slate-600">Try the question again. Think about what the question is asking you to find.</p><button onClick={() => retryQuestion(current.id)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#ff765f] px-5 py-2 font-black text-white"><RotateCcw size={17}/>Try Again</button></div>}
-          </div>
-        </div>
-      </div>
-      </div>
-      <div className="mt-5 flex justify-center gap-2">{sampleQuestions.map((q,i)=><button key={q.id} onClick={()=>setIndex(i)} className={`h-3 rounded-full transition-all ${i===index?"w-10 bg-yellow-300":"w-3 bg-white/50"}`} aria-label={`Question ${i+1}`}/>)}</div>
-    </section>
-  </main>;
+  return <main className="min-h-screen bg-[#3f4f91] text-[#16234e]" style={{backgroundImage:"radial-gradient(circle at 20px 20px,rgba(255,255,255,.055) 2px,transparent 2px)",backgroundSize:"44px 44px"}}><header className="flex h-[60px] items-center justify-between bg-[#17275f] px-3 text-white sm:px-6"><Link href="/dashboard" className="inline-flex items-center gap-2 rounded-full bg-[#3655ba] px-4 py-2 font-black"><ArrowLeft size={18}/> Back</Link><h1 className="text-center text-lg font-black sm:text-xl">Revision • {grade}</h1><button onClick={()=>setShowResults(true)} className="rounded-full bg-[#3655ba] px-5 py-2 font-black">Submit</button></header><section className="mx-auto max-w-[1120px] px-3 py-6 sm:px-6"><div className="relative"><div aria-hidden="true" className="pointer-events-none absolute -left-[18px] top-[70px] z-20 hidden flex-col gap-[28px] sm:flex">{Array.from({length:10}).map((_,ring)=><span key={ring} className="block h-[10px] w-[42px] rounded-full border-[3px] border-[#68726f] bg-[#dbe4e1] shadow-[0_1px_0_rgba(255,255,255,.8)]"/>)}</div><div className="overflow-hidden rounded-[34px] border-[10px] border-[#f4d940] bg-[#eaf8fb] shadow-2xl"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#d7edf2] px-5 py-5 sm:px-10"><div><span className="text-3xl font-black text-[#ff6900]">Question {index+1}</span><span className="ml-3 text-sm font-bold text-slate-400">{current.skill||current.topic||grade}</span></div><div className="flex gap-2"><button disabled={index===0} onClick={()=>setIndex(i=>Math.max(0,i-1))} className="inline-flex items-center gap-1 rounded-full border border-[#8fd7e7] bg-white px-4 py-2 font-bold text-[#46b9d4] disabled:opacity-40"><ChevronLeft size={18}/> Previous Qn</button><button disabled={index===questions.length-1} onClick={()=>setIndex(i=>Math.min(questions.length-1,i+1))} className="inline-flex items-center gap-1 rounded-full border border-[#8fd7e7] bg-white px-4 py-2 font-bold text-[#46b9d4] disabled:opacity-40">Next <ChevronRight size={18}/></button></div></div><div className="min-h-[570px] bg-white px-6 py-8 sm:px-12"><div className="max-w-[850px]"><p className="whitespace-pre-line text-[20px] font-medium leading-[1.75] sm:text-[24px]">{current.prompt}</p><p className="mt-2 text-lg font-medium text-slate-400">Write your answer</p><div className="mt-12"><input value={value} disabled={checked[current.id]} onChange={e=>setAnswers(p=>({...p,[current.id]:e.target.value}))} onKeyDown={e=>{if(e.key==="Enter")checkAnswer();}} className={`h-14 w-52 border-2 bg-white px-4 text-2xl font-bold outline-none ${isCorrect?"border-green-500":isWrong?"border-red-400":"border-slate-400"}`}/></div>{!checked[current.id]?<button onClick={checkAnswer} className="mt-16 rounded-full bg-[#2bb9da] px-5 py-2.5 font-black text-white shadow">Check Answer</button>:isCorrect?<div className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-green-50 px-5 py-4 font-black text-green-600"><Check className="rounded-full bg-green-500 p-1 text-white"/>Correct! Great work.</div>:<div className="mt-8 max-w-lg rounded-2xl border border-red-200 bg-red-50 p-5"><div className="flex items-center gap-2 font-black text-red-500"><X className="rounded-full bg-red-500 p-1 text-white"/>Not quite yet.</div>{current.explanation&&<p className="mt-2 font-semibold text-slate-600">{current.explanation}</p>}<button onClick={()=>retryQuestion(current.id)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#ff765f] px-5 py-2 font-black text-white"><RotateCcw size={17}/>Try Again</button></div>}</div></div></div></div><div className="mt-5 flex justify-center gap-2">{questions.map((q,i)=><button key={q.id} onClick={()=>setIndex(i)} className={`h-3 rounded-full transition-all ${i===index?"w-10 bg-yellow-300":"w-3 bg-white/50"}`} aria-label={`Question ${i+1}`}/>)}</div></section></main>;
 }
