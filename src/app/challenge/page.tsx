@@ -85,7 +85,7 @@ export default function Challenge() {
       setLoading(false);
       return;
     }
-    const { data, error: questionError } = await supabase.rpc("get_adaptive_questions", { p_limit: 30 });
+    const { data, error: questionError } = await supabase.rpc("get_adaptive_questions", { p_limit: 10 });
     if (questionError || !data?.length) {
       setError(questionError?.message || "No challenge questions are available yet.");
       setLoading(false);
