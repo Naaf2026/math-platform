@@ -63,7 +63,7 @@ export default function VisualQuestionsPage(){
    }
    if(qe)throw new Error(qe.message);
    const selectedQuestions=(Array.isArray(q)?q:[]).filter((item:any)=>item && typeof item.id==="string" && typeof item.prompt==="string" && typeof item.answer==="string" && String(item.question_type??"").toLowerCase()!=="number_line") as Question[];
-   if(!selectedQuestions.length)throw new Error("There are no Grade 2 Visual Lab questions available right now.");
+   if(!selectedQuestions.length)throw new Error("There are no Visual Lab questions available for your grade right now.");
    const record=await withTimeout(supabase.rpc("record_visual_questions",{p_question_ids:selectedQuestions.map(item=>item.id)}));
    if(record.error)throw new Error(record.error.message);
    setQuestions(selectedQuestions);
