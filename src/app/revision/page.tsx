@@ -72,7 +72,11 @@ export default function RevisionPage() {
     </header>
 
     <section className="mx-auto max-w-[1120px] px-3 py-6 sm:px-6">
-      <div className="overflow-hidden rounded-[34px] border-[10px] border-[#f4d940] bg-[#eaf8fb] shadow-2xl">
+      <div className="relative">
+        <div aria-hidden="true" className="pointer-events-none absolute -left-[18px] top-[70px] z-20 hidden flex-col gap-[28px] sm:flex">
+          {Array.from({ length: 10 }).map((_, ring) => <span key={ring} className="block h-[10px] w-[42px] rounded-full border-[3px] border-[#68726f] bg-[#dbe4e1] shadow-[0_1px_0_rgba(255,255,255,.8)]" />)}
+        </div>
+        <div className="overflow-hidden rounded-[34px] border-[10px] border-[#f4d940] bg-[#eaf8fb] shadow-2xl">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#d7edf2] px-5 py-5 sm:px-10">
           <div><span className="text-3xl font-black text-[#ff6900]">Question {index + 1}</span><span className="ml-3 text-sm font-bold text-slate-400">Qn ID {current.id}</span></div>
           <div className="flex gap-2"><button disabled={index===0} onClick={() => setIndex(i => Math.max(0,i-1))} className="inline-flex items-center gap-1 rounded-full border border-[#8fd7e7] bg-white px-4 py-2 font-bold text-[#46b9d4] disabled:opacity-40"><ChevronLeft size={18}/> Previous Qn</button><button disabled={index===sampleQuestions.length-1} onClick={() => setIndex(i => Math.min(sampleQuestions.length-1,i+1))} className="inline-flex items-center gap-1 rounded-full border border-[#8fd7e7] bg-white px-4 py-2 font-bold text-[#46b9d4] disabled:opacity-40">Next <ChevronRight size={18}/></button></div>
@@ -86,6 +90,7 @@ export default function RevisionPage() {
             {!checked[current.id] ? <button onClick={checkAnswer} className="mt-16 rounded-full bg-[#2bb9da] px-5 py-2.5 font-black text-white shadow">Check Answer</button> : isCorrect ? <div className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-green-50 px-5 py-4 font-black text-green-600"><Check className="rounded-full bg-green-500 p-1 text-white"/>Correct! Great work.</div> : <div className="mt-8 max-w-lg rounded-2xl border border-red-200 bg-red-50 p-5"><div className="flex items-center gap-2 font-black text-red-500"><X className="rounded-full bg-red-500 p-1 text-white"/>Not quite yet.</div><p className="mt-2 font-semibold text-slate-600">Try the question again. Think about what the question is asking you to find.</p><button onClick={() => retryQuestion(current.id)} className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#ff765f] px-5 py-2 font-black text-white"><RotateCcw size={17}/>Try Again</button></div>}
           </div>
         </div>
+      </div>
       </div>
       <div className="mt-5 flex justify-center gap-2">{sampleQuestions.map((q,i)=><button key={q.id} onClick={()=>setIndex(i)} className={`h-3 rounded-full transition-all ${i===index?"w-10 bg-yellow-300":"w-3 bg-white/50"}`} aria-label={`Question ${i+1}`}/>)}</div>
     </section>
