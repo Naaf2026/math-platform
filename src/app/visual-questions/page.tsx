@@ -64,21 +64,25 @@ export default function VisualQuestionsPage(){
    if(qe)throw new Error(qe.message);
    const selectedQuestions=(Array.isArray(q)?q:[]).filter((item:any)=>item && typeof item.id==="string" && typeof item.prompt==="string" && typeof item.answer==="string" && String(item.question_type??"").toLowerCase()!=="number_line") as Question[];
    if(!selectedQuestions.length)throw new Error("There are no Visual Lab questions available for your grade right now.");
-   const record=await withTimeout(supabase.rpc("record_visual_questions",{p_question_ids:selectedQuestions.map(item=>item.id)}));
-   if(record.error)throw new Error(record.error.message);
    setQuestions(selectedQuestions);
    setLoading(false);
   }catch(e){
    setError(e instanceof Error?e.message:"Unable to load Visual Questions right now.");setLoading(false);
   }
  }
- function answer(value:string){
+ async function answer(value:string){
   if(selected!==null)return; setSelected(value);
   const q=questions[index]; if(!q)return;
   let ok=false;
   if(q.question_type==="visual_table"){try{const expected=JSON.parse(q.answer);const expectedNumber=Array.isArray(expected)&&expected[0]?.numberFormed!=null?String(expected[0].numberFormed):q.answer;ok=value.trim()===expectedNumber.trim();}catch{ok=value.trim().toLowerCase()===q.answer.trim().toLowerCase();}}
   else ok=value.trim().toLowerCase()===q.answer.trim().toLowerCase();
   if(ok){
+   const supabase=createClient();
+   if(supabase){
+    const record=await withTimeout(supabase.rpc("record_visual_questions",{p_question_ids:[q.id]}));
+    if(record.error){setError(record.error.message);return;}
+    setAccess(prev=>prev?{...prev,used_today:Math.min(prev.daily_limit??Number.MAX_SAFE_INTEGER,(prev.used_today||0)+1)}:prev);
+   }
    setCorrect(v=>v+1);setEarned(v=>v+(q.points??10));
    if(advanceTimer.current!==null)window.clearTimeout(advanceTimer.current);
    const currentIndex=index;
@@ -110,7 +114,7 @@ export default function VisualQuestionsPage(){
  if(error)return <main className="min-h-screen bg-[#eef9ff] grid place-items-center p-6"><div className="max-w-md rounded-[2rem] bg-white p-9 text-center shadow-xl"><h1 className="text-2xl font-black text-[#083d78]">Visual Questions are not ready</h1><p className="mt-3 text-sm font-semibold text-[#6685a4]">{error}</p><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center"><button onClick={()=>void load()} className="rounded-2xl bg-[#197fe9] px-6 py-3 font-black text-white">Try Again</button><Link href="/dashboard" className="rounded-2xl bg-slate-100 px-6 py-3 font-black text-slate-700">Back to Dashboard</Link></div></div></main>;
  if(!access?.enabled)return <Locked plan={access?.plan_name??"Free"}/>;
  if((access.daily_limit!==null&&used>=access.daily_limit)||!questions.length)return <Limit used={used} limit={access.daily_limit}/>;
- if(finished)return <main className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-violet-50 pb-24 lg:pb-0"><div className="mx-auto flex min-h-[85vh] max-w-2xl items-center justify-center p-5"><div className="w-full rounded-[2.5rem] bg-white p-8 text-center shadow-2xl sm:p-12"><div className="mx-auto grid h-24 w-24 place-items-center rounded-3xl bg-yellow-100 text-yellow-500"><Trophy size={52}/></div><p className="mt-6 text-xs font-black uppercase tracking-[.2em] text-sky-600">Visual session complete</p><h1 className="mt-2 text-4xl font-black text-[#083d78]">Amazing work! 🎉</h1><div className="mt-7 grid grid-cols-3 gap-3"><Stat label="Correct" value={`${correct}/${questions.length}`}/><Stat label="XP earned" value={`+${earned}`}/><Stat label="Used today" value={limit===null?`${used+questions.length}`: `${Math.min(limit,used+questions.length)}/${limit}`}/></div><div className="mt-7 flex flex-col gap-3 sm:flex-row"><Link href="/dashboard" className="flex-1 rounded-2xl bg-[#197fe9] px-6 py-3 font-black text-white">Back to Dashboard</Link><button onClick={()=>window.location.reload()} className="flex-1 rounded-2xl bg-slate-100 px-6 py-3 font-black text-slate-700">Play Again</button></div></div></div><LearnerBottomNav/></main>;
+ if(finished)return <main className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-violet-50 pb-24 lg:pb-0"><div className="mx-auto flex min-h-[85vh] max-w-2xl items-center justify-center p-5"><div className="w-full rounded-[2.5rem] bg-white p-8 text-center shadow-2xl sm:p-12"><div className="mx-auto grid h-24 w-24 place-items-center rounded-3xl bg-yellow-100 text-yellow-500"><Trophy size={52}/></div><p className="mt-6 text-xs font-black uppercase tracking-[.2em] text-sky-600">Visual session complete</p><h1 className="mt-2 text-4xl font-black text-[#083d78]">Amazing work! 🎉</h1><div className="mt-7 grid grid-cols-3 gap-3"><Stat label="Correct" value={`${correct}/${questions.length}`}/><Stat label="XP earned" value={`+${earned}`}/><Stat label="Used today" value={limit===null?`${used}`: `${Math.min(limit,used)}/${limit}`}/></div><div className="mt-7 flex flex-col gap-3 sm:flex-row"><Link href="/dashboard" className="flex-1 rounded-2xl bg-[#197fe9] px-6 py-3 font-black text-white">Back to Dashboard</Link><button onClick={()=>window.location.reload()} className="flex-1 rounded-2xl bg-slate-100 px-6 py-3 font-black text-slate-700">Play Again</button></div></div></div><LearnerBottomNav/></main>;
  const q=questions[index]; const progress=Math.round(((index)/questions.length)*100);
  return <main className="h-[100dvh] overflow-hidden bg-[#eef9ff] text-[#083d78]">
   <header className="sticky top-0 z-30 border-b border-[#dcecf6] bg-white/95 backdrop-blur"><div className="mx-auto flex max-w-[1500px] items-center gap-2 px-3 py-3 sm:px-4 xl:gap-4 xl:px-6"><Link href="/dashboard" className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eef6fc] text-[#197fe9]"><ArrowLeft size={18}/></Link><nav className="hidden min-w-0 flex-1 items-center justify-end gap-0 md:flex xl:justify-center xl:gap-2" aria-label="Student navigation desktop"><Link href="/dashboard" className="flex items-center gap-1 rounded-xl px-1.5 py-2 text-xs font-black hover:bg-sky-50 lg:gap-1.5 lg:px-2 lg:text-[13px] xl:gap-2 xl:px-2.5 xl:text-sm"><Home size={21}/>Home</Link><Link href="/brain-games" className="flex items-center gap-1 rounded-xl px-1.5 py-2 text-xs font-black hover:bg-sky-50 lg:gap-1.5 lg:px-2 lg:text-[13px] xl:gap-2 xl:px-2.5 xl:text-sm"><Gamepad2 size={21}/>Games</Link><Link href="/leaderboard" className="flex items-center gap-1 rounded-xl px-1.5 py-2 text-xs font-black hover:bg-sky-50 lg:gap-1.5 lg:px-2 lg:text-[13px] xl:gap-2 xl:px-2.5 xl:text-sm"><Trophy size={21}/>Leaderboard</Link><Link href="/rewards" className="flex items-center gap-1 rounded-xl px-1.5 py-2 text-xs font-black hover:bg-sky-50 lg:gap-1.5 lg:px-2 lg:text-[13px] xl:gap-2 xl:px-2.5 xl:text-sm"><Gift size={21}/>Rewards</Link><Link href="/progress" className="flex items-center gap-1 rounded-xl px-1.5 py-2 text-xs font-black hover:bg-sky-50 lg:gap-1.5 lg:px-2 lg:text-[13px] xl:gap-2 xl:px-2.5 xl:text-sm"><BarChart3 size={21}/>Progress</Link><Link href="/profile" className="flex items-center gap-1 rounded-xl px-1.5 py-2 text-xs font-black hover:bg-sky-50 lg:gap-1.5 lg:px-2 lg:text-[13px] xl:gap-2 xl:px-2.5 xl:text-sm"><GraduationCap size={21}/>Profile</Link></nav><div className="ml-1 shrink-0 rounded-2xl bg-[#fff4cf] px-3 py-2 text-xs font-black text-[#806a12] xl:ml-auto"><Crown size={14} className="mr-1 inline"/> {access.plan_name}</div></div></header>
