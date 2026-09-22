@@ -38,7 +38,7 @@ export default function RevisionPage() {
   const isWrong=Boolean(current&&checked[current.id]&&!isCorrect);
   const correctCount=useMemo(()=>questions.filter(q=>checked[q.id]&&(answers[q.id]??"").trim().toLowerCase()===q.answer.trim().toLowerCase()).length,[questions,answers,checked]);
   const wrong=useMemo(()=>questions.filter(q=>checked[q.id]&&(answers[q.id]??"").trim().toLowerCase()!==q.answer.trim().toLowerCase()),[questions,answers,checked]);
-  function checkAnswer(){if(!current||!value.trim())return;setChecked(p=>({...p,[current.id]:true}));}
+  function checkAnswer(){if(!current||!value.trim())return;setChecked(p=>({...p,[current.id]:true}));const ok=value.trim().toLowerCase()===current.answer.trim().toLowerCase();if(ok){window.setTimeout(()=>{if(index>=questions.length-1)setShowResults(true);else setIndex(i=>Math.min(questions.length-1,i+1));},900);}}
   function retryQuestion(id:string){const n=questions.findIndex(q=>q.id===id);if(n>=0)setIndex(n);setChecked(p=>({...p,[id]:false}));setAnswers(p=>({...p,[id]:""}));setShowResults(false);}
 
   if(loading)return <main className="grid min-h-screen place-items-center bg-[#3f4f91]"><div className="rounded-3xl bg-white px-10 py-8 text-center shadow-2xl"><div className="text-4xl">📚</div><h1 className="mt-3 text-2xl font-black text-[#17275f]">Preparing Revision…</h1><p className="mt-2 font-bold text-slate-400">Loading questions for your grade</p></div></main>;
