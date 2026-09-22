@@ -27,7 +27,7 @@ export default function RevisionPage() {
     const studentGrade=normalizeGrade(profile?.grade); setGrade(studentGrade);
     const {data,error:qError}=await supabase.rpc("get_training_questions_by_grade",{p_grade_level:studentGrade,p_topic_id:null,p_skill:null,p_limit:30});
     if(qError){setError(qError.message);setLoading(false);return;}
-    const usable=((data??[]) as RevisionQuestion[]).filter(q=>q?.id&&q?.prompt&&q?.answer).filter(q=>!q.question_type||["text","number","numeric","short_answer"].includes(String(q.question_type).toLowerCase()));
+    const usable=((data??[]) as RevisionQuestion[]).filter(q=>q?.id&&q?.prompt&&q?.answer);
     const unique=Array.from(new Map(usable.map(q=>[q.id,q])).values()).slice(0,12);
     setQuestions(unique); setLoading(false);
   }
