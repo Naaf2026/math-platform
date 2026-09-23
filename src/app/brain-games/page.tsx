@@ -47,18 +47,28 @@ export default function BrainGamesPage() {
       </div></header>
       <div className="mx-auto flex max-w-[1680px]">
         <aside className="hidden min-h-[calc(100vh-90px)] w-[245px] shrink-0 flex-col border-r border-[#dcecf6] bg-[#f5fbff] px-7 py-9 lg:flex"><div className="flex flex-col items-center text-center">{avatar?<img src={avatar} alt="" className="h-[148px] w-[148px] rounded-full border-4 border-white object-cover shadow-lg"/>:<div className="grid h-[148px] w-[148px] place-items-center rounded-full border-4 border-white bg-[#dff7ff] text-5xl shadow-lg">{profile?.avatar_emoji||"🧑‍🎓"}</div>}<h2 className="mt-5 text-[34px] font-black">{first}</h2><div className="mt-1 flex items-center gap-2 text-[19px] font-bold"><GraduationCap size={22}/>{gradeLabel(profile?.grade)}</div></div><div className="mt-7 border-t border-[#dcecf6] pt-5"><p className="py-2 text-[17px] font-black">🔥 {profile?.current_streak??0} Day Streak</p><p className="py-2 text-[17px] font-black">⭐ {profile?.xp??0} XP</p></div></aside>
-        <section className="min-w-0 flex-1 pb-24">
-          <section className="brain-games-content">
-        <div className="brain-games-cloud cloud-one" aria-hidden="true" />
-        <div className="brain-games-cloud cloud-two" aria-hidden="true" />
-        <div className="brain-games-cloud cloud-three" aria-hidden="true" />
-        <div className="brain-games-sparkles" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
-        <div className="brain-games-image">
-          {challenges.map((challenge) => (
-            <button key={challenge.title} type="button" className={`brain-games-zone ${challenge.position}`} aria-label={`Play ${challenge.title}`} onClick={() => setSelectedChallenge(challenge)} />
-          ))}
-        </div>
-          </section>
+        <section className="min-w-0 flex-1 px-3 py-4 pb-24 sm:px-6 lg:px-10 lg:py-8">
+          <div className="mx-auto max-w-[1380px]">
+            <div className="relative overflow-hidden rounded-[32px] border border-[#cde7f4] bg-white p-2 shadow-[0_20px_55px_rgba(8,61,120,.14)] sm:p-3">
+              <div className="pointer-events-none absolute left-5 top-5 z-[3] rounded-2xl bg-[#073b73]/90 px-4 py-2 text-sm font-black text-white shadow-lg backdrop-blur-sm sm:left-7 sm:top-7">
+                Choose a game to play ✨
+              </div>
+              <section className="brain-games-content brain-games-dashboard-map">
+                <div className="brain-games-cloud cloud-one" aria-hidden="true" />
+                <div className="brain-games-cloud cloud-two" aria-hidden="true" />
+                <div className="brain-games-cloud cloud-three" aria-hidden="true" />
+                <div className="brain-games-sparkles" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
+                <div className="brain-games-image">
+                  {challenges.map((challenge) => (
+                    <button key={challenge.title} type="button" className={`brain-games-zone ${challenge.position}`} aria-label={`Play ${challenge.title}`} onClick={() => setSelectedChallenge(challenge)} />
+                  ))}
+                </div>
+              </section>
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
+              {challenges.map((challenge,index)=><button key={challenge.title} type="button" onClick={()=>setSelectedChallenge(challenge)} className="rounded-2xl border border-[#d8eaf4] bg-white px-2 py-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><span className="block text-lg">{["🧠","🔀","⚡","🎯","🧩","🚀"][index]}</span><span className="mt-1 block text-[11px] font-black text-[#083d78] sm:text-xs">{challenge.title}</span></button>)}
+            </div>
+          </div>
         </section>
       </div>
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#cfe4f2] bg-white/95 px-2 pb-[calc(env(safe-area-inset-bottom)+6px)] pt-2 shadow-[0_-6px_20px_rgba(8,61,120,.10)] lg:hidden"><div className="mx-auto grid max-w-lg grid-cols-6"><Link href="/dashboard" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Home size={22}/><span className="text-[11px] font-black">Home</span></Link><Link href="/brain-games" className="flex flex-col items-center gap-1 py-1.5 text-[#197fe9]"><Gamepad2 size={22}/><span className="text-[11px] font-black">Games</span></Link><Link href="/leaderboard" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Trophy size={22}/><span className="text-[11px] font-black">Leaderboard</span></Link><Link href="/rewards" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Gift size={22}/><span className="text-[11px] font-black">Rewards</span></Link><Link href="/progress" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><BarChart3 size={22}/><span className="text-[11px] font-black">Progress</span></Link><Link href="/profile" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><GraduationCap size={22}/><span className="text-[11px] font-black">Profile</span></Link></div></nav>
