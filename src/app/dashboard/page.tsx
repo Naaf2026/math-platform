@@ -185,6 +185,15 @@ export default function DashboardPage() {
 
       {showPracticeLimit && <div className="fixed inset-0 z-[100] grid place-items-center bg-[#062b52]/55 p-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="practice-limit-title"><div className="w-full max-w-md rounded-[28px] bg-white p-7 text-center shadow-2xl"><div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-[#e8f4ff] text-4xl">🎯</div><p className="mt-5 text-xs font-black uppercase tracking-[.18em] text-[#197fe9]">Daily practice complete</p><h2 id="practice-limit-title" className="mt-2 text-2xl font-black text-[#083d78]">Great work today! 🎉</h2><p className="mt-3 text-sm font-semibold leading-6 text-[#6685a4]">You have completed your {mathPracticeLimit} Math Practice questions for today. You can start practising again tomorrow when your daily limit resets.</p><div className="mt-6 grid gap-3"><button type="button" onClick={() => setShowPracticeLimit(false)} className="rounded-2xl bg-[#197fe9] px-6 py-3.5 font-black text-white shadow-md">Got it</button><button type="button" onClick={() => setShowPracticeLimit(false)} className="rounded-2xl bg-[#eef6fc] px-6 py-3 font-black text-[#083d78]">Close</button></div></div></div>}
 
+      <footer className="px-4 pb-28 pt-7 text-center text-[10px] font-medium text-slate-400 sm:text-[11px] lg:pb-8">
+        <p>© Copyright 2026 FAHI VISSNUN LEARNING INSTITUTE. All rights reserved.</p>
+        <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <Link href="/about" className="hover:text-[#073b73]">About</Link>
+          <Link href="/privacy" className="hover:text-[#073b73]">Privacy Policy</Link>
+          <Link href="/terms" className="hover:text-[#073b73]">Terms of Service</Link>
+          <Link href="/payment-policy" className="hover:text-[#073b73]">Payment Policy</Link>
+        </div>
+      </footer>
       <LearnerLoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
       {!loggedOut && <LearnerAccessNotice />}
     </main>
