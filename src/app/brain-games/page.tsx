@@ -41,8 +41,8 @@ export default function BrainGamesPage() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#eef9ff] text-[#083d78]">
-      <header className="sticky top-0 z-40 h-[76px] border-b border-white/10 bg-[#073b73] text-white shadow-sm lg:h-[90px]"><div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12">
-        <Link href="/dashboard"><img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[44px] w-auto max-w-[220px] lg:h-[57px] lg:max-w-none"/></Link>
+      <header className="sticky top-0 z-40 h-[54px] border-b border-white/10 bg-[#073b73] text-white shadow-sm sm:h-[64px] lg:h-[90px]"><div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12">
+        <Link href="/dashboard"><img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[32px] w-auto max-w-[150px] sm:h-[38px] sm:max-w-[180px] lg:h-[57px] lg:max-w-none"/></Link>
         <nav className="hidden items-center gap-8 lg:flex"><Link href="/dashboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Home size={25}/>Home</Link><Link href="/brain-games" className="relative flex items-center gap-3 px-4 py-7 text-lg font-black"><Gamepad2 size={25}/>Games<span className="absolute bottom-0 left-4 right-4 h-1 rounded-full bg-yellow-400"/></Link><Link href="/leaderboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Trophy size={25}/>Leaderboard</Link><Link href="/rewards" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Gift size={25}/>Rewards</Link><Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><BarChart3 size={25}/>Progress</Link><Link href="/profile" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><GraduationCap size={25}/>Profile</Link></nav><NotificationBell/>
       </div></header>
       <div className="mx-auto flex max-w-[1680px]">
