@@ -13,7 +13,7 @@ const activities = [
   { title: "Revision", text: "Practise past topics and strengthen your skills.", href: "/revision", image: "/homepage-artwork/revision.webp", tone: "from-sky-100 to-cyan-50" },
   { title: "Brain Games", text: "Fun games to boost your thinking skills.", href: "/brain-games", image: "/homepage-artwork/brain-games.webp", tone: "from-cyan-100 to-blue-50" },
   { title: "Buddy Challenge", text: "Challenge your friends and learn together.", href: "/peer-challenge/select", image: "/homepage-artwork/buddy-challenge.webp", tone: "from-emerald-100 to-teal-50" },
-  { title: "Leaderboard", text: "See how you're doing and climb to the top!", href: "/leaderboard", image: "/homepage-artwork/rewards.webp", tone: "from-yellow-100 to-amber-50" },
+  { title: "Leaderboard", text: "See how you're doing and climb to the top!", href: "/leaderboard", image: "/homepage-artwork/leaderboard.webp", tone: "from-yellow-100 to-amber-50" },
   { title: "Rewards", text: "Earn Mind Sparks and unlock exciting rewards.", href: "/rewards", image: "/homepage-artwork/rewards.webp", tone: "from-fuchsia-100 to-purple-50" },
 ];
 
