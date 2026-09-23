@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Brain, Gift, Menu, Sparkles, Star, Trophy, Users, X } from "lucide-react";
+import { ArrowRight, Brain, Gift, Menu, Search, Sparkles, Star, Trophy, Users, X } from "lucide-react";
 import { useState } from "react";
 
 const activities = [
