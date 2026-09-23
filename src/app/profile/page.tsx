@@ -220,15 +220,38 @@ export default function ProfilePage() {
   const recentAchievements = useMemo(() => achievements.slice(0, 4), [achievements]);
 
   if (status) {
+    const isLoading = status === "Loading your learning world…";
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#eef4ff] p-6">
-        <div className="rounded-[2rem] bg-white p-9 text-center shadow-2xl ring-1 ring-violet-100">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-600 to-cyan-400 text-white shadow-lg">
-            <Sparkles />
+      <main className="min-h-screen bg-[#eef4ff] text-[#12204a]">
+        {isLoading ? (
+          <>
+            <header className="h-[76px] bg-[#073b73] shadow-sm lg:h-[90px]">
+              <div className="mx-auto flex h-full max-w-[1680px] items-center px-4 sm:px-6 lg:px-12">
+                <img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[44px] w-auto max-w-[220px] lg:h-[57px] lg:max-w-none"/>
+              </div>
+            </header>
+            <div className="mx-auto max-w-[1340px] px-4 py-8 sm:px-6 lg:px-12">
+              <div className="h-10 w-56 animate-pulse rounded-2xl bg-white/80"/>
+              <div className="mt-8 grid gap-5 lg:grid-cols-[280px_1fr]">
+                <div className="h-72 animate-pulse rounded-[2rem] bg-white shadow-sm"/>
+                <div className="space-y-5">
+                  <div className="h-40 animate-pulse rounded-[2rem] bg-white shadow-sm"/>
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="h-36 animate-pulse rounded-[2rem] bg-white shadow-sm"/>
+                    <div className="h-36 animate-pulse rounded-[2rem] bg-white shadow-sm"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex min-h-screen items-center justify-center p-6">
+            <div className="rounded-[2rem] bg-white p-9 text-center shadow-2xl ring-1 ring-violet-100">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-600 to-cyan-400 text-white shadow-lg"><Sparkles /></div>
+              <p className="mt-5 font-black text-[#10204a]">{status}</p>
+            </div>
           </div>
-          <p className="mt-5 font-black text-[#10204a]">{status}</p>
-          <Link href="/login" className="mt-4 inline-flex rounded-xl bg-violet-600 px-4 py-2 text-sm font-black text-white">Go to student login</Link>
-        </div>
+        )}
       </main>
     );
   }
