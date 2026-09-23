@@ -5,7 +5,14 @@ import Link from "next/link";
 import { ArrowLeft, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-type RevisionQuestion = { id:string; prompt:string; answer:string; explanation?:string|null; skill?:string|null; topic?:string|null; topic_id?:string|null; difficulty?:string|null; question_type?:string|null; options?:string[]|null; interaction_config?:Record<string,unknown>|null; hint?:string|null; media_url?:string|null; from_mistake?:boolean; };
+type RevisionQuestion = { id:string; prompt:string; answer:string; explanation?:string|null; skill?:string|null; topic?:string|null; topic_id?:string|null; difficulty?:string|null; question_type?:string|null; options?:unknown[]|null; interaction_config?:Record<string,unknown>|null; hint?:string|null; media_url?:string|null; from_mistake?:boolean; };
+function normalizeQuestion(q:RevisionQuestion):RevisionQuestion {
+  const raw=Array.isArray(q.options)?q.options:[];
+  const objects=raw.filter((o):o is Record<string,unknown>=>typeof o==="object"&&o!==null);
+  const answerObj=objects.find(o=>String(o.id??"")===String(q.answer));
+  const options=raw.map(o=>typeof o==="object"&&o!==null?String((o as Record<string,unknown>).text??(o as Record<string,unknown>).label??(o as Record<string,unknown>).value??(o as Record<string,unknown>).id??""):String(o)).filter(Boolean);
+  return {...q,answer:answerObj?String(answerObj.text??answerObj.label??answerObj.value??q.answer):String(q.answer??""),options};
+}
 function normalizeGrade(raw: unknown) { const m=String(raw??"").match(/(?:grade|primary)?\s*([1-7])/i); return m ? `Grade ${m[1]}` : "Grade 1"; }
 
 export default function RevisionPage() {
@@ -28,7 +35,7 @@ export default function RevisionPage() {
     const studentGrade=normalizeGrade(profile?.grade); setGrade(studentGrade);
     const {data,error:qError}=await supabase.rpc("get_revision_questions",{p_grade_level:studentGrade,p_limit:12});
     if(qError){setError(qError.message);setLoading(false);return;}
-    const usable=((data??[]) as RevisionQuestion[]).filter(q=>q?.id&&q?.prompt&&q?.answer);
+    const usable=((data??[]) as RevisionQuestion[]).map(normalizeQuestion).filter(q=>q?.id&&q?.prompt&&q?.answer);
     const unique=Array.from(new Map(usable.map(q=>[q.id,q])).values()).slice(0,12);
     setQuestions(unique); setLoading(false);
   }
@@ -91,7 +98,7 @@ export default function RevisionPage() {
                 <div className="mt-8">
                   {(current.question_type==="multiple_choice"||current.question_type==="true_false") ? (
                     <div className="grid gap-3 sm:grid-cols-2">
-                      {(current.question_type==="true_false"?["True","False"]:(current.options??[])).map((option,i)=>(
+                      {(current.options?.length?current.options:["True","False"]).map((option,i)=>(
                         <button key={option} type="button" onClick={()=>setAnswers(p=>({...p,[current.id]:option}))} className={`rounded-2xl border-2 p-4 text-left text-base font-black transition ${value===option?"border-[#3655ba] bg-blue-50 ring-2 ring-[#3655ba]/20":"border-slate-200 bg-white hover:border-sky-300"}`}>
                           <span className="mr-2 text-slate-400">{String.fromCharCode(65+i)}.</span>{option}
                         </button>
