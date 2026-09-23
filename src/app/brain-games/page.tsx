@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { ArrowLeft, Flame, Home, Star } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import NotificationBell from "@/components/learner-notification-bell";
+import { useEffect, useState } from "react";
+import { BarChart3, Gamepad2, Gift, GraduationCap, Home, Trophy } from "lucide-react";
 
 const challenges = [
   { title: "Brain Boost", href: "/brain-games/memory", position: "challenge-one" },
@@ -27,18 +29,27 @@ function MindMascot({ size = 62 }: { size?: number }) {
   );
 }
 
+type Profile = { full_name:string|null; grade:string|null; avatar_url:string|null; avatar_emoji:string|null; xp:number|null; current_streak:number|null };
+function gradeLabel(v:string|null|undefined){const m=String(v||"").match(/[1-7]/);return m?`Grade ${m[0]}`:"Student";}
+
 export default function BrainGamesPage() {
   const [selectedChallenge, setSelectedChallenge] = useState<(typeof challenges)[number] | null>(null);
+  const [profile,setProfile]=useState<Profile|null>(null);
+  useEffect(()=>{(async()=>{const s=createClient();if(!s)return;const {data:a}=await s.auth.getUser();if(!a.user){window.location.href="/login";return;}const {data:p}=await s.from("profiles").select("full_name,grade,avatar_url,avatar_emoji,xp,current_streak").eq("id",a.user.id).maybeSingle();setProfile(p as Profile|null);})();},[]);
+  const first=(profile?.full_name||"Learner").split(" ")[0];
+  const avatar=profile?.avatar_url;
 
   return (
-    <main className="brain-games-page">
-      <div className="brain-games-shade" />
-      <header className="brain-games-header">
-        <Link href="/dashboard" className="brain-games-home"><ArrowLeft size={18} /> Home</Link>
-        <div className="brain-games-logo"><span><MindMascot size={24} /></span> FAHI VISSNUN <small>Math Learning Platform</small></div>
-        <div className="brain-games-stats"><span><Flame size={17} fill="currentColor" /> 3</span><span><Star size={17} fill="currentColor" /> 120</span><Home size={18} /></div>
-      </header>
-      <section className="brain-games-content">
+    <main className="min-h-screen overflow-x-hidden bg-[#eef9ff] text-[#083d78]">
+      <header className="sticky top-0 z-40 h-[76px] border-b border-white/10 bg-[#073b73] text-white shadow-sm lg:h-[90px]"><div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12">
+        <Link href="/dashboard"><img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[44px] w-auto max-w-[220px] lg:h-[57px] lg:max-w-none"/></Link>
+        <nav className="hidden items-center gap-8 lg:flex"><Link href="/dashboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Home size={25}/>Home</Link><Link href="/brain-games" className="relative flex items-center gap-3 px-4 py-7 text-lg font-black"><Gamepad2 size={25}/>Games<span className="absolute bottom-0 left-4 right-4 h-1 rounded-full bg-yellow-400"/></Link><Link href="/leaderboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Trophy size={25}/>Leaderboard</Link><Link href="/rewards" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Gift size={25}/>Rewards</Link><Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><BarChart3 size={25}/>Progress</Link><Link href="/profile" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><GraduationCap size={25}/>Profile</Link></nav><NotificationBell/>
+      </div></header>
+      <div className="mx-auto flex max-w-[1680px]">
+        <aside className="hidden min-h-[calc(100vh-90px)] w-[245px] shrink-0 flex-col border-r border-[#dcecf6] bg-[#f5fbff] px-7 py-9 lg:flex"><div className="flex flex-col items-center text-center">{avatar?<img src={avatar} alt="" className="h-[148px] w-[148px] rounded-full border-4 border-white object-cover shadow-lg"/>:<div className="grid h-[148px] w-[148px] place-items-center rounded-full border-4 border-white bg-[#dff7ff] text-5xl shadow-lg">{profile?.avatar_emoji||"🧑‍🎓"}</div>}<h2 className="mt-5 text-[34px] font-black">{first}</h2><div className="mt-1 flex items-center gap-2 text-[19px] font-bold"><GraduationCap size={22}/>{gradeLabel(profile?.grade)}</div></div><div className="mt-7 border-t border-[#dcecf6] pt-5"><p className="py-2 text-[17px] font-black">🔥 {profile?.current_streak??0} Day Streak</p><p className="py-2 text-[17px] font-black">⭐ {profile?.xp??0} XP</p></div></aside>
+        <section className="min-w-0 flex-1 pb-24">
+          <div className="px-4 pt-6 sm:px-6 lg:px-12 lg:pt-10"><div className="mx-auto max-w-[1340px]"><p className="text-sm font-black uppercase tracking-[.18em] text-[#735fe6]">Mind Games</p><h1 className="mt-1 text-[38px] font-black tracking-tight text-[#083d78] sm:text-[48px] lg:text-[54px]">Brain Games 🧠</h1><p className="mt-2 text-[18px] font-semibold text-[#6685a4] sm:text-[21px]">Play, think and strengthen your maths brain.</p></div></div>
+          <section className="brain-games-content">
         <div className="brain-games-cloud cloud-one" aria-hidden="true" />
         <div className="brain-games-cloud cloud-two" aria-hidden="true" />
         <div className="brain-games-cloud cloud-three" aria-hidden="true" />
@@ -48,7 +59,10 @@ export default function BrainGamesPage() {
             <button key={challenge.title} type="button" className={`brain-games-zone ${challenge.position}`} aria-label={`Play ${challenge.title}`} onClick={() => setSelectedChallenge(challenge)} />
           ))}
         </div>
-      </section>
+          </section>
+        </section>
+      </div>
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#cfe4f2] bg-white/95 px-2 pb-[calc(env(safe-area-inset-bottom)+6px)] pt-2 shadow-[0_-6px_20px_rgba(8,61,120,.10)] lg:hidden"><div className="mx-auto grid max-w-lg grid-cols-6"><Link href="/dashboard" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Home size={22}/><span className="text-[11px] font-black">Home</span></Link><Link href="/brain-games" className="flex flex-col items-center gap-1 py-1.5 text-[#197fe9]"><Gamepad2 size={22}/><span className="text-[11px] font-black">Games</span></Link><Link href="/leaderboard" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Trophy size={22}/><span className="text-[11px] font-black">Leaderboard</span></Link><Link href="/rewards" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Gift size={22}/><span className="text-[11px] font-black">Rewards</span></Link><Link href="/progress" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><BarChart3 size={22}/><span className="text-[11px] font-black">Progress</span></Link><Link href="/profile" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><GraduationCap size={22}/><span className="text-[11px] font-black">Profile</span></Link></div></nav>
       {selectedChallenge && (
         <div className="brain-games-rules-backdrop" role="presentation" onClick={() => setSelectedChallenge(null)}>
           <section className="brain-games-rules" role="dialog" aria-modal="true" aria-labelledby="brain-games-rules-title" onClick={(event) => event.stopPropagation()}>
