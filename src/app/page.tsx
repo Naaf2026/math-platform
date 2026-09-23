@@ -62,54 +62,54 @@ export default function HomePage() {
       <section className="relative mx-auto max-w-[1500px] overflow-hidden bg-[#c9edfc] lg:mt-3 lg:rounded-[30px]">
         <img src="/homepage-artwork/hero-illustration.webp" alt="Two students learning maths beside the ocean" className="absolute inset-0 h-full w-full object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#e7f7ff]/95 via-[#e7f7ff]/75 to-transparent sm:via-[#e7f7ff]/45 lg:from-[#e7f7ff]/90 lg:via-transparent" />
-        <div className="relative mx-auto flex min-h-[480px] max-w-[1440px] items-center px-6 py-14 sm:min-h-[530px] lg:min-h-[610px] lg:px-12">
-          <div className="max-w-[570px] rounded-[24px] bg-[#e8f7ff]/45 p-3 backdrop-blur-[2px] sm:p-5 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-black uppercase tracking-wider text-[#0e86cf] shadow-sm"><Sparkles size={17}/> Learn • Practise • Play</div>
-            <h1 className="text-[clamp(3.1rem,5.6vw,5.5rem)] font-black leading-[1.04] tracking-tight text-[#072c61]">Maths<br/>Builds <span className="text-[#1595e7]">Brighter</span><br/>Futures</h1>
-            <p className="mt-5 max-w-[470px] text-lg font-bold leading-8 text-[#173e66]">Explore. Practise. Play. Earn Mind Sparks.<br/>Build confidence and enjoy learning maths every day.</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/login" className="inline-flex items-center gap-2 rounded-2xl bg-[#ff6b22] px-7 py-4 text-base font-black text-white shadow-xl shadow-orange-200">▶ Start Learning</Link>
-              <Link href="/login" className="inline-flex items-center gap-2 rounded-2xl border-2 border-[#168ff0] bg-white px-7 py-4 text-base font-black text-[#07528e]"><Users size={20}/> Student Login</Link>
+        <div className="relative mx-auto flex min-h-[390px] max-w-[1440px] items-center px-6 py-9 sm:min-h-[420px] lg:min-h-[465px] lg:px-12">
+          <div className="max-w-[520px] rounded-[24px] bg-[#e8f7ff]/45 p-3 backdrop-blur-[2px] sm:p-5 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-black uppercase tracking-wider text-[#0e86cf] shadow-sm"><Sparkles size={17}/> Learn • Practise • Play</div>
+            <h1 className="text-[clamp(2.7rem,4.7vw,4.6rem)] font-black leading-[1.04] tracking-tight text-[#072c61]">Maths<br/>Builds <span className="text-[#1595e7]">Brighter</span><br/>Futures</h1>
+            <p className="mt-4 max-w-[450px] text-base font-bold leading-7 text-[#173e66]">Explore. Practise. Play. Earn Mind Sparks.<br/>Build confidence and enjoy learning maths every day.</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href="/login" className="inline-flex items-center gap-2 rounded-2xl bg-[#ff6b22] px-6 py-3.5 text-sm font-black text-white shadow-xl shadow-orange-200">▶ Start Learning</Link>
+              <Link href="/login" className="inline-flex items-center gap-2 rounded-2xl border-2 border-[#168ff0] bg-white px-6 py-3.5 text-sm font-black text-[#07528e]"><Users size={20}/> Student Login</Link>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto -mt-5 max-w-[1500px] rounded-t-[34px] bg-white px-5 py-10 shadow-[0_-8px_35px_rgba(22,105,160,.08)] sm:px-8 lg:px-12">
-        <div className="mb-7">
-          <h2 className="text-3xl font-black text-[#082b61] sm:text-4xl">Jump into an Activity</h2>
+      <section className="relative z-10 mx-auto -mt-5 max-w-[1500px] rounded-t-[34px] bg-white px-5 py-7 shadow-[0_-8px_35px_rgba(22,105,160,.08)] sm:px-8 lg:px-12">
+        <div className="mb-5">
+          <h2 className="text-2xl font-black text-[#082b61] sm:text-3xl">Jump into an Activity</h2>
           <p className="mt-2 text-base font-bold text-[#477092]">Different ways to learn, practise and have fun with maths!</p>
         </div>
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {activities.map((a) => (
             <Link key={a.title} href={a.href} className="group overflow-hidden rounded-[22px] border border-[#dcecf7] bg-white shadow-[0_8px_22px_rgba(16,78,120,.09)] transition hover:-translate-y-1 hover:shadow-[0_16px_30px_rgba(16,78,120,.15)]">
-              <div className="relative aspect-[1.9/1] overflow-hidden bg-[#e9f7ff]">
+              <div className="relative aspect-[2.25/1] overflow-hidden bg-[#e9f7ff]">
                 <img src={a.image} alt="" className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-[1.035]" />
               </div>
-              <div className="relative min-h-[136px] p-5 pr-14">
-                <h3 className="text-xl font-black text-[#082b61]">{a.title}</h3>
-                <p className="mt-2 text-sm font-bold leading-6 text-[#557794]">{a.text}</p>
-                <span className="absolute bottom-5 right-4 grid h-10 w-10 place-items-center rounded-full bg-[#1595e7] text-white"><ArrowRight size={20}/></span>
+              <div className="relative min-h-[108px] p-4 pr-12">
+                <h3 className="text-lg font-black text-[#082b61]">{a.title}</h3>
+                <p className="mt-1 text-[13px] font-bold leading-5 text-[#557794]">{a.text}</p>
+                <span className="absolute bottom-4 right-3 grid h-9 w-9 place-items-center rounded-full bg-[#1595e7] text-white"><ArrowRight size={20}/></span>
               </div>
             </Link>
           ))}
           <Link href="/dashboard" className="group overflow-hidden rounded-[22px] border border-[#dcecf7] bg-white shadow-[0_8px_22px_rgba(16,78,120,.09)] transition hover:-translate-y-1 hover:shadow-[0_16px_30px_rgba(16,78,120,.15)]">
-            <div className="aspect-[1.9/1] overflow-hidden bg-[#e9f7ff]"><img src="/homepage-artwork/my-progress.webp" alt="" className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-[1.035]"/></div>
-            <div className="relative min-h-[136px] p-5 pr-14"><h3 className="text-xl font-black text-[#082b61]">My Progress</h3><p className="mt-2 text-sm font-bold leading-6 text-[#557794]">See your learning journey, streak and achievements.</p><span className="absolute bottom-5 right-4 grid h-10 w-10 place-items-center rounded-full bg-[#1595e7] text-white"><ArrowRight size={20}/></span></div>
+            <div className="aspect-[2.25/1] overflow-hidden bg-[#e9f7ff]"><img src="/homepage-artwork/my-progress.webp" alt="" className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-[1.035]"/></div>
+            <div className="relative min-h-[108px] p-4 pr-12"><h3 className="text-lg font-black text-[#082b61]">My Progress</h3><p className="mt-1 text-[13px] font-bold leading-5 text-[#557794]">See your learning journey, streak and achievements.</p><span className="absolute bottom-4 right-3 grid h-9 w-9 place-items-center rounded-full bg-[#1595e7] text-white"><ArrowRight size={20}/></span></div>
           </Link>
         </div>
-        <div className="mt-9 grid overflow-hidden rounded-[22px] border border-[#d8ebf8] bg-[#eef8ff] sm:grid-cols-3">
-          <div className="flex items-center justify-center gap-3 p-6"><Brain className="text-[#168ff0]"/><div><b className="block text-lg font-black">Learn visually</b><span className="text-sm font-bold text-[#5b7891]">Understand ideas clearly</span></div></div>
+        <div className="mt-6 grid overflow-hidden rounded-[22px] border border-[#d8ebf8] bg-[#eef8ff] sm:grid-cols-3">
+          <div className="flex items-center justify-center gap-3 p-4"><Brain className="text-[#168ff0]"/><div><b className="block text-lg font-black">Learn visually</b><span className="text-sm font-bold text-[#5b7891]">Understand ideas clearly</span></div></div>
           <div className="flex items-center justify-center gap-3 border-y border-[#d8ebf8] p-6 sm:border-x sm:border-y-0"><Star className="text-[#ffb500]" fill="currentColor"/><div><b className="block text-lg font-black">Earn Mind Sparks</b><span className="text-sm font-bold text-[#5b7891]">Complete challenges & games</span></div></div>
-          <div className="flex items-center justify-center gap-3 p-6"><Trophy className="text-[#ff8a21]"/><div><b className="block text-lg font-black">Grow every day</b><span className="text-sm font-bold text-[#5b7891]">Build confidence and skill</span></div></div>
+          <div className="flex items-center justify-center gap-3 p-4"><Trophy className="text-[#ff8a21]"/><div><b className="block text-lg font-black">Grow every day</b><span className="text-sm font-bold text-[#5b7891]">Build confidence and skill</span></div></div>
         </div>
       </section>
 
       <section className="bg-gradient-to-r from-[#e8f9ff] via-[#fff9db] to-[#e6faff]">
-        <div className="mx-auto grid max-w-[1440px] items-center gap-8 px-6 py-14 lg:grid-cols-[1fr_.8fr] lg:px-12">
+        <div className="mx-auto grid max-w-[1440px] items-center gap-8 px-6 py-9 lg:grid-cols-[1fr_.8fr] lg:px-12">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-[#ffef9e] px-3 py-1.5 text-xs font-black uppercase tracking-wider text-[#805d00]"><Gift size={15}/> Rewards</div>
-            <h2 className="mt-4 text-3xl font-black text-[#082b61] sm:text-4xl">Earn Mind Sparks as you learn!</h2>
+            <h2 className="mt-4 text-2xl font-black text-[#082b61] sm:text-3xl">Earn Mind Sparks as you learn!</h2>
             <p className="mt-3 max-w-2xl font-bold leading-7 text-[#477092]">Complete challenges, play games and show your progress to earn Mind Sparks. Use them across the platform and keep your learning journey moving.</p>
             <Link href="/login" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#ff6b22] px-5 py-3 font-black text-white">Start Learning Now <ArrowRight size={18}/></Link>
           </div>
