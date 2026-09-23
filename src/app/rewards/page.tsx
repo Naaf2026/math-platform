@@ -2,16 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BarChart3, CheckCircle2, Flame, LockKeyhole, Map, Sparkles, Trophy, Zap } from "lucide-react";
+import { BarChart3, CheckCircle2, Flame, Gamepad2, Gift, GraduationCap, Home, LockKeyhole, Map, Sparkles, Trophy, Zap } from "lucide-react";
+import NotificationBell from "@/components/learner-notification-bell";
 import { createClient } from "@/lib/supabase/client";
 
-type Profile={xp:number;current_streak:number;best_streak:number};
+type Profile={full_name:string|null;grade:string|null;avatar_url:string|null;avatar_emoji:string|null;xp:number;current_streak:number;best_streak:number};
 type Achievement={id:string;title:string;description:string;icon:string;sort_order:number};
 
 function levelForXp(xp:number){return Math.floor(Math.max(0,xp)/100)+1;}
 
 export default function RewardsPage(){
- const[profile,setProfile]=useState<Profile>({xp:0,current_streak:0,best_streak:0});
+ const[profile,setProfile]=useState<Profile>({full_name:null,grade:null,avatar_url:null,avatar_emoji:null,xp:0,current_streak:0,best_streak:0});
  const[achievements,setAchievements]=useState<Achievement[]>([]);
  const[earned,setEarned]=useState<Set<string>>(new Set());
  const[loading,setLoading]=useState(true);
@@ -26,13 +27,13 @@ export default function RewardsPage(){
   const{data:{user}}=await supabase.auth.getUser();
   if(!user){window.location.href="/login";return;}
   const[{data:profileRow,error:profileError},{data:allAchievements,error:achievementError},{data:earnedRows}]=await Promise.all([
-   supabase.from("profiles").select("xp,current_streak,best_streak").eq("id",user.id).maybeSingle(),
+   supabase.from("profiles").select("full_name,grade,avatar_url,avatar_emoji,xp,current_streak,best_streak").eq("id",user.id).maybeSingle(),
    supabase.from("learning_achievements").select("id,title,description,icon,sort_order").order("sort_order"),
    supabase.from("student_achievements").select("achievement_id").eq("user_id",user.id)
   ]);
   if(profileError||achievementError){setError(profileError?.message||achievementError?.message||"Rewards could not be loaded.");setLoading(false);return;}
   const xp=profileRow?.xp??0;
-  setProfile({xp,current_streak:profileRow?.current_streak??0,best_streak:profileRow?.best_streak??0});
+  setProfile({full_name:profileRow?.full_name??null,grade:profileRow?.grade??null,avatar_url:profileRow?.avatar_url??null,avatar_emoji:profileRow?.avatar_emoji??null,xp,current_streak:profileRow?.current_streak??0,best_streak:profileRow?.best_streak??0});
   setLevel(levelForXp(xp));
   setAchievements((allAchievements??[]) as Achievement[]);
   setEarned(new Set((earnedRows??[]).map((row:{achievement_id:string})=>row.achievement_id)));
@@ -55,9 +56,9 @@ export default function RewardsPage(){
 
  if(error)return <main className="min-h-screen bg-violet-50 p-6"><div className="mx-auto mt-20 max-w-xl rounded-[2rem] bg-white p-10 text-center shadow-xl"><Sparkles className="mx-auto text-violet-600" size={42}/><h1 className="mt-4 text-2xl font-black text-[#071b3a]">Rewards unavailable</h1><p className="mt-2 text-slate-500">{error}</p><Link href="/dashboard" className="mt-6 inline-flex rounded-2xl bg-violet-600 px-5 py-3 font-black text-white">Back to dashboard</Link></div></main>;
 
- return <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-5 sm:p-8">
-  <div className="mx-auto max-w-5xl">
-   <header className="flex items-center justify-between"><Link href="/dashboard" className="inline-flex items-center gap-2 font-bold text-slate-600"><ArrowLeft size={18}/> Dashboard</Link><span className="rounded-full bg-white px-4 py-2 text-sm font-black text-violet-600 shadow-sm">Rewards Centre</span></header>
+ return <main className="min-h-screen overflow-x-hidden bg-[#eef9ff] text-[#083d78]">
+  <header className="sticky top-0 z-40 h-[76px] bg-[#073b73] text-white shadow-sm lg:h-[90px]"><div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12"><Link href="/dashboard"><img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[44px] w-auto max-w-[220px] lg:h-[57px] lg:max-w-none"/></Link><nav className="hidden items-center gap-8 lg:flex"><Link href="/dashboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Home size={25}/>Home</Link><Link href="/brain-games" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Gamepad2 size={25}/>Games</Link><Link href="/leaderboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Trophy size={25}/>Leaderboard</Link><Link href="/rewards" className="relative flex items-center gap-3 px-4 py-7 text-lg font-black"><Gift size={25}/>Rewards<span className="absolute bottom-0 left-4 right-4 h-1 rounded-full bg-yellow-400"/></Link><Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><BarChart3 size={25}/>Progress</Link><Link href="/profile" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><GraduationCap size={25}/>Profile</Link></nav><NotificationBell/></div></header>
+  <div className="mx-auto flex max-w-[1680px]"><aside className="hidden min-h-[calc(100vh-90px)] w-[245px] shrink-0 flex-col border-r border-[#dcecf6] bg-[#f5fbff] px-7 py-9 lg:flex"><div className="flex flex-col items-center text-center">{profile.avatar_url?<img src={profile.avatar_url} alt="" className="h-[148px] w-[148px] rounded-full border-4 border-white object-cover shadow-lg"/>:<div className="grid h-[148px] w-[148px] place-items-center rounded-full border-4 border-white bg-[#dff7ff] text-5xl shadow-lg">{profile.avatar_emoji||"🧑‍🎓"}</div>}<h2 className="mt-5 text-[34px] font-black">{(profile.full_name||"Learner").split(" ")[0]}</h2><p className="mt-1 text-[19px] font-bold"><GraduationCap size={22} className="mr-2 inline"/>{profile.grade||"Student"}</p></div><div className="mt-7 border-t border-[#dcecf6] pt-5"><p className="py-2 text-[17px] font-black">🔥 {profile.current_streak} Day Streak</p><p className="py-2 text-[17px] font-black">⭐ {profile.xp} XP</p></div></aside><section className="min-w-0 flex-1 px-4 py-6 pb-24 sm:px-6 lg:px-12 lg:py-10"><div className="mx-auto max-w-[1340px]"><div className="mb-7"><p className="text-sm font-black uppercase tracking-[.18em] text-[#735fe6]">Rewards Centre</p><h1 className="mt-1 text-[38px] font-black sm:text-[48px] lg:text-[54px]">Your Rewards 🎁</h1><p className="mt-2 text-[18px] font-semibold text-[#6685a4] sm:text-[21px]">Celebrate your progress, streaks and achievements.</p></div>
 
    <section className="mt-7 overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-500 p-7 text-white shadow-2xl sm:p-10">
     <div className="grid gap-8 lg:grid-cols-[1.2fr_.8fr] lg:items-center">
@@ -83,6 +84,7 @@ export default function RewardsPage(){
    <section className="mt-8 rounded-3xl border border-white bg-white p-6 shadow-sm sm:p-8"><div className="flex items-center justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.15em] text-violet-600">Achievement journey</p><h2 className="mt-1 text-2xl font-black text-[#071b3a]">Your badge collection</h2></div><Trophy className="text-yellow-500"/></div><div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{achievements.map(a=>{const isEarned=earned.has(a.id);return <div key={a.id} className={`rounded-3xl border-2 p-5 transition ${isEarned?"border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50":"border-slate-100 bg-slate-50"}`}><div className="flex items-start justify-between"><div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-3xl ${isEarned?"bg-white shadow-sm":"bg-slate-200 grayscale"}`}>{isEarned?a.icon:"🔒"}</div>{isEarned?<CheckCircle2 className="text-emerald-500"/>:<LockKeyhole className="text-slate-400" size={20}/>}</div><h3 className="mt-4 font-black text-[#071b3a]">{a.title}</h3><p className="mt-1 text-sm leading-5 text-slate-500">{a.description}</p><p className={`mt-4 text-xs font-black uppercase tracking-wider ${isEarned?"text-emerald-600":"text-slate-400"}`}>{isEarned?"Unlocked":"Keep learning"}</p></div>})}</div></section>
 
    <section className="mt-6 rounded-3xl bg-gradient-to-r from-amber-50 via-white to-violet-50 p-6 ring-1 ring-amber-100 sm:p-8"><div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-black uppercase tracking-wider text-orange-600">Keep the adventure going</p><h2 className="mt-1 text-2xl font-black text-[#071b3a]">Earn more XP today</h2><p className="mt-2 text-sm text-slate-600">Complete a Daily Challenge, finish lessons and build your streak to unlock more rewards.</p></div><Link href="/challenge" className="inline-flex shrink-0 items-center justify-center rounded-2xl bg-violet-600 px-5 py-3.5 font-black text-white shadow-lg shadow-violet-200 hover:bg-violet-700">Take today's challenge 🚀</Link></div></section>
-  </div>
+  </div></section></div>
+  <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#cfe4f2] bg-white/95 px-2 pb-[calc(env(safe-area-inset-bottom)+6px)] pt-2 shadow-[0_-6px_20px_rgba(8,61,120,.10)] lg:hidden"><div className="mx-auto grid max-w-lg grid-cols-6"><Link href="/dashboard" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Home size={22}/><span className="text-[11px] font-black">Home</span></Link><Link href="/brain-games" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Gamepad2 size={22}/><span className="text-[11px] font-black">Games</span></Link><Link href="/leaderboard" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Trophy size={22}/><span className="text-[11px] font-black">Leaderboard</span></Link><Link href="/rewards" className="flex flex-col items-center gap-1 py-1.5 text-[#197fe9]"><Gift size={22}/><span className="text-[11px] font-black">Rewards</span></Link><Link href="/progress" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><BarChart3 size={22}/><span className="text-[11px] font-black">Progress</span></Link><Link href="/profile" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><GraduationCap size={22}/><span className="text-[11px] font-black">Profile</span></Link></div></nav>
  </main>;
 }
