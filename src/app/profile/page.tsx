@@ -66,7 +66,6 @@ const journey: JourneyLevel[] = [
 
 const nav = [
   { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/mission", label: "Mission", icon: Target },
   { href: "/challenge", label: "Daily Challenge", icon: Gamepad2 },
   { href: "/progress", label: "Progress", icon: BarChart3 },
   { href: "/rewards", label: "Rewards", icon: Trophy },
@@ -327,7 +326,7 @@ export default function ProfilePage() {
               <h1 className="mt-4 max-w-2xl text-3xl font-black leading-tight sm:text-5xl">Hi {firstName}!<br /><span className="text-yellow-300">Your adventure is growing.</span> 🌴</h1>
               <p className="mt-3 max-w-xl text-sm font-semibold leading-6 text-white/80 sm:text-base">Welcome back to your maths world. Keep learning, collect rewards and climb your learning journey one win at a time.</p>
               <div className="mt-5 flex flex-wrap gap-3">
-                <Link href="/mission" className="inline-flex items-center gap-2 rounded-2xl bg-yellow-300 px-5 py-3 text-sm font-black text-[#172047] shadow-lg transition hover:-translate-y-0.5 hover:bg-yellow-200">Continue Mission <ArrowRight className="h-4 w-4" /></Link>
+                <Link href="/challenge" className="inline-flex items-center gap-2 rounded-2xl bg-yellow-300 px-5 py-3 text-sm font-black text-[#172047] shadow-lg transition hover:-translate-y-0.5 hover:bg-yellow-200">Daily Challenge <ArrowRight className="h-4 w-4" /></Link>
                 <Link href="/challenge" className="inline-flex items-center gap-2 rounded-2xl bg-white/15 px-5 py-3 text-sm font-black text-white ring-1 ring-white/25 hover:bg-white/20">Daily Challenge <Gamepad2 className="h-4 w-4" /></Link>
               </div>
             </div>
@@ -341,7 +340,7 @@ export default function ProfilePage() {
         </section>
 
         <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <ActionCard href="/mission" icon={<Target />} title="My Mission" text="Keep building your maths skills." className="from-violet-600 to-indigo-500" />
+          <ActionCard href="/challenge" icon={<Target />} title="Daily Challenge" text="Complete today’s maths challenge." className="from-violet-600 to-indigo-500" />
           <ActionCard href="/challenge" icon={<Gamepad2 />} title="Daily Challenge" text="Take today's maths sprint." className="from-pink-500 to-rose-500" />
           <ActionCard href="/progress" icon={<BarChart3 />} title="My Progress" text="See how far you have come." className="from-cyan-400 to-blue-500" />
           <ActionCard href="/rewards" icon={<Trophy />} title="My Rewards" text="Collect badges and milestones." className="from-amber-400 to-orange-500" dark />
@@ -397,7 +396,7 @@ export default function ProfilePage() {
           <div className="absolute -right-12 -top-16 text-[9rem] opacity-10">🌴</div>
           <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="max-w-2xl"><div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200"><Sparkles className="h-3 w-3" /> Keep going</div><h2 className="mt-3 text-2xl font-black sm:text-3xl">Every question makes you stronger. 💪</h2><p className="mt-2 text-sm font-medium leading-6 text-indigo-200">You don't have to be perfect. Just keep learning, keep trying and celebrate every small win.</p></div>
-            <Link href="/mission" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-yellow-300 px-6 py-3.5 text-sm font-black text-[#172047] shadow-lg transition hover:-translate-y-0.5">Start Learning <ArrowRight className="h-4 w-4" /></Link>
+            <Link href="/challenge" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-yellow-300 px-6 py-3.5 text-sm font-black text-[#172047] shadow-lg transition hover:-translate-y-0.5">Daily Challenge <ArrowRight className="h-4 w-4" /></Link>
           </div>
         </section>
           </div>
