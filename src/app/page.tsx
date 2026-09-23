@@ -84,7 +84,7 @@ export default function HomePage() {
           {activities.map((a) => (
             <Link key={a.title} href={a.href} className="group overflow-hidden rounded-[22px] border border-[#dcecf7] bg-white shadow-[0_8px_22px_rgba(16,78,120,.09)] transition hover:-translate-y-1 hover:shadow-[0_16px_30px_rgba(16,78,120,.15)]">
               <div className="relative aspect-[2.25/1] overflow-hidden bg-[#e9f7ff]">
-                <img src={a.image} alt="" className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-[1.035]" />
+                <img src={a.image} alt="" className="h-[118%] w-full -translate-y-[2%] object-cover object-top transition duration-300 group-hover:scale-[1.025]" />
               </div>
               <div className="relative min-h-[108px] p-4 pr-12">
                 <h3 className="text-lg font-black text-[#082b61]">{a.title}</h3>
@@ -94,7 +94,7 @@ export default function HomePage() {
             </Link>
           ))}
           <Link href="/dashboard" className="group overflow-hidden rounded-[22px] border border-[#dcecf7] bg-white shadow-[0_8px_22px_rgba(16,78,120,.09)] transition hover:-translate-y-1 hover:shadow-[0_16px_30px_rgba(16,78,120,.15)]">
-            <div className="aspect-[2.25/1] overflow-hidden bg-[#e9f7ff]"><img src="/homepage-artwork/my-progress.webp" alt="" className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-[1.035]"/></div>
+            <div className="aspect-[2.25/1] overflow-hidden bg-[#e9f7ff]"><img src="/homepage-artwork/my-progress.webp" alt="" className="h-[118%] w-full -translate-y-[2%] object-cover object-top transition duration-300 group-hover:scale-[1.025]"/></div>
             <div className="relative min-h-[108px] p-4 pr-12"><h3 className="text-lg font-black text-[#082b61]">My Progress</h3><p className="mt-1 text-[13px] font-bold leading-5 text-[#557794]">See your learning journey, streak and achievements.</p><span className="absolute bottom-4 right-3 grid h-9 w-9 place-items-center rounded-full bg-[#1595e7] text-white"><ArrowRight size={20}/></span></div>
           </Link>
         </div>
