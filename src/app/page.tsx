@@ -96,7 +96,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-[1500px] px-3 pb-4">
           <div className="grid gap-4 rounded-[22px] bg-[#eaf7ff] px-5 py-4 lg:grid-cols-[1fr_390px] lg:items-center">
             <div className="flex flex-wrap items-center gap-3"><span className="mr-1 text-sm font-black text-[#082b61]">Fun ways to learn:</span>{[["🖼️","Visual Maths"],["⚡","Daily Challenge"],["📝","Revision"],["🎮","Brain Games"],["📊","Progress Tracking"]].map(([icon,label])=><span key={label} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-[#1269a7]"><span>{icon}</span>{label}</span>)}</div>
-            <div className="border-t border-[#9fd1ec] pt-3 text-center lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0"><p className="text-[13px] font-black leading-4 text-[#082b61]">Built around the Maldives primary<br/>mathematics curriculum</p><div className="mt-2 flex flex-wrap justify-center gap-2">{["Grade 1","Grade 2","Grade 3","Grade 4"].map(g=><span key={g} className="rounded-full border border-[#8bd0f8] bg-white px-3 py-1 text-[11px] font-black text-[#137ac1]">{g}</span>)}</div></div>
+            <div className="border-t border-[#9fd1ec] pt-3 text-center lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0"><p className="text-[13px] font-black leading-4 text-[#082b61]">Built around the Maldives primary<br/>mathematics curriculum</p><div className="mt-2 flex flex-wrap justify-center gap-2">{["Grade 1","Grade 2","Grade 3","Grade 4","Grade 5"].map(g=><span key={g} className="rounded-full border border-[#8bd0f8] bg-white px-3 py-1 text-[11px] font-black text-[#137ac1]">{g}</span>)}</div></div>
           </div>
         </div>
       </section>
