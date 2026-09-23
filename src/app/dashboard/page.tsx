@@ -155,15 +155,6 @@ export default function DashboardPage() {
     </div>
   </button>
 
-  <button type="button" onClick={() => { if (mathPracticeLimit !== null && mathPracticeUsed >= mathPracticeLimit) setShowPracticeLimit(true); else window.location.href = "/training"; }} className="order-3 group relative h-auto min-h-[500px] overflow-hidden rounded-[32px] border-2 border-[#43bdf4] bg-[#e4f6ff] text-left shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:col-start-2 md:row-start-1 md:h-[500px] md:min-h-0">
-    <div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-[#219eea]"><img src="/dashboard-assets/dashboard-training.svg" alt="Math Training" className="block h-full w-full object-contain px-2 py-1" /></div>
-    <div className="absolute left-8 right-8 top-[232px] bottom-0 rounded-t-[70px] bg-[#e8f7ff] px-2 pt-7 sm:pt-8">
-      <h2 className="text-[38px] font-black leading-none">Training</h2>
-      <p className="mt-4 text-[18px] font-bold text-[#55708b]">Practice your skills</p>
-      <div className="absolute bottom-5 left-2 right-2 rounded-full bg-[#197fe9] px-6 py-3.5 text-center text-[21px] font-black text-white shadow-md">Practice →</div>
-    </div>
-  </button>
-
   <Link href="/revision" className="order-4 group relative h-auto min-h-[500px] overflow-hidden rounded-[32px] border-2 border-[#67c9a5] bg-[#eafbf4] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:col-start-2 md:row-start-2 md:h-[500px] md:min-h-0">
     <div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-[#a6dcf6]"><img src="/dashboard-assets/dashboard-revision.webp" alt="Boy studying for revision" className="block h-full w-full object-cover object-center" /></div>
     <div className="absolute left-8 right-8 top-[232px] bottom-0 rounded-t-[70px] bg-[#f4fffa] px-2 pt-7 sm:pt-8">
