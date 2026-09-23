@@ -75,6 +75,32 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="bg-white">
+        <div className="mx-auto max-w-[1500px] px-5 pb-4 pt-7 sm:px-8 lg:px-12">
+          <div className="grid items-center gap-7 lg:grid-cols-[.98fr_1.02fr]">
+            <div>
+              <h2 className="text-[clamp(2.25rem,3.45vw,3.75rem)] font-black leading-[1.02] tracking-tight text-[#082b61]">Help Your Child Become<br/><span className="text-[#1595e7]">More Confident in Maths</span></h2>
+              <p className="mt-4 max-w-[690px] text-[15px] font-bold leading-6 text-[#426787] sm:text-base">Build stronger maths skills through short, engaging daily practice designed around your child’s grade level. Visual learning, personalised revision, daily challenges and fun Brain Games help children practise consistently without making maths feel like extra homework.</p>
+              <div className="mt-6 grid gap-5 sm:grid-cols-3">
+                <div className="flex items-start gap-3"><span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#ffe4ee] text-2xl">📊</span><div><h3 className="text-[15px] font-black leading-4 text-[#082b61]">Grade-based<br/>learning</h3><p className="mt-2 text-[12px] font-bold leading-4 text-[#5c7891]">Questions matched to your child’s school level.</p></div></div>
+                <div className="flex items-start gap-3"><span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#d9faed] text-2xl">🎯</span><div><h3 className="text-[15px] font-black leading-4 text-[#082b61]">Learn from<br/>mistakes</h3><p className="mt-2 text-[12px] font-bold leading-4 text-[#5c7891]">Revision helps children revisit areas they struggled with.</p></div></div>
+                <div className="flex items-start gap-3"><span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#fff2c9] text-2xl">⭐</span><div><h3 className="text-[15px] font-black leading-4 text-[#082b61]">See real<br/>progress</h3><p className="mt-2 text-[12px] font-bold leading-4 text-[#5c7891]">Parents can follow learning, practice and improvement.</p></div></div>
+              </div>
+              <Link href="/login" className="mt-6 inline-flex min-w-[285px] items-center justify-center gap-2 rounded-full bg-[#ff6b22] px-8 py-3.5 text-base font-black text-white shadow-md">Start Free Trial <ArrowRight size={19}/></Link>
+            </div>
+            <div className="h-[330px] overflow-hidden rounded-[24px] bg-[#dff4ff] sm:h-[370px] lg:h-[355px]">
+              <img src="/homepage-artwork/my-progress.webp" alt="Student learning maths" className="h-full w-full object-cover object-center"/>
+            </div>
+          </div>
+        </div>
+        <div className="mx-auto max-w-[1500px] px-3 pb-4">
+          <div className="grid gap-4 rounded-[22px] bg-[#eaf7ff] px-5 py-4 lg:grid-cols-[1fr_390px] lg:items-center">
+            <div className="flex flex-wrap items-center gap-3"><span className="mr-1 text-sm font-black text-[#082b61]">Fun ways to learn:</span>{[["🖼️","Visual Maths"],["⚡","Daily Challenge"],["📝","Revision"],["🎮","Brain Games"],["📊","Progress Tracking"]].map(([icon,label])=><span key={label} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-[#1269a7]"><span>{icon}</span>{label}</span>)}</div>
+            <div className="border-t border-[#9fd1ec] pt-3 text-center lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0"><p className="text-[13px] font-black leading-4 text-[#082b61]">Built around the Maldives primary<br/>mathematics curriculum</p><div className="mt-2 flex flex-wrap justify-center gap-2">{["Grade 1","Grade 2","Grade 3","Grade 4"].map(g=><span key={g} className="rounded-full border border-[#8bd0f8] bg-white px-3 py-1 text-[11px] font-black text-[#137ac1]">{g}</span>)}</div></div>
+          </div>
+        </div>
+      </section>
+
       <section className="relative z-10 mx-auto mt-0 max-w-[1500px] rounded-t-[34px] bg-white px-5 py-7 shadow-[0_-8px_35px_rgba(22,105,160,.08)] sm:px-8 lg:px-12">
         <div className="mb-5">
           <h2 className="text-2xl font-black text-[#082b61] sm:text-3xl">Jump into an Activity</h2>
@@ -102,32 +128,6 @@ export default function HomePage() {
           <div className="flex items-center justify-center gap-3 p-4"><Brain className="text-[#168ff0]"/><div><b className="block text-lg font-black">Learn visually</b><span className="text-sm font-bold text-[#5b7891]">Understand ideas clearly</span></div></div>
           <div className="flex items-center justify-center gap-3 border-y border-[#d8ebf8] p-6 sm:border-x sm:border-y-0"><Star className="text-[#ffb500]" fill="currentColor"/><div><b className="block text-lg font-black">Earn Mind Sparks</b><span className="text-sm font-bold text-[#5b7891]">Complete challenges & games</span></div></div>
           <div className="flex items-center justify-center gap-3 p-4"><Trophy className="text-[#ff8a21]"/><div><b className="block text-lg font-black">Grow every day</b><span className="text-sm font-bold text-[#5b7891]">Build confidence and skill</span></div></div>
-        </div>
-      </section>
-
-      <section className="bg-white">
-        <div className="mx-auto max-w-[1500px] px-5 pb-4 pt-7 sm:px-8 lg:px-12">
-          <div className="grid items-center gap-7 lg:grid-cols-[.98fr_1.02fr]">
-            <div>
-              <h2 className="text-[clamp(2.25rem,3.45vw,3.75rem)] font-black leading-[1.02] tracking-tight text-[#082b61]">Help Your Child Become<br/><span className="text-[#1595e7]">More Confident in Maths</span></h2>
-              <p className="mt-4 max-w-[690px] text-[15px] font-bold leading-6 text-[#426787] sm:text-base">Build stronger maths skills through short, engaging daily practice designed around your child’s grade level. Visual learning, personalised revision, daily challenges and fun Brain Games help children practise consistently without making maths feel like extra homework.</p>
-              <div className="mt-6 grid gap-5 sm:grid-cols-3">
-                <div className="flex items-start gap-3"><span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#ffe4ee] text-2xl">📊</span><div><h3 className="text-[15px] font-black leading-4 text-[#082b61]">Grade-based<br/>learning</h3><p className="mt-2 text-[12px] font-bold leading-4 text-[#5c7891]">Questions matched to your child’s school level.</p></div></div>
-                <div className="flex items-start gap-3"><span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#d9faed] text-2xl">🎯</span><div><h3 className="text-[15px] font-black leading-4 text-[#082b61]">Learn from<br/>mistakes</h3><p className="mt-2 text-[12px] font-bold leading-4 text-[#5c7891]">Revision helps children revisit areas they struggled with.</p></div></div>
-                <div className="flex items-start gap-3"><span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#fff2c9] text-2xl">⭐</span><div><h3 className="text-[15px] font-black leading-4 text-[#082b61]">See real<br/>progress</h3><p className="mt-2 text-[12px] font-bold leading-4 text-[#5c7891]">Parents can follow learning, practice and improvement.</p></div></div>
-              </div>
-              <Link href="/login" className="mt-6 inline-flex min-w-[285px] items-center justify-center gap-2 rounded-full bg-[#ff6b22] px-8 py-3.5 text-base font-black text-white shadow-md">Start Free Trial <ArrowRight size={19}/></Link>
-            </div>
-            <div className="h-[330px] overflow-hidden rounded-[24px] bg-[#dff4ff] sm:h-[370px] lg:h-[355px]">
-              <img src="/homepage-artwork/my-progress.webp" alt="Student learning maths" className="h-full w-full object-cover object-center"/>
-            </div>
-          </div>
-        </div>
-        <div className="mx-auto max-w-[1500px] px-3 pb-4">
-          <div className="grid gap-4 rounded-[22px] bg-[#eaf7ff] px-5 py-4 lg:grid-cols-[1fr_390px] lg:items-center">
-            <div className="flex flex-wrap items-center gap-3"><span className="mr-1 text-sm font-black text-[#082b61]">Fun ways to learn:</span>{[["🖼️","Visual Maths"],["⚡","Daily Challenge"],["📝","Revision"],["🎮","Brain Games"],["📊","Progress Tracking"]].map(([icon,label])=><span key={label} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black text-[#1269a7]"><span>{icon}</span>{label}</span>)}</div>
-            <div className="border-t border-[#9fd1ec] pt-3 text-center lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0"><p className="text-[13px] font-black leading-4 text-[#082b61]">Built around the Maldives primary<br/>mathematics curriculum</p><div className="mt-2 flex flex-wrap justify-center gap-2">{["Grade 1","Grade 2","Grade 3","Grade 4"].map(g=><span key={g} className="rounded-full border border-[#8bd0f8] bg-white px-3 py-1 text-[11px] font-black text-[#137ac1]">{g}</span>)}</div></div>
-          </div>
         </div>
       </section>
 
