@@ -22,6 +22,7 @@ import {
   GraduationCap,
   Info,
   LifeBuoy,
+  ShieldCheck,
   Zap,
   Camera,
   Pencil,
@@ -401,8 +402,12 @@ export default function ProfilePage() {
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-violet-100 text-violet-700"><Info className="h-6 w-6"/></span>
               <span className="min-w-0"><span className="block font-black text-[#12204a]">About FAHI VISSNUN</span><span className="mt-1 block text-xs font-bold text-slate-400">Learn about your maths learning platform.</span></span><ArrowRight className="ml-auto h-5 w-5 text-slate-300 transition group-hover:translate-x-1 group-hover:text-violet-500"/>
             </Link>
-            <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-100 text-cyan-700"><LifeBuoy className="h-6 w-6"/></span>
+            <Link href="/privacy" className="group flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:bg-cyan-50">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-100 text-cyan-700"><ShieldCheck className="h-6 w-6"/></span>
+              <span className="min-w-0"><span className="block font-black text-[#12204a]">Privacy Policy</span><span className="mt-1 block text-xs font-bold text-slate-400">How learner information and activity data are handled.</span></span><ArrowRight className="ml-auto h-5 w-5 text-slate-300 transition group-hover:translate-x-1 group-hover:text-cyan-500"/>
+            </Link>
+            <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:col-span-2">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-slate-200 text-slate-600"><LifeBuoy className="h-6 w-6"/></span>
               <span><span className="block font-black text-[#12204a]">Help & Support</span><span className="mt-1 block text-xs font-bold text-slate-400">Support options are coming soon.</span></span>
             </div>
           </div>
