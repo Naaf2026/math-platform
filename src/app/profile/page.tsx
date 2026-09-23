@@ -429,7 +429,7 @@ export default function ProfilePage() {
         </section>
       </div>
       <footer className="px-4 pb-28 pt-7 text-center text-[10px] font-medium text-slate-400 sm:text-[11px] lg:pb-8">
-        <p>© Copyright 2026 Edu Dhaitha. All rights reserved.</p>
+        <p>© Copyright 2026 FAHI VISSNUN LEARNING INSTITUTE. All rights reserved.</p>
         <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
           <Link href="/about" className="hover:text-[#073b73]">About</Link>
           <Link href="/privacy" className="hover:text-[#073b73]">Privacy Policy</Link>
