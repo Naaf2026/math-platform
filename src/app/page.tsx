@@ -8,13 +8,13 @@ import {
 import { useState } from "react";
 
 const activities = [
-  { title: "Visual Maths", text: "Explore concepts with videos, visuals and examples.", href: "/visual-questions", image: "/dashboard-assets/dashboard-training-v2.webp", tone: "from-violet-100 to-indigo-50" },
-  { title: "Daily Challenge", text: "A new challenge every day to build your skills.", href: "/challenge", image: "/dashboard-assets/dashboard-daily.svg", tone: "from-amber-100 to-orange-50" },
-  { title: "Revision", text: "Practise past topics and strengthen your skills.", href: "/revision", image: "/dashboard-assets/dashboard-revision.webp", tone: "from-sky-100 to-cyan-50" },
-  { title: "Brain Games", text: "Fun games to boost your thinking skills.", href: "/brain-games", image: "/assets/brain-games-generated-small.webp", tone: "from-cyan-100 to-blue-50" },
-  { title: "Buddy Challenge", text: "Challenge your friends and learn together.", href: "/peer-challenge/select", image: "/dashboard-assets/dashboard-peer.webp", tone: "from-emerald-100 to-teal-50" },
-  { title: "Leaderboard", text: "See how you're doing and climb to the top!", href: "/leaderboard", image: "/brain-games/brain-boost/39-treasure-memory.png", tone: "from-yellow-100 to-amber-50" },
-  { title: "Rewards", text: "Earn Mind Sparks and unlock exciting rewards.", href: "/rewards", image: "/brain-games/brain-boost/39-treasure-memory.png", tone: "from-fuchsia-100 to-purple-50" },
+  { title: "Visual Maths", text: "Explore concepts with videos, visuals and examples.", href: "/visual-questions", image: "/homepage-artwork/visual-maths.webp", tone: "from-violet-100 to-indigo-50" },
+  { title: "Daily Challenge", text: "A new challenge every day to build your skills.", href: "/challenge", image: "/homepage-artwork/daily-challenge.webp", tone: "from-amber-100 to-orange-50" },
+  { title: "Revision", text: "Practise past topics and strengthen your skills.", href: "/revision", image: "/homepage-artwork/revision.webp", tone: "from-sky-100 to-cyan-50" },
+  { title: "Brain Games", text: "Fun games to boost your thinking skills.", href: "/brain-games", image: "/homepage-artwork/brain-games.webp", tone: "from-cyan-100 to-blue-50" },
+  { title: "Buddy Challenge", text: "Challenge your friends and learn together.", href: "/peer-challenge/select", image: "/homepage-artwork/buddy-challenge.webp", tone: "from-emerald-100 to-teal-50" },
+  { title: "Leaderboard", text: "See how you're doing and climb to the top!", href: "/leaderboard", image: "/homepage-artwork/rewards.webp", tone: "from-yellow-100 to-amber-50" },
+  { title: "Rewards", text: "Earn Mind Sparks and unlock exciting rewards.", href: "/rewards", image: "/homepage-artwork/rewards.webp", tone: "from-fuchsia-100 to-purple-50" },
 ];
 
 const nav = [
@@ -77,13 +77,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative min-h-[340px] overflow-hidden rounded-[34px] border-[7px] border-white bg-gradient-to-br from-[#65d8f4] via-[#b5eff9] to-[#ffdf9a] shadow-[0_24px_65px_rgba(25,116,171,.22)] sm:min-h-[410px]">
-            <div className="absolute inset-x-0 bottom-0 h-[42%] bg-gradient-to-b from-[#64d5d2] to-[#16a8c3]" />
-            <div className="absolute -right-12 -top-8 h-56 w-56 rounded-full bg-[#ffd65a]/70 blur-2xl" />
-            <div className="absolute left-7 top-7 rounded-2xl bg-white/90 px-5 py-3 shadow-lg"><span className="text-3xl font-black text-[#168ff0]">5 × 3</span></div>
-            <img src="/dashboard-assets/dashboard-training-v2.webp" alt="" className="absolute bottom-0 left-[4%] h-[78%] w-[47%] object-contain drop-shadow-xl" />
-            <img src="/dashboard-assets/dashboard-daily.svg" alt="" className="absolute bottom-[-4%] right-[3%] h-[70%] w-[45%] object-contain drop-shadow-xl" />
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-[#ffcc29] px-5 py-2 text-sm font-black text-[#624600] shadow-lg">⭐ Earn Mind Sparks</div>
+          <div className="relative overflow-hidden rounded-[34px] border-[7px] border-white shadow-[0_24px_65px_rgba(25,116,171,.22)]">
+            <img src="/homepage-artwork/hero-illustration.webp" alt="Students enjoying maths together in a tropical learning scene" className="block aspect-[16/9] w-full object-cover lg:aspect-[5/4]" />
           </div>
         </div>
       </section>
@@ -108,7 +103,7 @@ export default function HomePage() {
             </Link>
           ))}
           <Link href="/dashboard" className="group flex min-h-[250px] flex-col justify-between overflow-hidden rounded-[22px] bg-gradient-to-br from-[#7849e8] to-[#4227a9] p-5 text-white shadow-lg">
-            <div><BarChart3 size={38}/><h3 className="mt-4 text-2xl font-black">My Progress</h3><p className="mt-2 text-sm font-bold text-violet-100">See your learning journey, streak and achievements.</p></div>
+            <div><img src="/homepage-artwork/my-progress.webp" alt="" className="mb-3 h-32 w-full rounded-2xl object-cover"/><h3 className="mt-4 text-2xl font-black">My Progress</h3><p className="mt-2 text-sm font-bold text-violet-100">See your learning journey, streak and achievements.</p></div>
             <span className="inline-flex items-center gap-2 font-black">View dashboard <ArrowRight size={18}/></span>
           </Link>
         </div>
