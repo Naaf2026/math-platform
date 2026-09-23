@@ -20,6 +20,8 @@ import {
   UserRound,
   Gift,
   GraduationCap,
+  Info,
+  LifeBuoy,
   Zap,
   Camera,
   Pencil,
@@ -388,6 +390,20 @@ export default function ProfilePage() {
               <StatCard icon={<CheckCircle2 />} value={`${accuracy}%`} label="Accuracy" className="bg-cyan-50 text-cyan-700" />
               <StatCard icon={<Medal />} value={achievements.length.toLocaleString()} label="Achievements" className="bg-amber-50 text-amber-700" />
               <StatCard icon={<Star />} value={totalXpFromAnswers.toLocaleString()} label="XP from answers" className="bg-pink-50 text-pink-700" />
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-6 rounded-[2rem] bg-white p-6 shadow-lg ring-1 ring-slate-100 sm:p-7">
+          <div><p className="text-xs font-black uppercase tracking-[0.18em] text-violet-600">Settings & Support</p><h2 className="mt-1 text-2xl font-black text-[#12204a]">Help & information</h2></div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <Link href="/about" className="group flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:bg-violet-50">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-violet-100 text-violet-700"><Info className="h-6 w-6"/></span>
+              <span className="min-w-0"><span className="block font-black text-[#12204a]">About FAHI VISSNUN</span><span className="mt-1 block text-xs font-bold text-slate-400">Learn about your maths learning platform.</span></span><ArrowRight className="ml-auto h-5 w-5 text-slate-300 transition group-hover:translate-x-1 group-hover:text-violet-500"/>
+            </Link>
+            <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-100 text-cyan-700"><LifeBuoy className="h-6 w-6"/></span>
+              <span><span className="block font-black text-[#12204a]">Help & Support</span><span className="mt-1 block text-xs font-bold text-slate-400">Support options are coming soon.</span></span>
             </div>
           </div>
         </section>
