@@ -24,7 +24,11 @@ export default function RevisionPage() {
   const [answers,setAnswers]=useState<Record<string,string>>({});
   const [checked,setChecked]=useState<Record<string,boolean>>({});
   const [showResults,setShowResults]=useState(false);
-  const [submitting,setSubmitting]=useState(false);\n  const [giftOpen,setGiftOpen]=useState(false);\n  const [giftLoading,setGiftLoading]=useState(false);\n  const [giftReward,setGiftReward]=useState<number|null>(null);\n  const [giftMessage,setGiftMessage]=useState("");
+  const [submitting,setSubmitting]=useState(false);
+  const [giftOpen,setGiftOpen]=useState(false);
+  const [giftLoading,setGiftLoading]=useState(false);
+  const [giftReward,setGiftReward]=useState<number|null>(null);
+  const [giftMessage,setGiftMessage]=useState("");
 
   useEffect(()=>{void load();},[]);
   async function load(){
