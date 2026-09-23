@@ -89,7 +89,7 @@ export default function HomePage() {
               <Link href="/login" className="mt-6 inline-flex min-w-[285px] items-center justify-center gap-2 rounded-full bg-[#ff6b22] px-8 py-3.5 text-base font-black text-white shadow-md">Start Free Trial <ArrowRight size={19}/></Link>
             </div>
             <div className="h-[330px] overflow-hidden rounded-[24px] bg-[#dff4ff] sm:h-[370px] lg:h-[355px]">
-              <img src="/homepage-artwork/my-progress.webp" alt="Student learning maths" className="h-full w-full object-cover object-center"/>
+              <img src="/homepage-artwork/parent-confidence.webp" alt="Parent supporting a child with maths learning" className="h-full w-full object-cover object-center"/>
             </div>
           </div>
         </div>
