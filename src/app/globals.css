@@ -52,3 +52,21 @@ main[class*="bg-[#eef9ff]"] h1,main[class*="bg-[#eef9ff]"] h2,main[class*="bg-[#
   .brain-games-dashboard-map .brain-games-image{height:auto!important;min-height:0!important;aspect-ratio:10/13;background-size:cover;background-position:center center;animation:none}
   .brain-games-dashboard-map .brain-games-sparkles{inset:0}
 }
+
+/* Clickable zones for the Maldives Mind Sparks artwork */
+.mind-sparks-hotspot{position:absolute;z-index:4;border:0;background:transparent;cursor:pointer;border-radius:28px;transition:background .18s ease,transform .18s ease}
+.mind-sparks-hotspot:hover,.mind-sparks-hotspot:focus-visible{background:rgba(255,255,255,.12);outline:3px solid rgba(255,229,75,.8);transform:scale(1.02)}
+.mind-sparks-hotspot.challenge-one{left:11%;top:6%;width:28%;height:30%}
+.mind-sparks-hotspot.challenge-two{left:61%;top:6%;width:28%;height:30%}
+.mind-sparks-hotspot.challenge-three{left:2%;top:36%;width:29%;height:28%}
+.mind-sparks-hotspot.challenge-four{left:69%;top:36%;width:29%;height:28%}
+.mind-sparks-hotspot.challenge-five{left:12%;top:64%;width:31%;height:31%}
+.mind-sparks-hotspot.challenge-six{left:57%;top:64%;width:31%;height:31%}
+@media(max-width:767px){
+ .mind-sparks-hotspot.challenge-one{left:2%;top:5%;width:45%;height:25%}
+ .mind-sparks-hotspot.challenge-two{left:53%;top:5%;width:45%;height:25%}
+ .mind-sparks-hotspot.challenge-three{left:1%;top:31%;width:46%;height:27%}
+ .mind-sparks-hotspot.challenge-four{left:53%;top:31%;width:46%;height:27%}
+ .mind-sparks-hotspot.challenge-five{left:1%;top:59%;width:47%;height:31%}
+ .mind-sparks-hotspot.challenge-six{left:52%;top:59%;width:47%;height:31%}
+}
