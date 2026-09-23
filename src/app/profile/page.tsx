@@ -6,6 +6,7 @@ import {
   BarChart3,
   BookOpen,
   CheckCircle2,
+  CreditCard,
   Flame,
   Gamepad2,
   Home,
@@ -405,6 +406,10 @@ export default function ProfilePage() {
             <Link href="/privacy" className="group flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:bg-cyan-50">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-100 text-cyan-700"><ShieldCheck className="h-6 w-6"/></span>
               <span className="min-w-0"><span className="block font-black text-[#12204a]">Privacy Policy</span><span className="mt-1 block text-xs font-bold text-slate-400">How learner information and activity data are handled.</span></span><ArrowRight className="ml-auto h-5 w-5 text-slate-300 transition group-hover:translate-x-1 group-hover:text-cyan-500"/>
+            </Link>
+            <Link href="/payment-policy" className="group flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:bg-emerald-50">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-100 text-emerald-700"><CreditCard className="h-6 w-6"/></span>
+              <span className="min-w-0"><span className="block font-black text-[#12204a]">Payment Policy</span><span className="mt-1 block text-xs font-bold text-slate-400">Payments, subscription access, refunds and cancellations.</span></span><ArrowRight className="ml-auto h-5 w-5 text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-500"/>
             </Link>
             <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:col-span-2">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-slate-200 text-slate-600"><LifeBuoy className="h-6 w-6"/></span>
