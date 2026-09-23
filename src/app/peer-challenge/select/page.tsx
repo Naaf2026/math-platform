@@ -31,7 +31,14 @@ export default function BuddySelectPage(){
    const s=createClient();
    if(!s){setError("Learning account is not configured.");setLoading(false);return}
    const {data,error}=await s.rpc("create_buddy_challenge",{p_challenged_id:null,p_challenge_type:mode});
-   if(error){setError(error.message);setLoading(false);return}
+   if(error){
+     const message=error.message||"";
+     if(message.includes("no_eligible_challenger")) setError("No available learner was found right now. Try again in a little while or choose another challenge mode.");
+     else if(message.includes("challenge_limit_or_hours")) setError("Buddy Challenge is unavailable right now or you have reached today’s challenge limit.");
+     else if(message.includes("not_enough_challenge_questions")) setError("We could not prepare this challenge yet. Please try again shortly.");
+     else setError("We could not start the challenge. Please try again.");
+     setLoading(false);return
+   }
    const id=data?.id||data?.[0]?.id;
    if(!id){setError("No eligible learner was found.");setLoading(false);return}
    window.location.href=`/peer-challenge/play?id=${id}`;
