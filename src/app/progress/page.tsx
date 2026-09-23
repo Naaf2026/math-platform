@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { BarChart3, CheckCircle2, Flame, Gamepad2, Gift, GraduationCap, Home, Sparkles, Target, Trophy, Zap } from "lucide-react";\nimport NotificationBell from "@/components/learner-notification-bell";
+import { BarChart3, CheckCircle2, Flame, Gamepad2, Gift, GraduationCap, Home, Sparkles, Target, Trophy, Zap } from "lucide-react";
+import NotificationBell from "@/components/learner-notification-bell";
 import { createClient } from "@/lib/supabase/client";
 
 type Topic={id:string;title:string;description:string;level:string;lessons:number;sort_order:number};
