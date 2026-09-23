@@ -47,12 +47,12 @@ export default function BrainGamesPage() {
       </div></header>
       <div className="mx-auto flex max-w-[1680px]">
         <aside className="hidden min-h-[calc(100vh-90px)] w-[245px] shrink-0 flex-col border-r border-[#dcecf6] bg-[#f5fbff] px-7 py-9 lg:flex"><div className="flex flex-col items-center text-center">{avatar?<img src={avatar} alt="" className="h-[148px] w-[148px] rounded-full border-4 border-white object-cover shadow-lg"/>:<div className="grid h-[148px] w-[148px] place-items-center rounded-full border-4 border-white bg-[#dff7ff] text-5xl shadow-lg">{profile?.avatar_emoji||"🧑‍🎓"}</div>}<h2 className="mt-5 text-[34px] font-black">{first}</h2><div className="mt-1 flex items-center gap-2 text-[19px] font-bold"><GraduationCap size={22}/>{gradeLabel(profile?.grade)}</div></div><div className="mt-7 border-t border-[#dcecf6] pt-5"><p className="py-2 text-[17px] font-black">🔥 {profile?.current_streak??0} Day Streak</p><p className="py-2 text-[17px] font-black">⭐ {profile?.xp??0} XP</p></div></aside>
-        <section className="min-w-0 flex-1 px-3 py-4 pb-24 sm:px-6 lg:px-10 lg:py-8">
-          <div className="mx-auto max-w-[1380px]">
-            <div className="relative overflow-hidden rounded-[28px] border border-[#cde7f4] bg-white shadow-[0_20px_55px_rgba(8,61,120,.14)]">
+        <section className="min-w-0 flex-1 px-0 py-0 pb-20 sm:px-6 sm:py-5 lg:px-10 lg:py-8 lg:pb-8">
+          <div className="mx-auto w-full max-w-[1380px]">
+            <div className="relative overflow-hidden bg-white sm:rounded-[28px] sm:border sm:border-[#cde7f4] sm:shadow-[0_20px_55px_rgba(8,61,120,.14)]">
               <picture className="block">
                 <source media="(max-width: 767px)" srcSet="/brain-games/mind-sparks-maldives-mobile.webp" />
-                <img src="/brain-games/mind-sparks-maldives-desktop.webp" alt="Mind Sparks Maldives game world" className="block h-auto w-full select-none" draggable={false}/>
+                <img src="/brain-games/mind-sparks-maldives-desktop.webp" alt="Mind Sparks Maldives game world" className="block h-auto w-full select-none object-contain" draggable={false}/>
               </picture>
               <div className="absolute inset-0">
                 {challenges.map((challenge) => (
