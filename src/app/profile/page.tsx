@@ -18,12 +18,15 @@ import {
   Target,
   Trophy,
   UserRound,
+  Gift,
+  GraduationCap,
   Zap,
   Camera,
   Pencil,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import NotificationBell from "@/components/learner-notification-bell";
 
 type Profile = {
   full_name: string | null;
@@ -258,72 +261,30 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen bg-[#eef4ff] text-[#12204a]">
-      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/95 shadow-sm backdrop-blur-xl">
-        <div className="flex h-[72px] items-center justify-between px-4 sm:px-6 lg:pl-[276px] lg:pr-8">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-500 text-lg font-black text-white shadow-md">F</div>
-            <div className="hidden sm:block">
-              <p className="text-sm font-black tracking-wide text-[#12204a]">FAHI VISSNUN</p>
-              <p className="text-[11px] font-bold text-slate-400">Math Adventure</p>
-            </div>
-          </Link>
-
-          <nav className="hidden items-center gap-1 md:flex">
-            <Link href="/dashboard" className="rounded-xl px-3 py-2 text-sm font-black text-slate-500 hover:bg-violet-50 hover:text-violet-600">Home</Link>
-            <Link href="/mission" className="rounded-xl px-3 py-2 text-sm font-black text-slate-500 hover:bg-violet-50 hover:text-violet-600">Mission</Link>
-            <Link href="/challenge" className="rounded-xl px-3 py-2 text-sm font-black text-slate-500 hover:bg-violet-50 hover:text-violet-600">Daily Challenge</Link>
-            <Link href="/progress" className="rounded-xl px-3 py-2 text-sm font-black text-slate-500 hover:bg-violet-50 hover:text-violet-600">Progress</Link>
-            <Link href="/rewards" className="rounded-xl px-3 py-2 text-sm font-black text-slate-500 hover:bg-violet-50 hover:text-violet-600">Rewards</Link>
+      <header className="sticky top-0 z-40 h-[76px] border-b border-white/10 bg-[#073b73] text-white shadow-sm lg:h-[90px]">
+        <div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12">
+          <Link href="/dashboard"><img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[44px] w-auto max-w-[220px] lg:h-[57px] lg:max-w-none"/></Link>
+          <nav className="hidden items-center gap-8 lg:flex">
+            <Link href="/dashboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Home size={25}/>Home</Link>
+            <Link href="/brain-games" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Gamepad2 size={25}/>Games</Link>
+            <Link href="/leaderboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Trophy size={25}/>Leaderboard</Link>
+            <Link href="/rewards" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Gift size={25}/>Rewards</Link>
+            <Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><BarChart3 size={25}/>Progress</Link>
+            <Link href="/profile" className="relative flex items-center gap-3 px-4 py-7 text-lg font-black"><GraduationCap size={25}/>Profile<span className="absolute bottom-0 left-4 right-4 h-1 rounded-full bg-yellow-400"/></Link>
           </nav>
-
-          <div className="flex items-center gap-2">
-            <div className="hidden items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 sm:flex">
-              <Flame className="h-4 w-4 text-orange-500" />
-              <span className="text-sm font-black text-orange-600">{currentStreak}</span>
-            </div>
-            <Link href="/profile" className="flex items-center gap-2 rounded-xl bg-violet-50 px-2.5 py-2 text-sm font-black text-violet-700">
-              <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-violet-600 to-cyan-400 text-xs text-white">{avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : avatarEmoji}</span>
-              <span className="hidden max-w-24 truncate sm:inline">{firstName}</span>
-            </Link>
-            <button onClick={signOut} aria-label="Sign out" className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><LogOut className="h-4 w-4" /></button>
-          </div>
+          <NotificationBell/>
         </div>
       </header>
+      <div className="mx-auto flex max-w-[1680px]">
+        <aside className="hidden min-h-[calc(100vh-90px)] w-[245px] shrink-0 flex-col border-r border-[#dcecf6] bg-[#f5fbff] px-7 py-9 lg:flex">
+          <div className="flex flex-col items-center text-center">{avatarUrl?<img src={avatarUrl} alt="" className="h-[148px] w-[148px] rounded-full border-4 border-white object-cover shadow-lg"/>:<div className="grid h-[148px] w-[148px] place-items-center rounded-full border-4 border-white bg-[#dff7ff] text-5xl shadow-lg">{avatarEmoji||"🧑‍🎓"}</div>}<h2 className="mt-5 text-[34px] font-black">{firstName}</h2><p className="mt-1 text-[19px] font-bold"><GraduationCap size={22} className="mr-2 inline"/>{profile?.grade||"Student"}</p></div>
+          <div className="mt-7 border-t border-[#dcecf6] pt-5"><p className="py-2 text-[17px] font-black">🔥 {currentStreak} Day Streak</p><p className="py-2 text-[17px] font-black">⭐ {xp} XP</p></div>
+          <button onClick={signOut} className="mt-auto flex items-center justify-center gap-2 rounded-2xl border border-[#dcecf6] bg-white px-4 py-3 font-black text-[#6685a4] hover:text-[#083d78]"><LogOut size={18}/>Logout</button>
+        </aside>
+        <section className="min-w-0 flex-1 px-4 py-6 pb-24 sm:px-6 lg:px-12 lg:py-10">
+          <div className="mx-auto max-w-[1340px]">
+            <div className="mb-7"><p className="text-sm font-black uppercase tracking-[.18em] text-[#735fe6]">Learner Profile</p><h1 className="mt-1 text-[38px] font-black tracking-tight text-[#083d78] sm:text-[48px] lg:text-[54px]">My Profile 👤</h1><p className="mt-2 text-[18px] font-semibold text-[#6685a4] sm:text-[21px]">Your learning identity, achievements and journey.</p></div>
 
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col bg-[#101d46] text-white lg:flex">
-        <div className="flex h-[72px] items-center gap-3 border-b border-white/10 px-6">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 text-xl font-black shadow-lg">F</div>
-          <div><p className="text-sm font-black tracking-wide">FAHI VISSNUN</p><p className="text-[10px] font-bold text-indigo-200">MATH ADVENTURE</p></div>
-        </div>
-        <div className="p-5">
-          <div className="rounded-3xl bg-white/10 p-4 ring-1 ring-white/10">
-            <div className="flex items-center gap-3">
-              <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-400 text-lg font-black shadow-lg">
-                {initial}
-                <span className="absolute -right-2 -top-2 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-[#101d46] bg-yellow-300 px-1 text-[10px] font-black text-slate-900">{level}</span>
-              </div>
-              <div className="min-w-0"><p className="truncate text-sm font-black">{profile?.full_name || "Student"}</p><p className="text-xs font-bold text-indigo-200">Level {level} · {xp} XP</p></div>
-            </div>
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-yellow-300 to-cyan-300" style={{ width: `${Math.max(4, levelProgress)}%` }} /></div>
-            <p className="mt-2 text-[10px] font-bold text-indigo-200">{xpToNext} XP to Level {level + 1}</p>
-          </div>
-        </div>
-        <nav className="px-3">
-          {nav.map(({ href, label, icon: Icon }) => {
-            const active = href === "/profile";
-            return <Link key={href} href={href} className={`mb-1 flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-black transition ${active ? "bg-white text-[#101d46] shadow-lg" : "text-indigo-100 hover:bg-white/10 hover:text-white"}`}><Icon className={`h-5 w-5 ${active ? "text-violet-600" : "text-indigo-200"}`} />{label}{active && <span className="ml-auto h-2 w-2 rounded-full bg-violet-500" />}</Link>;
-          })}
-        </nav>
-        <div className="mt-auto p-4">
-          <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 to-cyan-500 p-4">
-            <div className="flex items-center justify-between"><span className="text-3xl">🚀</span><Sparkles className="h-5 w-5 text-yellow-200" /></div>
-            <p className="mt-3 text-sm font-black">Keep exploring!</p>
-            <p className="mt-1 text-[11px] font-bold leading-5 text-white/75">Every little practice makes your maths brain stronger.</p>
-          </div>
-        </div>
-      </aside>
-
-      <div className="mx-auto max-w-[1240px] px-4 pb-10 pt-5 sm:px-6 lg:ml-[248px] lg:px-8 lg:pt-7">
         <section className="mb-6 rounded-[2rem] bg-white p-6 shadow-xl shadow-indigo-100/40 ring-1 ring-slate-100 sm:p-7">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <div className="relative shrink-0">
@@ -439,7 +400,10 @@ export default function ProfilePage() {
             <Link href="/mission" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-yellow-300 px-6 py-3.5 text-sm font-black text-[#172047] shadow-lg transition hover:-translate-y-0.5">Start Learning <ArrowRight className="h-4 w-4" /></Link>
           </div>
         </section>
+          </div>
+        </section>
       </div>
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#cfe4f2] bg-white/95 px-2 pb-[calc(env(safe-area-inset-bottom)+6px)] pt-2 shadow-[0_-6px_20px_rgba(8,61,120,.10)] lg:hidden"><div className="mx-auto grid max-w-lg grid-cols-6"><Link href="/dashboard" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Home size={22}/><span className="text-[11px] font-black">Home</span></Link><Link href="/brain-games" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Gamepad2 size={22}/><span className="text-[11px] font-black">Games</span></Link><Link href="/leaderboard" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Trophy size={22}/><span className="text-[11px] font-black">Leaderboard</span></Link><Link href="/rewards" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Gift size={22}/><span className="text-[11px] font-black">Rewards</span></Link><Link href="/progress" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><BarChart3 size={22}/><span className="text-[11px] font-black">Progress</span></Link><Link href="/profile" className="flex flex-col items-center gap-1 py-1.5 text-[#197fe9]"><GraduationCap size={22}/><span className="text-[11px] font-black">Profile</span></Link></div></nav>
     </main>
   );
 }
