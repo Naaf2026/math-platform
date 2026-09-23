@@ -62,13 +62,13 @@ export default function HomePage() {
       <section className="relative mx-auto max-w-[1500px] overflow-hidden bg-[#c9edfc] lg:mt-3 lg:rounded-[30px]">
         <img src="/homepage-artwork/hero-illustration.webp" alt="Two students learning maths beside the ocean" className="absolute inset-0 h-full w-full object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#e7f7ff]/95 via-[#e7f7ff]/75 to-transparent sm:via-[#e7f7ff]/45 lg:from-[#e7f7ff]/90 lg:via-transparent" />
-        <div className="relative mx-auto flex min-h-[390px] max-w-[1440px] items-center px-6 py-9 sm:min-h-[420px] lg:min-h-[465px] lg:px-12">
+        <div className="relative mx-auto flex min-h-[260px] max-w-[1440px] items-center px-6 py-5 sm:min-h-[280px] lg:h-[270px] lg:min-h-0 lg:px-12">
           <div className="max-w-[520px] rounded-[24px] bg-[#e8f7ff]/45 p-3 backdrop-blur-[2px] sm:p-5 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-black uppercase tracking-wider text-[#0e86cf] shadow-sm"><Sparkles size={17}/> Learn • Practise • Play</div>
-            <h1 className="text-[clamp(2.7rem,4.7vw,4.6rem)] font-black leading-[1.04] tracking-tight text-[#072c61]">Maths<br/>Builds <span className="text-[#1595e7]">Brighter</span><br/>Futures</h1>
-            <p className="mt-4 max-w-[450px] text-base font-bold leading-7 text-[#173e66]">Explore. Practise. Play. Earn Mind Sparks.<br/>Build confidence and enjoy learning maths every day.</p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/login" className="inline-flex items-center gap-2 rounded-2xl bg-[#ff6b22] px-6 py-3.5 text-sm font-black text-white shadow-xl shadow-orange-200">▶ Start Learning</Link>
+            <div className="mb-2 hidden items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 text-xs font-black uppercase tracking-wider text-[#0e86cf] shadow-sm sm:inline-flex"><Sparkles size={17}/> Learn • Practise • Play</div>
+            <h1 className="text-[clamp(2.15rem,3.4vw,3.5rem)] font-black leading-[1.01] tracking-tight text-[#072c61]">Maths<br/>Builds <span className="text-[#1595e7]">Brighter</span><br/>Futures</h1>
+            <p className="mt-2 max-w-[450px] text-sm font-bold leading-5 text-[#173e66] sm:text-[15px]">Explore. Practise. Play. Earn Mind Sparks.<br/>Build confidence and enjoy learning maths every day.</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link href="/login" className="inline-flex items-center gap-2 rounded-2xl bg-[#ff6b22] px-5 py-2.5 text-sm font-black text-white shadow-xl shadow-orange-200">▶ Start Learning</Link>
               <Link href="/login" className="inline-flex items-center gap-2 rounded-2xl border-2 border-[#168ff0] bg-white px-6 py-3.5 text-sm font-black text-[#07528e]"><Users size={20}/> Student Login</Link>
             </div>
           </div>
