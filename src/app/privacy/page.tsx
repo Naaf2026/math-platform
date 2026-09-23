@@ -25,3 +25,5 @@ export default function PrivacyPage(){
   </div>
  </main>;
 }
+
+// Deployment refresh: privacy route
