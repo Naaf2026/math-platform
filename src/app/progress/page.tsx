@@ -1,4 +1,5 @@
 "use client";
+// Dashboard-aligned progress page
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
