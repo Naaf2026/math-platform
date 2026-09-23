@@ -110,6 +110,15 @@ export default function ParentPage() {
         )}
 
         <section className="mt-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100 sm:p-7"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-black uppercase tracking-wider text-violet-600">Learner accounts</p><h2 className="mt-1 text-xl font-black text-[#071b3a]">Need to manage an account?</h2><p className="mt-1 text-sm text-slate-500">Add learners, change passwords or enable and disable learner accounts.</p></div><Link href="/parent/learners" className="inline-flex shrink-0 items-center justify-center rounded-2xl bg-slate-100 px-5 py-3 font-black text-slate-700 hover:bg-slate-200">Manage learner accounts</Link></div></section>
+      <footer className="px-4 pb-28 pt-7 text-center text-[10px] font-medium text-slate-400 sm:text-[11px] lg:pb-8">
+        <p>© Copyright 2026 FAHI VISSNUN LEARNING INSTITUTE. All rights reserved.</p>
+        <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <Link href="/about" className="hover:text-[#073b73]">About</Link>
+          <Link href="/privacy" className="hover:text-[#073b73]">Privacy Policy</Link>
+          <Link href="/terms" className="hover:text-[#073b73]">Terms of Service</Link>
+          <Link href="/payment-policy" className="hover:text-[#073b73]">Payment Policy</Link>
+        </div>
+      </footer>
       </div>
     </main>
   );
