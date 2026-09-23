@@ -67,7 +67,7 @@ export default function HomePage() {
             <div className="mb-1 hidden items-center gap-2 rounded-full bg-white/95 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-[#0e86cf] shadow-sm lg:inline-flex"><Sparkles size={17}/> Learn • Practise • Play</div>
             <h1 className="text-[clamp(2rem,3vw,3.15rem)] font-black leading-[.98] tracking-tight text-[#072c61]">Maths<br/>Builds <span className="text-[#1595e7]">Brighter</span><br/>Futures</h1>
             <p className="mt-2 max-w-[450px] text-[13px] font-bold leading-[1.35rem] text-[#173e66] sm:text-sm">Explore. Practise. Play. Earn Mind Sparks.<br/>Build confidence and enjoy learning maths every day.</p>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2 pb-3">
               <Link href="/login" className="inline-flex items-center gap-2 rounded-2xl bg-[#ff6b22] px-5 py-2.5 text-sm font-black text-white shadow-xl shadow-orange-200">▶ Start Learning</Link>
               <Link href="/login" className="inline-flex items-center gap-2 rounded-2xl border-2 border-[#168ff0] bg-white px-6 py-3.5 text-sm font-black text-[#07528e]"><Users size={20}/> Student Login</Link>
             </div>
@@ -75,7 +75,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto -mt-5 max-w-[1500px] rounded-t-[34px] bg-white px-5 py-7 shadow-[0_-8px_35px_rgba(22,105,160,.08)] sm:px-8 lg:px-12">
+      <section className="relative z-10 mx-auto mt-0 max-w-[1500px] rounded-t-[34px] bg-white px-5 py-7 shadow-[0_-8px_35px_rgba(22,105,160,.08)] sm:px-8 lg:px-12">
         <div className="mb-5">
           <h2 className="text-2xl font-black text-[#082b61] sm:text-3xl">Jump into an Activity</h2>
           <p className="mt-2 text-base font-bold text-[#477092]">Different ways to learn, practise and have fun with maths!</p>
