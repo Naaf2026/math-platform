@@ -117,7 +117,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-[100dvh] bg-gradient-to-b from-[#fffdf3] via-[#fffefb] to-[#eef8ff] px-4 py-5 text-[#202c42] sm:px-6 sm:py-10">
+    <main className="min-h-[100dvh] bg-white px-4 py-5 text-[#202c42] sm:px-6 sm:py-10">
       <div className="mx-auto flex min-h-[calc(100dvh-40px)] max-w-[490px] flex-col justify-center sm:min-h-[calc(100dvh-80px)]">
         <Link href="/" className="mb-3 inline-flex w-fit items-center gap-1.5 text-xs font-bold text-[#63758b] hover:text-[#157bb5]"><ArrowLeft size={15}/> Back to home</Link>
         <div className="mb-4 flex justify-center sm:mb-6">
