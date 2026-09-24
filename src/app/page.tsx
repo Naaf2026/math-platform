@@ -64,7 +64,7 @@ export default function HomePage() {
             <h1 className="text-[clamp(2rem,3vw,3.15rem)] font-black leading-[.98] tracking-tight text-[#072c61]">Maths<br/>Builds <span className="text-[#1595e7]">Brighter</span><br/>Futures</h1>
             <p className="mt-2 max-w-[450px] text-[13px] font-bold leading-[1.35rem] text-[#173e66] sm:text-sm">Explore. Practise. Play. Earn Mind Sparks.<br/>Build confidence and enjoy learning maths every day.</p>
             <div className="mt-3 flex flex-wrap gap-2 pb-3">
-              <Link href="/login" className="inline-flex items-center gap-2 rounded-2xl bg-[#ff6b22] px-5 py-2.5 text-sm font-black text-white shadow-xl shadow-orange-200">▶ Try Fahi Hisaabu for Free!!</Link>
+              <Link href="/parents" className="inline-flex items-center gap-2 rounded-2xl bg-[#ff6b22] px-5 py-2.5 text-sm font-black text-white shadow-xl shadow-orange-200">👨‍👩‍👧 Learn More for Parents <ArrowRight size={18}/></Link>
               <button type="button" onClick={() => setLearnerLoginOpen(true)} className="inline-flex items-center gap-2 rounded-2xl border-2 border-[#168ff0] bg-white px-6 py-3.5 text-sm font-black text-[#07528e]"><Users size={20}/> Student Login</button>
             </div>
           </div>
