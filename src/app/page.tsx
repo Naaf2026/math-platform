@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, Brain, Gift, Menu, Search, Sparkles, Star, Trophy, Users, X } from "lucide-react";
 import { useState } from "react";
+import LearnerLoginModal from "@/components/learner-login-modal";
 
 const activities = [
   { title: "Visual Maths", text: "Explore concepts with videos, visuals and examples.", href: "/visual-questions", image: "/homepage-artwork/visual-maths.webp", tone: "from-violet-100 to-indigo-50" },
@@ -21,9 +22,11 @@ const nav = [
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [learnerLoginOpen, setLearnerLoginOpen] = useState(false);
 
   return (
     <main className="min-h-screen bg-[#eef8ff] text-[#082b61] student-dashboard-font">
+      <LearnerLoginModal open={learnerLoginOpen} onClose={() => setLearnerLoginOpen(false)} />
       <header className="sticky top-0 z-50 border-b border-[#dcecf8] bg-white/95 shadow-sm backdrop-blur">
         <div className="mx-auto flex h-[74px] max-w-[1440px] items-center gap-6 px-5 lg:px-8">
           <Link href="/" className="flex min-w-fit items-center gap-3">
@@ -49,7 +52,7 @@ export default function HomePage() {
 
           <div className="ml-auto flex items-center gap-2 lg:ml-3">
             <Link href="/login" aria-label="Search" className="hidden h-11 w-11 place-items-center rounded-full border border-[#dbeaf5] text-[#0c548d] sm:grid"><Search size={20}/></Link>
-            <Link href="/login" className="hidden rounded-xl border-2 border-[#168ff0] px-5 py-2.5 text-sm font-black text-[#07528e] sm:inline-flex">Student Login</Link>
+            <button type="button" onClick={() => setLearnerLoginOpen(true)} className="hidden rounded-xl border-2 border-[#168ff0] px-5 py-2.5 text-sm font-black text-[#07528e] sm:inline-flex">Student Login</button>
             <Link href="/login" className="hidden rounded-xl bg-[#ff6b22] px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-200 sm:inline-flex">Start Learning</Link>
             <button onClick={() => setMenuOpen(!menuOpen)} className="grid h-11 w-11 place-items-center rounded-xl bg-[#edf7ff] lg:hidden" aria-label="Menu">{menuOpen ? <X/> : <Menu/>}</button>
           </div>
@@ -58,6 +61,7 @@ export default function HomePage() {
           <div className="border-t border-[#e1eef7] bg-white px-5 py-4 lg:hidden">
             <div className="grid gap-2">
               {nav.map(([label, href]) => <Link onClick={() => setMenuOpen(false)} key={label} href={href} className="rounded-xl px-4 py-3 font-extrabold hover:bg-[#edf7ff]">{label}</Link>)}
+              <button type="button" onClick={() => { setMenuOpen(false); setLearnerLoginOpen(true); }} className="rounded-xl border-2 border-[#168ff0] px-4 py-3 text-center font-black text-[#07528e]">Student Login</button>
               <Link href="/login" className="mt-2 rounded-xl bg-[#ff6b22] px-4 py-3 text-center font-black text-white">Start Learning</Link>
             </div>
           </div>
@@ -74,7 +78,7 @@ export default function HomePage() {
             <p className="mt-2 max-w-[450px] text-[13px] font-bold leading-[1.35rem] text-[#173e66] sm:text-sm">Explore. Practise. Play. Earn Mind Sparks.<br/>Build confidence and enjoy learning maths every day.</p>
             <div className="mt-3 flex flex-wrap gap-2 pb-3">
               <Link href="/login" className="inline-flex items-center gap-2 rounded-2xl bg-[#ff6b22] px-5 py-2.5 text-sm font-black text-white shadow-xl shadow-orange-200">▶ Start Learning</Link>
-              <Link href="/login" className="inline-flex items-center gap-2 rounded-2xl border-2 border-[#168ff0] bg-white px-6 py-3.5 text-sm font-black text-[#07528e]"><Users size={20}/> Student Login</Link>
+              <button type="button" onClick={() => setLearnerLoginOpen(true)} className="inline-flex items-center gap-2 rounded-2xl border-2 border-[#168ff0] bg-white px-6 py-3.5 text-sm font-black text-[#07528e]"><Users size={20}/> Student Login</button>
             </div>
           </div>
         </div>
