@@ -31,7 +31,7 @@ export default function HomePage() {
         <div className="mx-auto flex h-[74px] max-w-[1440px] items-center gap-6 px-5 lg:px-8">
           <Link href="/" className="flex min-w-fit items-center gap-3">
             <img
-              src="/fahi-hisaabu-logo-transparent.webp"
+              src="/fahi-hisaabu-logo-optimized.webp"
               onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }}
               alt="ފަހި ހިސާބު — Fahi Hisaabu"
               width={220}
