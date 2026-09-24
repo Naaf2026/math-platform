@@ -31,15 +31,15 @@ export default function HomePage() {
         <div className="mx-auto flex h-[74px] max-w-[1440px] items-center gap-6 px-5 lg:px-8">
           <Link href="/" className="flex min-w-fit items-center gap-3">
             <img
-              src="/fahi-hisaabu-logo-optimized.webp" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }}
-              alt="ފަހި ހިސާބު — The Maldives Maths Learning Hub"
-              className="hidden h-14 w-auto max-w-[230px] object-contain sm:max-w-[290px]"
-              onLoad={(event) => { event.currentTarget.classList.remove("hidden"); event.currentTarget.nextElementSibling?.classList.add("hidden"); }}
+              src="/fahi-hisaabu-logo-optimized.webp"
+              onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }}
+              alt="ފަހި ހިސާބު — Fahi Hisaabu"
+              width={220}
+              height={74}
+              fetchPriority="high"
+              decoding="async"
+              className="block h-[66px] w-[196px] max-w-full object-cover object-center sm:h-[74px] sm:w-[220px]"
             />
-            <div className="leading-tight">
-              <div lang="dv" dir="rtl" className="text-[21px] font-black text-[#082b61]">ފަހި ހިސާބު</div>
-              <div className="mt-1 text-[9px] font-extrabold text-[#1595e7]">The Maldives Maths Learning Hub</div>
-            </div>
           </Link>
 
           <nav className="ml-auto hidden items-center gap-7 lg:flex">
