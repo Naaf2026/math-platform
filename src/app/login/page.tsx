@@ -121,7 +121,7 @@ export default function LoginPage() {
       <div className="mx-auto flex min-h-[calc(100dvh-40px)] max-w-[490px] flex-col justify-center sm:min-h-[calc(100dvh-80px)]">
         <Link href="/" className="mb-3 inline-flex w-fit items-center gap-1.5 text-xs font-bold text-[#63758b] hover:text-[#157bb5]"><ArrowLeft size={15}/> Back to home</Link>
         <div className="mb-4 flex justify-center sm:mb-6">
-          <img src="/fahi-hisaabu-logo-optimized.webp" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }} alt="Fahi Hisaabu" className="h-[76px] w-auto max-w-[270px] object-contain sm:h-[100px] sm:max-w-[340px]" />
+          <img src="/fahi-hisaabu-logo-transparent.webp" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }} alt="Fahi Hisaabu" className="h-[76px] w-auto max-w-[270px] object-contain sm:h-[100px] sm:max-w-[340px]" />
         </div>
         <section className="rounded-[30px] border-[2.5px] border-[#263449] bg-white px-5 py-6 shadow-[0_5px_0_#263449] sm:rounded-[38px] sm:px-9 sm:py-9">
           <div className="text-center">
