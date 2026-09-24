@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { ArrowLeft, Eye, EyeOff, Loader2, LockKeyhole, Mail, UserRound } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getUserRole, roleHome, type AppRole } from "@/app/auth/role-router";
 
@@ -117,53 +117,43 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#edf8ff] text-[#082b61]">
-      <div className="mx-auto grid min-h-screen max-w-[1500px] lg:grid-cols-[1.04fr_.96fr]">
-        <aside className="relative hidden min-h-screen overflow-hidden bg-gradient-to-br from-[#d9f3ff] via-[#e8faff] to-[#e2fff2] lg:flex lg:flex-col lg:justify-between">
-          <div className="absolute -left-28 -top-24 h-80 w-80 rounded-full bg-[#91ddff]/35 blur-3xl" />
-          <div className="absolute -bottom-28 -right-20 h-96 w-96 rounded-full bg-[#6bdfb3]/30 blur-3xl" />
-          <div className="relative z-10 px-12 pt-12 xl:px-16">
-            <Link href="/" className="inline-flex items-center gap-2 text-sm font-extrabold text-[#1765a0]"><ArrowLeft size={17}/> Back to home</Link>
-            <img src="/fahi-hisaabu-logo.png" alt="Fahi Hisaabu" className="mt-10 h-24 w-auto max-w-[390px] object-contain object-left" />
-            <div className="mt-14 inline-flex rounded-full bg-white/80 px-4 py-2 text-xs font-black uppercase tracking-[.16em] text-[#1387bd] shadow-sm">The Maldives Maths Learning Hub</div>
-            <h1 className="mt-7 max-w-xl text-5xl font-black leading-[1.12] tracking-tight xl:text-6xl">Learn Maths.<br/><span className="text-[#f68b21]">Play Smart.</span><br/><span className="text-[#0b9b8b]">Grow Confident.</span></h1>
-            <p className="mt-7 max-w-lg text-lg font-semibold leading-8 text-[#436b8b]">A fun place for every Maldivian child to practise, explore and build confidence in maths.</p>
-          </div>
-          <div className="relative mt-8 flex flex-1 items-end justify-center px-6 pb-8">
-            <img src="/homepage-artwork/hero-illustration.webp" alt="Children enjoying maths learning" className="max-h-[370px] w-full rounded-[30px] object-cover object-center shadow-[0_18px_55px_rgba(16,88,143,.16)]" />
-          </div>
-          <p className="relative pb-8 text-center text-xs font-bold tracking-widest text-[#5683a1]">LEARN • PRACTISE • PLAY • ACHIEVE</p>
-        </aside>
-
-        <div className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-8 lg:px-10 xl:px-16">
-          <section className="w-full max-w-[490px] rounded-[28px] border border-[#dcebf6] bg-white p-6 shadow-[0_20px_70px_rgba(23,91,144,.10)] sm:p-10">
-            <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-[#63829d] hover:text-[#168ff0] lg:hidden"><ArrowLeft size={17}/> Back to home</Link>
-            <img src="/fahi-hisaabu-logo.png" alt="Fahi Hisaabu" className="mx-auto mt-4 h-[76px] max-w-[260px] object-contain lg:hidden" />
-            <div className="mt-5 text-center lg:mt-0">
-              <span className="inline-flex rounded-full bg-[#e8f7ff] px-4 py-1.5 text-xs font-black uppercase tracking-widest text-[#1388c9]">Welcome to Fahi Hisaabu</span>
-              <h2 className="mt-5 text-3xl font-black tracking-tight sm:text-4xl">Welcome back!</h2>
-              <p className="mt-3 text-sm font-semibold leading-6 text-[#66839a]">Sign in and continue your learning journey.</p>
-            </div>
-
-            <div className="mt-8 grid grid-cols-2 gap-1 rounded-2xl bg-[#eef7ff] p-1.5">
-              <button type="button" onClick={() => { setMode("parent"); setIdentifier(""); setMessage(""); }} className={`rounded-xl px-2 py-3 text-sm font-black transition ${mode === "parent" ? "bg-white text-[#0c65aa] shadow-sm" : "text-[#6c89a0]"}`}>Parent / Staff</button>
-              <button type="button" onClick={() => { setMode("learner"); setIdentifier(""); setMessage(""); }} className={`rounded-xl px-2 py-3 text-sm font-black transition ${mode === "learner" ? "bg-white text-[#0c65aa] shadow-sm" : "text-[#6c89a0]"}`}>Learner</button>
-            </div>
-
-            {mode === "parent" && <button type="button" onClick={continueWithGoogle} disabled={googleLoading} className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl border-2 border-[#dceaf4] bg-white px-4 py-3.5 font-extrabold text-[#163f65] transition hover:bg-[#f4faff] disabled:opacity-60">{googleLoading ? <Loader2 className="animate-spin" size={19}/> : <span className="text-xl font-black text-[#4285f4]">G</span>}{googleLoading ? "Connecting…" : "Continue with Google"}</button>}
-            {mode === "parent" && <div className="my-5 flex items-center gap-3"><div className="h-px flex-1 bg-[#e2edf5]"/><span className="text-xs font-bold text-[#89a0b2]">or sign in with email</span><div className="h-px flex-1 bg-[#e2edf5]"/></div>}
-
-            <form onSubmit={submit} className={mode === "learner" ? "mt-7 space-y-5" : "space-y-5"}>
-              <label className="block"><span className="mb-2 block text-sm font-extrabold text-[#153b64]">{mode === "parent" ? "Email address" : "Learner username"}</span><span className="relative block"><UserRound size={19} className="absolute left-4 top-4 text-[#7596b0]"/><input type={mode === "parent" ? "email" : "text"} autoComplete={mode === "parent" ? "email" : "username"} value={identifier} onChange={e => setIdentifier(e.target.value)} required placeholder={mode === "parent" ? "Enter your email address" : "Your learner username"} className="w-full rounded-xl border-2 border-[#dbe9f4] bg-[#fbfdff] py-3.5 pl-12 pr-4 text-base font-semibold outline-none transition focus:border-[#168ff0] focus:ring-4 focus:ring-[#168ff0]/10"/></span></label>
-              <label className="block"><span className="mb-2 block text-sm font-extrabold text-[#153b64]">Password</span><span className="relative block"><LockKeyhole size={19} className="absolute left-4 top-4 text-[#7596b0]"/><input type={showPassword ? "text" : "password"} autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} placeholder="Enter your password" className="w-full rounded-xl border-2 border-[#dbe9f4] bg-[#fbfdff] py-3.5 pl-12 pr-12 text-base font-semibold outline-none transition focus:border-[#168ff0] focus:ring-4 focus:ring-[#168ff0]/10"/><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3.5 text-[#7896ae]">{showPassword ? <EyeOff size={21}/> : <Eye size={21}/>}</button></span></label>
-              {mode === "parent" && <div className="text-right"><Link href="/forgot-password" className="text-sm font-extrabold text-[#168bd1] hover:underline">Forgot password?</Link></div>}
-              {message && <p role="alert" className="rounded-xl bg-amber-50 p-3 text-sm font-semibold leading-6 text-amber-800">{message}</p>}
-              <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#168ff0] to-[#0c73d6] px-5 py-4 text-base font-black text-white shadow-lg shadow-blue-100 transition hover:brightness-105 disabled:opacity-60">{loading && <Loader2 className="animate-spin" size={19}/ >}{loading ? "Signing in…" : mode === "learner" ? "Let's Learn!" : "Sign in"}</button>
-            </form>
-            {mode === "parent" ? <p className="mt-7 text-center text-sm font-semibold text-[#718da3]">New parent? <Link href="/register" className="font-black text-[#0c86cb] hover:underline">Create a parent account</Link></p> : <p className="mt-7 text-center text-sm font-semibold leading-6 text-[#718da3]">Your parent provides your learner username and password.</p>}
-            <div className="mt-8 flex items-center justify-center gap-2 border-t border-[#edf3f8] pt-5 text-xs font-semibold text-[#90a7b8]"><Mail size={14}/> Secure account access</div>
-          </section>
+    <main className="min-h-[100dvh] bg-gradient-to-b from-[#fffdf3] via-[#fffefb] to-[#eef8ff] px-4 py-5 text-[#202c42] sm:px-6 sm:py-10">
+      <div className="mx-auto flex min-h-[calc(100dvh-40px)] max-w-[490px] flex-col justify-center sm:min-h-[calc(100dvh-80px)]">
+        <Link href="/" className="mb-3 inline-flex w-fit items-center gap-1.5 text-xs font-bold text-[#63758b] hover:text-[#157bb5]"><ArrowLeft size={15}/> Back to home</Link>
+        <div className="mb-4 flex justify-center sm:mb-6">
+          <img src="/fahi-hisaabu-logo.png" alt="Fahi Hisaabu" className="h-[76px] w-auto max-w-[270px] object-contain sm:h-[100px] sm:max-w-[340px]" />
         </div>
+        <section className="rounded-[30px] border-[2.5px] border-[#263449] bg-white px-5 py-6 shadow-[0_5px_0_#263449] sm:rounded-[38px] sm:px-9 sm:py-9">
+          <div className="text-center">
+            <h1 className="text-[25px] font-black tracking-tight sm:text-[31px]">{mode === "parent" ? "Welcome, parents!" : "Welcome, learners!"}</h1>
+            <p className="mt-2 text-sm leading-5 text-[#718096] sm:text-base">{mode === "parent" ? "Sign in to your account to continue." : "Ready for another fun maths adventure?"}</p>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-1 rounded-full bg-[#eef5fb] p-1">
+            <button type="button" onClick={() => { setMode("parent"); setIdentifier(""); setMessage(""); }} className={`rounded-full px-2 py-2.5 text-[13px] font-extrabold transition ${mode === "parent" ? "bg-[#ffdc62] text-[#253047] shadow-sm" : "text-[#6a7d92]"}`}>Parent / Staff</button>
+            <button type="button" onClick={() => { setMode("learner"); setIdentifier(""); setMessage(""); }} className={`rounded-full px-2 py-2.5 text-[13px] font-extrabold transition ${mode === "learner" ? "bg-[#ffdc62] text-[#253047] shadow-sm" : "text-[#6a7d92]"}`}>Learner</button>
+          </div>
+
+          {mode === "parent" && <>
+            <button type="button" onClick={continueWithGoogle} disabled={googleLoading} className="mt-5 flex w-full items-center justify-center gap-3 rounded-full border-[2px] border-[#263449] bg-white px-4 py-3 text-sm font-extrabold shadow-[0_4px_0_#263449] transition active:translate-y-1 active:shadow-none disabled:opacity-60 sm:text-base">
+              {googleLoading ? <Loader2 className="animate-spin" size={19}/> : <span className="text-xl font-black text-[#4285f4]">G</span>}{googleLoading ? "Connecting…" : "Continue with Google"}
+            </button>
+            <p className="mt-4 text-center text-[13px] text-[#718096]">Don&apos;t have an account? <Link href="/register" className="font-bold text-[#176eb2] underline underline-offset-2">Sign up</Link></p>
+            <div className="my-5 flex items-center gap-2"><span className="h-px flex-1 bg-[#e0e8f0]"/><span className="text-xs text-[#74859a]">Or use email and password</span><span className="h-px flex-1 bg-[#e0e8f0]"/></div>
+          </>}
+
+          <form onSubmit={submit} className={mode === "learner" ? "mt-6 space-y-4" : "space-y-4"}>
+            <label className="block"><span className="mb-1.5 block text-sm font-semibold">{mode === "parent" ? "Email" : "Learner username"}</span><input type={mode === "parent" ? "email" : "text"} autoComplete={mode === "parent" ? "email" : "username"} value={identifier} onChange={e => setIdentifier(e.target.value)} required placeholder={mode === "parent" ? "name@example.com" : "Your learner username"} className="w-full rounded-full border-[1.5px] border-[#344159] bg-[#f6f9ff] px-5 py-3 text-base outline-none focus:border-[#168ff0] focus:ring-2 focus:ring-[#168ff0]/15"/></label>
+            <div>
+              <div className="mb-1.5 flex items-center justify-between gap-2"><label htmlFor="login-password" className="text-sm font-semibold">Password</label>{mode === "parent" && <Link href="/forgot-password" className="text-xs font-semibold text-[#176eb2] underline underline-offset-2">Forgot password?</Link>}</div>
+              <div className="relative"><input id="login-password" type={showPassword ? "text" : "password"} autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} placeholder="Enter your password" className="w-full rounded-full border-[1.5px] border-[#dce5f0] bg-[#fbfcff] px-5 py-3 pr-12 text-base outline-none focus:border-[#168ff0] focus:ring-2 focus:ring-[#168ff0]/15"/><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3 text-[#56677e]">{showPassword ? <EyeOff size={21}/> : <Eye size={21}/>}</button></div>
+            </div>
+            {message && <p role="alert" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{message}</p>}
+            <button type="submit" disabled={loading} className="mt-2 flex w-full items-center justify-center gap-2 rounded-full border-[2px] border-[#263449] bg-[#ffda61] px-4 py-3 text-base font-black shadow-[0_5px_0_#263449] transition active:translate-y-1 active:shadow-none disabled:opacity-60">{loading && <Loader2 className="animate-spin" size={18}/>}{loading ? "Signing in…" : mode === "learner" ? "Let's Learn!" : "Sign in"}</button>
+          </form>
+          {mode === "learner" && <p className="mt-5 text-center text-xs leading-5 text-[#718096]">Your parent provides your learner username and password.</p>}
+        </section>
+        <p className="mx-auto mt-5 max-w-[380px] text-center text-xs leading-5 text-[#74859a]">Learn Maths. <span className="text-[#e29c18]">Play Smart.</span> <span className="text-[#159c89]">Grow Confident.</span></p>
       </div>
     </main>
   );
