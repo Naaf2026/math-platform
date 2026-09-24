@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Brain, Gift, Menu, Search, Sparkles, Star, Trophy, Users, X } from "lucide-react";
+import { ArrowRight, Brain, Gift, Menu, Sparkles, Star, Trophy, Users, X } from "lucide-react";
 import { useState } from "react";
 import LearnerLoginModal from "@/components/learner-login-modal";
 
@@ -51,7 +51,6 @@ export default function HomePage() {
           </nav>
 
           <div className="ml-auto flex items-center gap-2 lg:ml-1">
-            <Link href="/login" aria-label="Search" className="hidden h-11 w-11 place-items-center rounded-full border border-[#dbeaf5] text-[#0c548d] sm:grid"><Search size={20}/></Link>
             <button type="button" onClick={() => setLearnerLoginOpen(true)} className="hidden rounded-xl border-2 border-[#168ff0] px-5 py-2.5 text-sm font-black text-[#07528e] sm:inline-flex">Student Login</button>
             <Link href="/login" className="hidden rounded-xl border-2 border-[#159c89] px-3 py-2.5 text-sm font-black text-[#087966] lg:inline-flex xl:px-4">Parent Login</Link>
             <Link href="/login" className="hidden rounded-xl bg-[#ff6b22] px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-200 sm:inline-flex">Start Learning</Link>
