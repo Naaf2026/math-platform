@@ -27,10 +27,15 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 border-b border-[#dcecf8] bg-white/95 shadow-sm backdrop-blur">
         <div className="mx-auto flex h-[74px] max-w-[1440px] items-center gap-6 px-5 lg:px-8">
           <Link href="/" className="flex min-w-fit items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#082b61] text-2xl shadow-md">📖</div>
-            <div className="leading-none">
-              <div className="text-[21px] font-black tracking-wide text-[#082b61]">FAHI VISSNUN</div>
-              <div className="mt-1 text-[9px] font-black uppercase tracking-[.11em] text-[#1595e7]">Maths for a brighter tomorrow</div>
+            <img
+              src="/fahi-hisaabu-logo.png"
+              alt="ފަހި ހިސާބު — The Maldives Maths Learning Hub"
+              className="hidden h-14 w-auto max-w-[230px] object-contain sm:max-w-[290px]"
+              onLoad={(event) => { event.currentTarget.classList.remove("hidden"); event.currentTarget.nextElementSibling?.classList.add("hidden"); }}
+            />
+            <div className="leading-tight">
+              <div lang="dv" dir="rtl" className="text-[21px] font-black text-[#082b61]">ފަހި ހިސާބު</div>
+              <div className="mt-1 text-[9px] font-extrabold text-[#1595e7]">The Maldives Maths Learning Hub</div>
             </div>
           </Link>
 
@@ -152,7 +157,7 @@ export default function HomePage() {
 
       <footer className="bg-[#082b61] px-5 py-7 text-white">
         <div className="mx-auto flex max-w-[1440px] flex-col gap-2 text-sm font-bold sm:flex-row sm:items-center sm:justify-between">
-          <span>© 2026 FAHI VISSNUN · Mathematics Learning Platform</span>
+          <span>© 2026 Fahi Hisaabu · The Maldives Maths Learning Hub</span>
           <span className="text-[#8ed8ff]">Learn • Practise • Play • Achieve</span>
         </div>
       </footer>
