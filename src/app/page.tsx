@@ -72,6 +72,15 @@ export default function HomePage() {
       </section>
 
       <section className="bg-white">
+        <div className="mx-auto max-w-[1500px] px-5 pt-6 sm:px-8 lg:px-12">
+          <div className="rounded-[22px] border border-[#cfe8f8] bg-gradient-to-r from-[#eef9ff] via-white to-[#fff7e8] px-5 py-5 text-center shadow-sm sm:px-8">
+            <h2 className="text-xl font-black leading-tight text-[#082b61] sm:text-2xl">Everything Your Child Needs to Build Maths Confidence</h2>
+            <p className="mx-auto mt-3 max-w-[1100px] text-[14px] font-black leading-7 text-[#1269a7] sm:text-base">
+              <span className="text-[#ff6b22]">10,000+ Maths Questions</span> • Grades 1–5 • Visual Maths • Daily Challenges • Revision • Educational Brain Games • Rewards &amp; Progress Tracking
+            </p>
+            <p className="mx-auto mt-2 max-w-[900px] text-sm font-bold leading-6 text-[#557794]">Curriculum-focused maths practice made more engaging through visual learning, challenges and educational games — all in one place.</p>
+          </div>
+        </div>
         <div className="mx-auto max-w-[1500px] px-5 pb-4 pt-7 sm:px-8 lg:px-12">
           <div className="grid items-center gap-7 lg:grid-cols-[.98fr_1.02fr]">
             <div>
