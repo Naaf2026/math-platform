@@ -63,7 +63,7 @@ export default function LearnerLoginModal({ open, onClose }: { open: boolean; on
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#071b3a]/65 p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget && !loading) onClose(); }}>
       <section role="dialog" aria-modal="true" aria-labelledby="learner-login-title" className="relative w-full max-w-[420px] rounded-[28px] bg-white p-6 text-[#082b61] shadow-2xl sm:p-8">
         <button type="button" aria-label="Close learner login" onClick={onClose} disabled={loading} className="absolute right-4 top-4 rounded-full bg-[#edf7ff] p-2 text-[#164473]"><X size={20}/></button>
-        <img src="/fahi-hisaabu-logo.png" alt="Fahi Hisaabu" className="mx-auto h-20 max-w-[230px] object-contain" />
+        <img src="/fahi-hisaabu-logo-optimized.webp" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }} alt="Fahi Hisaabu" className="mx-auto h-20 max-w-[230px] object-contain" />
         <h2 id="learner-login-title" className="mt-3 text-center text-2xl font-black">Learner Login</h2>
         <p className="mt-2 text-center text-sm font-semibold text-[#557794]">Welcome back! Ready to learn maths?</p>
         <form onSubmit={submit} className="mt-7 space-y-4">
