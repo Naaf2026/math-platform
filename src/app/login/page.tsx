@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { paymentSections, privacySections } from "@/lib/legal-policy-content";
 import { getUserRole, roleHome, type AppRole } from "@/app/auth/role-router";
 
 const requestedRoles: AppRole[] = ["student", "teacher", "parent", "guardian"];
@@ -18,6 +19,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [policyOpen, setPolicyOpen] = useState<"payment" | "privacy" | null>(null);
 
   async function finishLogin(supabase: ReturnType<typeof createClient>, userId: string) {
     if (!supabase) return;
@@ -153,7 +155,30 @@ export default function LoginPage() {
           </form>
           {mode === "learner" && <p className="mt-5 text-center text-xs leading-5 text-[#718096]">Your parent provides your learner username and password.</p>}
         </section>
-        <p className="mx-auto mt-5 max-w-[380px] text-center text-xs leading-5 text-[#74859a]">Learn Maths. <span className="text-[#e29c18]">Play Smart.</span> <span className="text-[#159c89]">Grow Confident.</span></p>
+        <p className="mx-auto mt-6 max-w-[410px] text-center text-sm leading-6 text-[#718096]">
+          By continuing, you agree to our{" "}
+          <button type="button" onClick={() => setPolicyOpen("payment")} className="font-semibold text-[#176eb2] underline underline-offset-2">Terms of Service (Payment Policy)</button>{" "}
+          and{" "}
+          <button type="button" onClick={() => setPolicyOpen("privacy")} className="font-semibold text-[#176eb2] underline underline-offset-2">Privacy Policy</button>.
+        </p>
+        <p className="mx-auto mt-4 max-w-[380px] text-center text-xs leading-5 text-[#74859a]">Learn Maths. <span className="text-[#e29c18]">Play Smart.</span> <span className="text-[#159c89]">Grow Confident.</span></p>
+      </div>
+      {policyOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#17263b]/65 p-3 backdrop-blur-sm sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) setPolicyOpen(null); }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="policy-modal-title" className="flex max-h-[88dvh] w-full max-w-[650px] flex-col overflow-hidden rounded-[26px] bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#e4edf5] px-5 py-4 sm:px-7">
+              <div><p className="text-xs font-bold uppercase tracking-widest text-[#168bd1]">Fahi Hisaabu</p><h2 id="policy-modal-title" className="mt-1 text-xl font-black">{policyOpen === "payment" ? "Payment Policy" : "Privacy Policy"}</h2></div>
+              <button type="button" onClick={() => setPolicyOpen(null)} aria-label="Close policy" className="rounded-full bg-[#eef5fb] p-2 text-[#263449]"><X size={22}/></button>
+            </div>
+            <div className="space-y-5 overflow-y-auto overscroll-contain px-5 py-5 text-sm leading-7 sm:px-7">
+              {policyOpen === "payment" && <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">This is the existing Payment Policy, covering delivery, refunds and cancellation. It is not a separate, comprehensive Terms of Service document.</p>}
+              {(policyOpen === "payment" ? paymentSections : privacySections).map(([heading, body]) => <section key={heading}><h3 className="text-base font-black text-[#083d78]">{heading}</h3><p className="mt-1 text-[#526e88]">{body}</p></section>)}
+              <p className="rounded-xl bg-[#f3f8fc] p-3 text-xs text-[#637d95]">These policies are pre-launch drafts. Official contact details and final legal terms must be confirmed before public launch.</p>
+            </div>
+            <div className="border-t border-[#e4edf5] p-4 sm:px-7"><button type="button" onClick={() => setPolicyOpen(null)} className="w-full rounded-full bg-[#ff6b22] px-4 py-3 font-black text-white">Close</button></div>
+          </section>
+        </div>
+      )}
       </div>
     </main>
   );
