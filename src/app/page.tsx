@@ -42,7 +42,7 @@ export default function HomePage() {
             />
           </Link>
 
-          <nav className="ml-auto hidden items-center gap-7 lg:flex">
+          <nav className="ml-auto hidden items-center gap-4 xl:gap-6 lg:flex">
             {nav.map(([label, href], i) => (
               <Link key={label} href={href} className={`relative py-7 text-sm font-extrabold transition hover:text-[#118ee5] ${i === 0 ? "text-[#118ee5]" : "text-[#164473]"}`}>
                 {label}{i === 0 && <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-full bg-[#168ff0]" />}
@@ -50,9 +50,10 @@ export default function HomePage() {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-2 lg:ml-3">
+          <div className="ml-auto flex items-center gap-2 lg:ml-1">
             <Link href="/login" aria-label="Search" className="hidden h-11 w-11 place-items-center rounded-full border border-[#dbeaf5] text-[#0c548d] sm:grid"><Search size={20}/></Link>
             <button type="button" onClick={() => setLearnerLoginOpen(true)} className="hidden rounded-xl border-2 border-[#168ff0] px-5 py-2.5 text-sm font-black text-[#07528e] sm:inline-flex">Student Login</button>
+            <Link href="/login" className="hidden rounded-xl border-2 border-[#159c89] px-3 py-2.5 text-sm font-black text-[#087966] lg:inline-flex xl:px-4">Parent Login</Link>
             <Link href="/login" className="hidden rounded-xl bg-[#ff6b22] px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-200 sm:inline-flex">Start Learning</Link>
             <button onClick={() => setMenuOpen(!menuOpen)} className="grid h-11 w-11 place-items-center rounded-xl bg-[#edf7ff] lg:hidden" aria-label="Menu">{menuOpen ? <X/> : <Menu/>}</button>
           </div>
@@ -62,6 +63,7 @@ export default function HomePage() {
             <div className="grid gap-2">
               {nav.map(([label, href]) => <Link onClick={() => setMenuOpen(false)} key={label} href={href} className="rounded-xl px-4 py-3 font-extrabold hover:bg-[#edf7ff]">{label}</Link>)}
               <button type="button" onClick={() => { setMenuOpen(false); setLearnerLoginOpen(true); }} className="rounded-xl border-2 border-[#168ff0] px-4 py-3 text-center font-black text-[#07528e]">Student Login</button>
+              <Link href="/login" onClick={() => setMenuOpen(false)} className="rounded-xl border-2 border-[#159c89] px-4 py-3 text-center font-black text-[#087966]">Parent Login</Link>
               <Link href="/login" className="mt-2 rounded-xl bg-[#ff6b22] px-4 py-3 text-center font-black text-white">Start Learning</Link>
             </div>
           </div>
