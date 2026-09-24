@@ -113,7 +113,7 @@ export default function HomePage() {
 
       <section className="relative z-10 mx-auto mt-0 max-w-[1500px] rounded-t-[34px] bg-white px-5 py-7 shadow-[0_-8px_35px_rgba(22,105,160,.08)] sm:px-8 lg:px-12">
         <div className="mb-5">
-          <h2 className="text-2xl font-black text-[#082b61] sm:text-3xl">Jump into an Activity</h2>
+          <h2 className="text-2xl font-black text-[#082b61] sm:text-3xl">Explore Fun Ways to Learn Maths</h2>
           <p className="mt-2 text-base font-bold text-[#477092]">Different ways to learn, practise and have fun with maths!</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
