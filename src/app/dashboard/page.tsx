@@ -159,7 +159,7 @@ export default function DashboardPage() {
   </Link>
 
   <Link href="/peer-challenge" className="order-5 group relative h-auto min-h-[500px] overflow-hidden rounded-[32px] border-2 border-[#ffab8d] bg-[#fff0e9] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl xl:col-start-3 xl:row-start-1 md:h-[500px] md:min-h-0">
-    <div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-[#ff855f]"><img src="/dashboard-assets/dashboard-peer.svg" alt="Buddy Challenge" className="block h-full w-full object-cover" /></div>
+    <div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-[#ff855f]"><img src="/dashboard-assets/dashboard-buddy-challenge.webp" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/dashboard-assets/dashboard-peer.svg"; }} alt="Two young learners enjoying a friendly maths challenge" className="block h-full w-full object-cover object-center" /></div>
     <div className="absolute left-8 right-8 top-[232px] bottom-0 rounded-t-[70px] bg-[#fff3ef] px-2 pt-7 sm:pt-8">
       <h2 className="text-[34px] font-black leading-none sm:text-[36px]">Buddy Challenge</h2>
       <p className="mt-4 text-[18px] font-bold text-[#55708b]">Challenge a friend</p>
