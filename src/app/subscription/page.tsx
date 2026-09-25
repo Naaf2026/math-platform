@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Check, Clock3, Crown, Menu, Sparkles, X, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import LearnerLoginModal from "@/components/learner-login-modal";
@@ -42,6 +43,7 @@ function daysLeft(value: string | null) {
 }
 
 export default function SubscriptionPage() {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [learnerLoginOpen, setLearnerLoginOpen] = useState(false);
   const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
@@ -106,9 +108,27 @@ export default function SubscriptionPage() {
     setMessage("");
     const supabase = createClient();
     if (!supabase) { setMessage("Please log in first."); setStarting(false); return; }
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      setStarting(false);
+      router.push("/login");
+      return;
+    }
     const { error } = await supabase.rpc("start_premium_trial");
-    if (error) setMessage(error.message.includes("already") ? "Your 3-day trial has already been used." : error.message);
-    else { setMessage("Your 3-day Premium trial is now active!"); await load(); }
+    if (error) {
+      if (/not authenticated|jwt|unauthorized|auth session missing/i.test(error.message)) {
+        router.push("/login");
+        return;
+      }
+      setMessage(/already/i.test(error.message) ? "Your 3-day trial has already been used." : error.message);
+    } else {
+      setMessage("Your 3-day Premium trial is now active!");
+      await load();
+      const { data } = await supabase.rpc("get_my_subscription_status");
+      const row = Array.isArray(data) ? data[0] : data;
+      setSubscriptionStatus(row?.subscription_status ?? null);
+      setSubscriptionTrialEnds(row?.trial_ends_at ?? null);
+    }
     setStarting(false);
   }
 
