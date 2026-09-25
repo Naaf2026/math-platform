@@ -20,12 +20,9 @@ export default async function ParentLayout({ children }: { children: React.React
     redirect(role === "admin" ? "/admin" : role === "teacher" ? "/teacher" : "/dashboard");
   }
 
-  const { data: parentProfile } = await supabase.from("profiles").select("mobile_phone").eq("id", user.id).single();
-  const needsPhone = !/^\+[1-9]\d{7,14}$/.test(parentProfile?.mobile_phone || "");
-
   return (
     <>
-      <nav className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 px-4 py-3 shadow-sm backdrop-blur sm:px-6">
+      <nav className="sticky top-0 z-40 hidden border-b border-slate-200/80 bg-white/90 px-4 py-3 shadow-sm backdrop-blur lg:block lg:px-6">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
           <Link href="/parent" className="font-black tracking-tight text-[#071b3a]">Family Learning Centre</Link>
           <div className="flex flex-wrap items-center gap-2 text-sm font-black">
@@ -39,7 +36,6 @@ export default async function ParentLayout({ children }: { children: React.React
           </div>
         </div>
       </nav>
-      {needsPhone && <div className="border-b border-amber-200 bg-amber-50 px-5 py-3 text-center text-sm font-bold text-amber-900">Add your mobile phone number before registering a learner. <Link href="/parent/profile" className="ml-1 underline underline-offset-2">Complete Parent Profile</Link></div>}
       {children}
       <div className="mx-auto max-w-6xl px-5 pt-5 sm:px-8"><ParentLearningAlerts /></div>
     </>
