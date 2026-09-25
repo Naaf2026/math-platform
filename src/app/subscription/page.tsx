@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Check, Clock3, Crown, Menu, Sparkles, X, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import LearnerLoginModal from "@/components/learner-login-modal";
@@ -44,6 +44,7 @@ function daysLeft(value: string | null) {
 
 export default function SubscriptionPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [menuOpen, setMenuOpen] = useState(false);
   const [learnerLoginOpen, setLearnerLoginOpen] = useState(false);
   const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
@@ -52,6 +53,7 @@ export default function SubscriptionPage() {
   const [message, setMessage] = useState("");
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [subscriptionTrialEnds, setSubscriptionTrialEnds] = useState<string | null>(null);
+  const [trialStartHandled, setTrialStartHandled] = useState(false);
   const [showUpgradeConfirm, setShowUpgradeConfirm] = useState(false);
   const [upgradeRequesting, setUpgradeRequesting] = useState(false);
   const [upgradeRequested, setUpgradeRequested] = useState(false);
@@ -74,6 +76,15 @@ export default function SubscriptionPage() {
       setSubscriptionTrialEnds(row?.trial_ends_at ?? null);
     });
   }, []);
+
+  useEffect(() => {
+    if (searchParams.get("startTrial") !== "1" || trialStartHandled) return;
+    setTrialStartHandled(true);
+    router.replace("/subscription");
+    void startTrial();
+  // Only run once when returning from login.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, trialStartHandled]);
 
   const trialEnds = subscriptionTrialEnds ?? entitlements.reduce<string | null>((latest, item) => {
     if (!item.trial_ends_at) return latest;
@@ -107,11 +118,11 @@ export default function SubscriptionPage() {
     setStarting(true);
     setMessage("");
     const supabase = createClient();
-    if (!supabase) { setMessage("Please log in first."); setStarting(false); return; }
+    if (!supabase) { setMessage("Subscription service is temporarily unavailable."); setStarting(false); return; }
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       setStarting(false);
-      router.push("/login");
+      router.push("/login?next=%2Fsubscription%3FstartTrial%3D1");
       return;
     }
     const { error } = await supabase.rpc("start_premium_trial");
@@ -216,6 +227,7 @@ export default function SubscriptionPage() {
               {trialing ? `${remaining} day${remaining === 1 ? "" : "s"} left in your Premium Trial` : active ? "Premium Active" : starting ? "Starting trial…" : "Start 3-Day Premium Trial"}
             </button>
             {loading && <p className="mt-3 text-center text-sm font-semibold text-[#6685a4]">Checking your subscription…</p>}
+            {trialing && trialEnds && <p className="mt-3 text-center text-sm font-bold text-[#197fe9]">Premium Trial Active · Expires {new Date(trialEnds).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>}
           </article>
 
           <article className="relative overflow-hidden rounded-[30px] border-2 border-[#ffca3a] bg-white p-6 shadow-xl sm:p-8">
