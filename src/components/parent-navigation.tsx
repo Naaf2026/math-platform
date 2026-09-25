@@ -8,10 +8,10 @@ import LogoutButton from "@/components/logout-button";
 
 const links = [
   { href: "/parent", label: "Home", icon: Home },
+  { href: "/parent/notifications", label: "Alerts", icon: Bell },
   { href: "/parent/learners", label: "Learners", icon: Users },
   { href: "/parent/history", label: "Learning History", icon: History },
   { href: "/parent/goals", label: "Goals", icon: Target },
-  { href: "/parent/notifications", label: "Alerts", icon: Bell },
   { href: "/parent/profile", label: "Profile", icon: UserRound },
   { href: "/parent/upgrade", label: "Upgrade", icon: Crown },
 ];
@@ -23,12 +23,15 @@ export default function ParentNavigation() {
 
   return <div className="relative z-[90] lg:hidden">
     <header className="flex h-[96px] items-center justify-between gap-3 border-b border-[#dcecf8] bg-white px-4 text-[#073b73] shadow-sm sm:h-[112px]">
-      <Link href="/parent" aria-label="Fahi Hisaabu parent dashboard" className="min-w-0">
-        <img src="/fahi-hisaabu-logo-optimized.webp" onError={event => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }} alt="Fahi Hisaabu" className="h-[72px] w-auto max-w-[min(76vw,310px)] object-contain object-left sm:h-[88px] sm:max-w-[430px]" />
+      <Link href="/parent" aria-label="Fahi Hisaabu parent dashboard" className="min-w-0 flex-1">
+        <img src="/fahi-hisaabu-logo-optimized.webp" onError={event => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }} alt="Fahi Hisaabu" className="h-[72px] w-auto max-w-full object-contain object-left sm:h-[88px]" />
       </Link>
-      <button type="button" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="parent-mobile-menu" onClick={() => setOpen(value => !value)} className="grid h-11 w-11 shrink-0 place-items-center rounded-xl hover:bg-[#eaf5ff]">
-        {open ? <X size={30} /> : <Menu size={30} />}
-      </button>
+      <div className="flex shrink-0 items-center gap-1">
+        <Link href="/parent/notifications" aria-label="Parent alerts" aria-current={pathname === "/parent/notifications" ? "page" : undefined} className={`grid h-11 w-11 place-items-center rounded-xl ${pathname === "/parent/notifications" ? "bg-[#dff1ff] text-[#0875dc]" : "hover:bg-[#eaf5ff]"}`}><Bell size={25} aria-hidden="true" /></Link>
+        <button type="button" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="parent-mobile-menu" onClick={() => setOpen(value => !value)} className="grid h-11 w-11 place-items-center rounded-xl hover:bg-[#eaf5ff]">
+          {open ? <X size={30} /> : <Menu size={30} />}
+        </button>
+      </div>
     </header>
     {open && <>
       <button type="button" aria-label="Close menu" onClick={() => setOpen(false)} className="fixed inset-0 z-[91] bg-[#072d54]/40" />
