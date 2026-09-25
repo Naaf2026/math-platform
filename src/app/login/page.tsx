@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, Loader2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { paymentSections, privacySections } from "@/lib/legal-policy-content";
@@ -12,6 +13,9 @@ const learnerAuthDomain = "learner.fahi-vissnun.local";
 type LoginMode = "parent" | "learner";
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next");
+  const returnToSubscription = next === "/subscription?startTrial=1";
   const [mode, setMode] = useState<LoginMode>("parent");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -57,7 +61,7 @@ export default function LoginPage() {
         : "This account is not an admin, teacher, or parent account. Please use the learner login if you are signing in as a learner.");
     }
 
-    window.location.href = roleHome(role);
+    window.location.href = returnToSubscription && (role === "parent" || role === "guardian") ? next! : roleHome(role);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -109,7 +113,7 @@ export default function LoginPage() {
     setGoogleLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}/auth/callback${returnToSubscription ? "?next=%2Fsubscription%3FstartTrial%3D1" : ""}` },
     });
 
     if (error) {
