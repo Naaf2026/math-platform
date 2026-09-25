@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import ParentLearningAlerts from "@/components/parent-learning-alerts";
 import { createClient } from "@/lib/supabase/server";
 import { getUserRole } from "@/app/auth/role-router";
 
@@ -17,10 +16,5 @@ export default async function ParentLayout({ children }: { children: React.React
     redirect(role === "admin" ? "/admin" : role === "teacher" ? "/teacher" : "/dashboard");
   }
 
-  return (
-    <>
-      {children}
-      <div className="mx-auto max-w-6xl px-5 pt-5 sm:px-8"><ParentLearningAlerts /></div>
-    </>
-  );
+  return children;
 }
