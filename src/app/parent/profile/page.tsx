@@ -11,7 +11,8 @@ export default function ParentProfilePage() {
   const [savedName, setSavedName] = useState("");
   const [email, setEmail] = useState("");
   const [savedEmail, setSavedEmail] = useState("");
-  const [mobilePhone, setMobilePhone] = useState("+960");
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [mobilePhone, setMobilePhone] = useState("");
   const [savedMobilePhone, setSavedMobilePhone] = useState("");
   const [joined, setJoined] = useState("");
   const [learners, setLearners] = useState<LearnerAccount[]>([]);
@@ -39,7 +40,8 @@ export default function ParentProfilePage() {
         setSavedName(displayName);
         setEmail(user.email || "");
         setSavedEmail(user.email || "");
-        setMobilePhone(profile?.mobile_phone || "+960");
+        setPendingEmail(user.new_email && user.new_email.toLowerCase() !== user.email?.toLowerCase() ? user.new_email : "");
+        setMobilePhone(profile?.mobile_phone || "");
         setSavedMobilePhone(profile?.mobile_phone || "");
         setJoined(user.created_at || "");
         setLearners(linkedLearners);
@@ -53,6 +55,21 @@ export default function ParentProfilePage() {
     return () => { cancelled = true; };
   }, []);
 
+  useEffect(() => {
+    async function refreshEmail() {
+      const supabase = createClient();
+      if (!supabase) return;
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) return;
+      setSavedEmail(user.email || "");
+      setPendingEmail(user.new_email && user.new_email.toLowerCase() !== user.email?.toLowerCase() ? user.new_email : "");
+      // Do not replace an address the parent is currently editing.
+      setEmail(current => current === savedEmail ? user.email || "" : current);
+    }
+    window.addEventListener("focus", refreshEmail);
+    return () => window.removeEventListener("focus", refreshEmail);
+  }, [savedEmail]);
+
   async function save(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
@@ -62,22 +79,34 @@ export default function ParentProfilePage() {
       const supabase = createClient();
       if (!supabase) throw new Error("Account service is unavailable.");
       const normalizedPhone = mobilePhone.replace(/[\s()-]/g, "");
-      if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) throw new Error("Enter a mobile number with country code, for example +9607777777.");
-      const { data, error: saveError } = await supabase.rpc("update_my_parent_profile", { p_full_name: name.trim(), p_mobile_phone: normalizedPhone });
-      if (saveError) throw new Error(saveError.message);
-      const updatedName = String(data);
-      setName(updatedName);
-      setSavedName(updatedName);
-      setMobilePhone(normalizedPhone);
-      setSavedMobilePhone(normalizedPhone);
-      if (email.trim().toLowerCase() !== savedEmail.toLowerCase()) {
-        const { error: emailError } = await supabase.auth.updateUser({ email: email.trim() });
+      const profileChanged = name.trim() !== savedName || normalizedPhone !== savedMobilePhone;
+      const requestedEmail = email.trim();
+      const emailChanged = requestedEmail.toLowerCase() !== savedEmail.toLowerCase();
+      if (profileChanged) {
+        if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) throw new Error("Enter a mobile number with country code, for example +9607777777.");
+        const { data, error: saveError } = await supabase.rpc("update_my_parent_profile", { p_full_name: name.trim(), p_mobile_phone: normalizedPhone });
+        if (saveError) throw new Error(saveError.message);
+        const updatedName = String(data);
+        setName(updatedName);
+        setSavedName(updatedName);
+        setMobilePhone(normalizedPhone);
+        setSavedMobilePhone(normalizedPhone);
+      }
+      if (emailChanged && requestedEmail.toLowerCase() !== pendingEmail.toLowerCase()) {
+        const { data: emailData, error: emailError } = await supabase.auth.updateUser({ email: requestedEmail });
         if (emailError) {
-          setError(`Your name and mobile number were saved, but the email change could not be started: ${emailError.message}`);
+          setError(`${profileChanged ? "Your other changes were saved, but " : ""}The email change could not be started: ${emailError.message}`);
           return;
         }
-        setMessage("Your name and mobile number were saved. Check your email for a confirmation link to finish changing your sign-in address.");
-      } else {
+        setSavedEmail(emailData.user.email || savedEmail);
+        setEmail(emailData.user.email || savedEmail);
+        setPendingEmail(emailData.user.new_email || (emailData.user.email?.toLowerCase() === requestedEmail.toLowerCase() ? "" : requestedEmail));
+        if (emailData.user.email?.toLowerCase() === requestedEmail.toLowerCase()) {
+          setMessage("Your email address has been updated.");
+        } else {
+          setMessage("Verification requested. Follow the confirmation link sent to your new email address to finish the change.");
+        }
+      } else if (profileChanged) {
         setMessage("Your profile has been updated.");
       }
     } catch (e) {
@@ -108,12 +137,13 @@ export default function ParentProfilePage() {
               <form onSubmit={save} className="mt-6">
                 <div className="grid gap-5 sm:grid-cols-2">
                   <label className="block sm:col-span-2"><span className="inline-flex items-center gap-2 text-sm font-bold text-[#31536d]"><UserRound size={16} className="text-[#0da4a0]" /> Full name</span><input required minLength={2} maxLength={100} autoComplete="name" value={name} onChange={e => setName(e.target.value)} className="mt-2 w-full rounded-xl border border-[#d8e5ef] bg-[#fafdff] px-4 py-3 text-base text-[#133653] outline-none focus:border-[#0aa6a2] focus:ring-2 focus:ring-[#0aa6a2]/20" placeholder="Your full name" /></label>
-                  <label className="block"><span className="inline-flex items-center gap-2 text-sm font-bold text-[#31536d]"><Mail size={16} className="text-[#0da4a0]" /> Email address</span><input required type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-2 w-full rounded-xl border border-[#d8e5ef] bg-[#fafdff] px-4 py-3 text-base text-[#133653] outline-none focus:border-[#0aa6a2] focus:ring-2 focus:ring-[#0aa6a2]/20" /><span className="mt-1.5 block text-xs text-slate-500">Changing email requires confirmation.</span></label>
-                  <label className="block"><span className="inline-flex items-center gap-2 text-sm font-bold text-[#31536d]"><Phone size={16} className="text-[#0da4a0]" /> Mobile number</span><input required type="tel" autoComplete="tel" inputMode="tel" value={mobilePhone} onChange={e => setMobilePhone(e.target.value)} className="mt-2 w-full rounded-xl border border-[#d8e5ef] bg-[#fafdff] px-4 py-3 text-base text-[#133653] outline-none focus:border-[#0aa6a2] focus:ring-2 focus:ring-[#0aa6a2]/20" placeholder="+9607777777" /><span className="mt-1.5 block text-xs text-slate-500">Include your country code, for example +9607777777.</span></label>
+                  <label className="block"><span className="inline-flex items-center gap-2 text-sm font-bold text-[#31536d]"><Mail size={16} className="text-[#0da4a0]" /> Email address</span><input required type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-2 w-full rounded-xl border border-[#d8e5ef] bg-[#fafdff] px-4 py-3 text-base text-[#133653] outline-none focus:border-[#0aa6a2] focus:ring-2 focus:ring-[#0aa6a2]/20" /><span className="mt-1.5 block text-xs text-slate-500">A new address must be confirmed before it becomes your sign-in email.</span></label>
+                  <label className="block"><span className="inline-flex items-center gap-2 text-sm font-bold text-[#31536d]"><Phone size={16} className="text-[#0da4a0]" /> Mobile number</span><input type="tel" autoComplete="tel" inputMode="tel" value={mobilePhone} onChange={e => setMobilePhone(e.target.value)} className="mt-2 w-full rounded-xl border border-[#d8e5ef] bg-[#fafdff] px-4 py-3 text-base text-[#133653] outline-none focus:border-[#0aa6a2] focus:ring-2 focus:ring-[#0aa6a2]/20" placeholder="+9607777777" /><span className="mt-1.5 block text-xs text-slate-500">Include your country code, for example +9607777777.</span></label>
                 </div>
+                {pendingEmail && <div role="status" className="mt-5 rounded-xl border border-[#bde6e4] bg-[#effafa] p-4 text-sm text-[#17475c]"><p className="font-black">Email verification pending</p><p className="mt-1 break-all">New address: <strong>{pendingEmail}</strong></p><p className="mt-2">Open the confirmation email sent to your new address. You may also need to confirm a message at your current address. Until the change is verified, sign in with {savedEmail}.</p></div>}
                 {error && <p role="alert" className="mt-5 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{error}</p>}
                 {message && <p role="status" className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-50 p-3 text-sm font-bold text-emerald-800"><CheckCircle2 size={17} />{message}</p>}
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#e7eef5] pt-5"><span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500"><LockKeyhole size={16} /> {joined ? `Account created ${new Intl.DateTimeFormat("en-MV", { day: "numeric", month: "long", year: "numeric" }).format(new Date(joined))}` : "Your details are private"}</span><button type="submit" disabled={saving || (name.trim() === savedName && mobilePhone.replace(/[\s()-]/g, "") === savedMobilePhone && email.trim().toLowerCase() === savedEmail.toLowerCase())} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#087bc3] to-[#0da59d] px-5 py-3 text-sm font-black text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-50">{saving ? <Loader2 className="animate-spin" size={17} /> : <CheckCircle2 size={17} />} {saving ? "Saving…" : "Save changes"}</button></div>
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#e7eef5] pt-5"><span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500"><LockKeyhole size={16} /> {joined ? `Account created ${new Intl.DateTimeFormat("en-MV", { day: "numeric", month: "long", year: "numeric" }).format(new Date(joined))}` : "Your details are private"}</span><button type="submit" disabled={saving || (name.trim() === savedName && mobilePhone.replace(/[\s()-]/g, "") === savedMobilePhone && (email.trim().toLowerCase() === savedEmail.toLowerCase() || email.trim().toLowerCase() === pendingEmail.toLowerCase()))} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#087bc3] to-[#0da59d] px-5 py-3 text-sm font-black text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-50">{saving ? <Loader2 className="animate-spin" size={17} /> : <CheckCircle2 size={17} />} {saving ? "Saving…" : "Save changes"}</button></div>
               </form>
             </section>
             <aside className="grid gap-5">
