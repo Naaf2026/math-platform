@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, Clock3, Crown, Sparkles, Zap } from "lucide-react";
+import { Check, Clock3, Crown, Menu, Sparkles, X, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import LearnerBottomNav from "@/components/learner-bottom-nav";
+import LearnerLoginModal from "@/components/learner-login-modal";
 
 type Entitlement = {
   plan_slug: string;
@@ -42,6 +42,8 @@ function daysLeft(value: string | null) {
 }
 
 export default function SubscriptionPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [learnerLoginOpen, setLearnerLoginOpen] = useState(false);
   const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -112,11 +114,26 @@ export default function SubscriptionPage() {
 
   return (
     <main className="min-h-screen bg-[#eef9ff] pb-24 text-[#083d78] lg:pb-0">
-      <header className="border-b border-[#dcecf6] bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <Link href="/dashboard" className="inline-flex items-center gap-2 font-black text-[#197fe9]"><ArrowLeft size={18} /> Dashboard</Link>
-          <div className="flex items-center gap-2 font-black"><Crown size={20} className="text-[#f3a900]" /> My Premium</div>
+      <LearnerLoginModal open={learnerLoginOpen} onClose={() => setLearnerLoginOpen(false)} />
+      <header className="sticky top-0 z-50 border-b border-[#dcecf8] bg-white/95 shadow-sm backdrop-blur">
+        <div className="mx-auto flex h-[74px] max-w-[1440px] items-center gap-6 px-5 lg:px-8">
+          <Link href="/" className="flex min-w-fit items-center gap-3">
+            <img src="/fahi-hisaabu-logo-optimized.webp" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }} alt="Fahi Hisaabu" width={220} height={74} className="block h-[66px] w-[196px] max-w-full object-cover object-center sm:h-[74px] sm:w-[220px]" />
+          </Link>
+          <div className="ml-auto flex items-center gap-2 lg:ml-1">
+            <button type="button" onClick={() => setLearnerLoginOpen(true)} className="hidden rounded-xl border-2 border-[#168ff0] px-5 py-2.5 text-sm font-black text-[#07528e] sm:inline-flex">Student Login</button>
+            <Link href="/login" className="hidden rounded-xl border-2 border-[#159c89] px-3 py-2.5 text-sm font-black text-[#087966] lg:inline-flex xl:px-4">Parent Login</Link>
+            <Link href="/login" className="hidden rounded-xl bg-[#ff6b22] px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-200 sm:inline-flex">Try Fahi Hisaabu for Free!!</Link>
+            <Link href="/pricing" className="hidden rounded-xl border-2 border-[#f49c20] px-4 py-2.5 text-sm font-black text-[#a65b00] transition hover:bg-[#fff3df] sm:inline-flex">Pricing</Link>
+            <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="grid h-11 w-11 place-items-center rounded-xl bg-[#edf7ff] lg:hidden" aria-label="Menu" aria-expanded={menuOpen}>{menuOpen ? <X /> : <Menu />}</button>
+          </div>
         </div>
+        {menuOpen && <div className="border-t border-[#e1eef7] bg-white px-5 py-4 lg:hidden"><div className="grid gap-2">
+          <button type="button" onClick={() => { setMenuOpen(false); setLearnerLoginOpen(true); }} className="rounded-xl border-2 border-[#168ff0] px-4 py-3 text-center font-black text-[#07528e]">Student Login</button>
+          <Link href="/login" onClick={() => setMenuOpen(false)} className="rounded-xl border-2 border-[#159c89] px-4 py-3 text-center font-black text-[#087966]">Parent Login</Link>
+          <Link href="/login" onClick={() => setMenuOpen(false)} className="rounded-xl bg-[#ff6b22] px-4 py-3 text-center font-black text-white">Try Fahi Hisaabu for Free!!</Link>
+          <Link href="/pricing" onClick={() => setMenuOpen(false)} className="rounded-xl border-2 border-[#f49c20] px-4 py-3 text-center font-black text-[#a65b00]">Pricing</Link>
+        </div></div>}
       </header>
 
       <section className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
@@ -198,7 +215,6 @@ export default function SubscriptionPage() {
           </article>
         </div>
       </section>
-      <LearnerBottomNav />
     </main>
   );
 }
