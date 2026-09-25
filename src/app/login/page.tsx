@@ -15,7 +15,7 @@ type LoginMode = "parent" | "learner";
 export default function LoginPage() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next");
-  const returnToSubscription = next === "/subscription?startTrial=1";
+  const returnToSubscription = next === "/subscription?startTrial=1" || next === "/subscription?upgrade=1";
   const [mode, setMode] = useState<LoginMode>("parent");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -113,7 +113,7 @@ export default function LoginPage() {
     setGoogleLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback${returnToSubscription ? "?next=%2Fsubscription%3FstartTrial%3D1" : ""}` },
+      options: { redirectTo: `${window.location.origin}/auth/callback${returnToSubscription ? `?next=${encodeURIComponent(next!)}` : ""}` },
     });
 
     if (error) {
