@@ -2,6 +2,7 @@
 
 import { useEffect,useState } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft,CheckCircle2,HelpCircle,Printer,RefreshCw,XCircle } from "lucide-react";
 
 type Operation="Addition"|"Subtraction"|"Counting"|"Comparing Numbers";
@@ -27,7 +28,9 @@ export default function WorksheetsPage(){
  const [operation,setOperation]=useState<Operation>("Addition");
  const [problems,setProblems]=useState<Problem[]>([]),[answers,setAnswers]=useState<Record<number,string>>({});
  const [checked,setChecked]=useState(false),[help,setHelp]=useState(false);
+ const [learnerName,setLearnerName]=useState("");
  useEffect(()=>{setProblems(makeProblems(count,challenge,operation,seed));setAnswers({});setChecked(false)},[count,challenge,operation,seed]);
+ useEffect(()=>{let mounted=true;async function loadLearner(){const supabase=createClient();if(!supabase)return;const {data:auth}=await supabase.auth.getUser();if(!mounted||!auth.user)return;const {data}=await supabase.from("profiles").select("full_name").eq("id",auth.user.id).maybeSingle();if(mounted)setLearnerName(data?.full_name?.trim()||auth.user.user_metadata?.full_name?.trim()||"");}void loadLearner();return()=>{mounted=false}},[]);
  const score=problems.reduce((n,p,i)=>n+Number((answers[i]??"")===answerFor(p,operation)),0);
  const setAnswer=(i:number,value:string)=>setAnswers({...answers,[i]:value});
  return <main className="min-h-screen bg-[#f8f5e9] text-[#17234b] print:bg-white"><div className="mx-auto max-w-5xl px-3 py-5 sm:px-6 print:max-w-none print:p-0">
@@ -43,7 +46,7 @@ export default function WorksheetsPage(){
   </section>
   <section className="mt-5 print:mt-0">
    <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-[#17234b] pb-3"><div><p className="text-sm font-black uppercase tracking-widest text-violet-600 print:text-black">Fahi Hisaabu · Grade 1</p><h1 className="text-3xl font-black">{operation} Worksheet</h1></div><p className="font-bold">Date: {new Intl.DateTimeFormat("en-GB").format(new Date())}</p></div>
-   <div className="mt-4 flex items-end gap-3"><span className="text-lg font-bold">Name:</span><span className="h-7 flex-1 border-b border-slate-500"/></div>
+   <div className="mt-4 flex items-end gap-3"><span className="text-lg font-bold">Name:</span><span className="min-h-7 flex-1 border-b border-slate-500 px-2 pb-1 text-lg font-bold">{learnerName}</span></div>
    {checked&&<div className="mt-4 rounded-xl bg-emerald-50 p-4 text-center font-black text-emerald-700 print:hidden">Score: {score} / {problems.length}</div>}
    <div className="mt-5 space-y-4">{problems.map((p,i)=>{const expected=answerFor(p,operation),correct=(answers[i]??"")===expected;return <div key={i} className="grid items-center gap-4 rounded-2xl border-2 border-[#cde6e3] bg-white p-4 sm:grid-cols-[1fr_auto] print:break-inside-avoid">
     <div className="flex min-w-0 flex-wrap items-center gap-3">
