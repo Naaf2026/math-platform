@@ -1,3 +1,7 @@
+"use client";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
+import LearnerLoginModal from "@/components/learner-login-modal";
 import Link from "next/link";
 import { Award, BookOpen, Check, ChevronDown, Star } from "lucide-react";
 
@@ -20,8 +24,29 @@ const faqs = [
 ];
 
 export default function PricingPage() {
+  const [menuOpen,setMenuOpen]=useState(false);
+  const [learnerLoginOpen,setLearnerLoginOpen]=useState(false);
   return (
     <main className="min-h-screen bg-white text-[#16345b]">
+      <LearnerLoginModal open={learnerLoginOpen} onClose={() => setLearnerLoginOpen(false)} />
+      <header className="sticky top-0 z-50 border-b border-[#dcecf8] bg-white/95 shadow-sm backdrop-blur">
+        <div className="mx-auto flex h-[74px] max-w-[1440px] items-center gap-6 px-5 lg:px-8">
+          <Link href="/" className="flex min-w-fit items-center gap-3">
+            <img src="/fahi-hisaabu-logo-optimized.webp" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }} alt="Fahi Hisaabu" width={220} height={74} className="block h-[66px] w-[196px] max-w-full object-cover object-center sm:h-[74px] sm:w-[220px]" />
+          </Link>
+          <div className="ml-auto flex items-center gap-2 lg:ml-1">
+            <button type="button" onClick={() => setLearnerLoginOpen(true)} className="hidden rounded-xl border-2 border-[#168ff0] px-5 py-2.5 text-sm font-black text-[#07528e] sm:inline-flex">Student Login</button>
+            <Link href="/login" className="hidden rounded-xl border-2 border-[#159c89] px-3 py-2.5 text-sm font-black text-[#087966] lg:inline-flex xl:px-4">Parent Login</Link>
+            <Link href="/login" className="hidden rounded-xl bg-[#ff6b22] px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-200 sm:inline-flex">Try Fahi Hisaabu for Free!!</Link>
+            <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="grid h-11 w-11 place-items-center rounded-xl bg-[#edf7ff] lg:hidden" aria-label="Menu" aria-expanded={menuOpen}>{menuOpen ? <X/> : <Menu/>}</button>
+          </div>
+        </div>
+        {menuOpen && <div className="border-t border-[#e1eef7] bg-white px-5 py-4 lg:hidden"><div className="grid gap-2">
+          <button type="button" onClick={() => {setMenuOpen(false);setLearnerLoginOpen(true);}} className="rounded-xl border-2 border-[#168ff0] px-4 py-3 text-center font-black text-[#07528e]">Student Login</button>
+          <Link href="/login" onClick={() => setMenuOpen(false)} className="rounded-xl border-2 border-[#159c89] px-4 py-3 text-center font-black text-[#087966]">Parent Login</Link>
+          <Link href="/login" onClick={() => setMenuOpen(false)} className="mt-2 rounded-xl bg-[#ff6b22] px-4 py-3 text-center font-black text-white">Try Fahi Hisaabu for Free!!</Link>
+        </div></div>}
+      </header>
       <div className="mx-auto max-w-4xl px-5 pb-20 pt-12 sm:pt-16">
         <div className="text-center">
           <p className="mb-4 text-sm font-extrabold uppercase tracking-[0.2em] text-[#ed9a13]">Fahi Hisaabu Pricing</p>
