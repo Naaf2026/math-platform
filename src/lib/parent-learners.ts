@@ -49,6 +49,7 @@ export async function createLearnerAccount(input: {
   username: string;
   password: string;
   grade?: string;
+  school_name: string;
   avatar_emoji?: string;
 }) {
   const supabase = createClient();
