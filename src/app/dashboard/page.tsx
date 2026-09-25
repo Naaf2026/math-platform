@@ -136,14 +136,8 @@ export default function DashboardPage() {
   </button>
 
   <button type="button" onClick={() => { if (isPremium) setShowVisualStart(true); else setShowVisualPremium(true); }} className="order-2 group relative h-auto min-h-[500px] overflow-hidden rounded-[32px] border-2 border-[#9b8cff] bg-[#f0edff] text-left shadow-lg transition hover:-translate-y-1 hover:shadow-2xl xl:col-start-1 xl:row-start-2 md:h-[500px] md:min-h-0">
-    <div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-gradient-to-br from-[#8d7cf6] via-[#a994ff] to-[#6fc9ff]">
-      <div className="relative flex h-full items-center justify-center gap-3 px-3 sm:gap-4 sm:px-4">
-        <div className="grid h-20 w-20 shrink-0 place-items-center rounded-3xl bg-white text-4xl shadow-xl sm:h-24 sm:w-24 sm:text-5xl">👀</div>
-        <div className="rounded-2xl bg-white/90 px-4 py-3 text-center shadow-lg sm:px-5">
-          <div className="text-[10px] font-black uppercase tracking-[.15em] text-[#735fe6] sm:text-xs sm:tracking-[.18em]">Premium Learning</div>
-          <div className="text-[21px] font-black text-[#183b68] sm:text-2xl">Visual Math Lab</div>
-        </div>
-      </div>
+    <div className="absolute inset-x-0 top-0 h-[250px] overflow-hidden rounded-t-[30px] bg-gradient-to-br from-[#8d7cf6] to-[#6fc9ff]">
+      <img src="/dashboard-assets/visual-math-lab-illustration.webp" alt="Child exploring tens and ones with colourful maths blocks" className="block h-full w-full object-cover object-center" />
     </div>
     <div className="absolute left-8 right-8 top-[232px] bottom-0 rounded-t-[70px] bg-white px-2 pt-7 sm:pt-8">
       <div className="flex items-start justify-between gap-3">
