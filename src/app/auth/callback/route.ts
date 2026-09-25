@@ -5,7 +5,8 @@ import { getUserRole, roleHome } from "@/app/auth/role-router";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const returnToSubscription = url.searchParams.get("next") === "/subscription?startTrial=1";
+  const next = url.searchParams.get("next");
+  const returnToSubscription = next === "/subscription?startTrial=1" || next === "/subscription?upgrade=1";
 
   if (!code) {
     return NextResponse.redirect(new URL("/login?error=missing_auth_code", url.origin));
@@ -44,5 +45,5 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=account_role_missing", url.origin));
   }
 
-  return NextResponse.redirect(new URL(returnToSubscription && (role === "parent" || role === "guardian") ? "/subscription?startTrial=1" : roleHome(role), url.origin));
+  return NextResponse.redirect(new URL(returnToSubscription && (role === "parent" || role === "guardian") ? next! : roleHome(role), url.origin));
 }
