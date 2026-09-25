@@ -20,6 +20,14 @@ Deno.serve(async (req) => {
     const { data: role } = await admin.from('user_roles').select('role').eq('user_id', user.id).maybeSingle();
     if (!['parent', 'guardian', 'admin'].includes(role?.role)) return json({ error: 'Parent access required' }, 403);
 
+    if (role?.role === 'parent' || role?.role === 'guardian') {
+      const { data: parentProfile, error: profileError } = await admin.from('profiles').select('mobile_phone').eq('id', user.id).single();
+      if (profileError) return json({ error: 'Could not verify your parent profile. Please try again.' }, 500);
+      if (!/^\+[1-9]\d{7,14}$/.test(parentProfile?.mobile_phone || '')) {
+        return json({ error: 'Add your mobile phone number in Parent Profile before registering a learner.' }, 403);
+      }
+    }
+
     const body = await req.json().catch(() => ({}));
     const displayName = String(body.display_name || '').trim();
     const username = String(body.username || '').trim().toLowerCase();
