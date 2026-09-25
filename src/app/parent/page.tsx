@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, CheckCircle2, Flame, GraduationCap, History, Plus, ShieldCheck, Target, Trophy, UserRound } from "lucide-react";
+import { CalendarDays, CheckCircle2, Flame, GraduationCap, History, Lightbulb, ListChecks, Plus, Sparkles, Target, TrendingUp, Trophy, UserRound, Users, Zap } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { getMyLearners, type LearnerAccount } from "@/lib/parent-learners";
@@ -10,6 +10,7 @@ import ParentActionCenter from "@/components/parent-action-center";
 
 type Summary = { questions_answered: number; accuracy: number; practice_days: number; xp_earned: number };
 type Insight = { insight_type: string; title: string; message: string; priority: number };
+type ActivityDay = { activity_date: string; questions_answered: number };
 
 export default function ParentPage() {
   const searchParams = useSearchParams();
@@ -17,6 +18,7 @@ export default function ParentPage() {
   const [learners, setLearners] = useState<LearnerAccount[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
+  const [activity, setActivity] = useState<ActivityDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,22 +37,25 @@ export default function ParentPage() {
   useEffect(() => {
     let cancelled = false;
     async function loadSnapshot() {
-      if (!selectedLearner) { setSummary(null); setInsights([]); return; }
+      if (!selectedLearner) { setSummary(null); setInsights([]); setActivity([]); return; }
       const supabase = createClient();
       if (!supabase) return;
+      setSummary(null); setInsights([]); setActivity([]);
       setSnapshotLoading(true);
       try {
-        const [summaryResult, insightsResult] = await Promise.all([
+        const [summaryResult, insightsResult, activityResult] = await Promise.all([
           supabase.rpc("get_parent_learning_summary", { p_student_id: selectedLearner.learner_id }),
           supabase.rpc("get_parent_learning_insights", { p_student_id: selectedLearner.learner_id }),
+          supabase.rpc("get_parent_weekly_activity", { p_student_id: selectedLearner.learner_id }),
         ]);
         if (cancelled) return;
         if (summaryResult.error) throw new Error(summaryResult.error.message);
         if (insightsResult.error) throw new Error(insightsResult.error.message);
         setSummary((summaryResult.data?.[0] ?? null) as Summary | null);
         setInsights((insightsResult.data ?? []) as Insight[]);
+        setActivity(activityResult.error ? [] : (activityResult.data ?? []) as ActivityDay[]);
       } catch {
-        if (!cancelled) { setSummary(null); setInsights([]); }
+        if (!cancelled) { setSummary(null); setInsights([]); setActivity([]); }
       } finally {
         if (!cancelled) setSnapshotLoading(false);
       }
@@ -60,15 +65,15 @@ export default function ParentPage() {
   }, [selectedLearner]);
 
   return (
-    <main className="min-h-screen bg-[#f3f8ff] px-4 py-6 text-[#102a4d] sm:px-8 sm:py-9">
+    <main className="min-h-screen bg-[#f3f8fd] px-4 py-7 text-[#10294b] sm:px-8 sm:py-9">
       <div className="mx-auto max-w-6xl">
-        <header className="flex flex-wrap items-start justify-between gap-4">
+        <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-black uppercase tracking-[0.14em] text-[#197fe9]">Parent dashboard</p>
-            <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">Your family’s learning</h1>
-            <p className="mt-2 max-w-xl text-base text-slate-600">Follow each learner’s progress and plan what comes next.</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#087b92]">Parent dashboard</p>
+            <h1 className="mt-1 text-3xl font-black tracking-tight text-[#0c2c51] sm:text-4xl">Your family’s learning</h1>
+            <p className="mt-2 max-w-xl text-base text-slate-600">A clear view of progress, goals and access in one place.</p>
           </div>
-          <Link href="/parent/learners" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#073b73] px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-[#12518d]"><Plus size={18} /> Manage learners</Link>
+          <Link href="/parent/learners" className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#dbe8f2] bg-white px-4 py-3 text-sm font-black text-[#174b7b] hover:bg-[#eff8fb]"><Users size={18} /> Manage learners</Link>
         </header>
 
         {error && <div role="alert" className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900">{error}</div>}
@@ -81,7 +86,7 @@ export default function ParentPage() {
             <Link href="/parent/learners" className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#197fe9] px-5 py-3 font-black text-white"><Plus size={18} /> Add learner</Link>
           </section>
         ) : selectedLearner && <>
-          {learners.length > 1 && <section className="mt-6 rounded-3xl border border-[#d8e7f4] bg-white p-4 shadow-sm sm:p-5" aria-label="Choose a learner">
+          {learners.length > 1 && <section className="mt-6 rounded-3xl border border-[#d8e7f4] bg-white p-4 shadow-sm sm:p-5 lg:hidden" aria-label="Choose a learner">
             <p className="mb-3 text-sm font-black text-slate-600">Choose a learner</p>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{learners.map(learner => {
               const selected = learner.learner_id === selectedLearner.learner_id;
@@ -93,39 +98,37 @@ export default function ParentPage() {
             })}</div>
           </section>}
 
-          <section className="mt-6 overflow-hidden rounded-[30px] bg-[#073b73] text-white shadow-lg">
-            <div className="grid gap-6 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:p-9">
-              <div className="flex min-w-0 items-start gap-4">
-                <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-4xl" aria-hidden="true">{selectedLearner.avatar_emoji || "🧑‍🎓"}</span>
+          <section className="mt-6 overflow-hidden rounded-3xl bg-gradient-to-r from-[#063e78] via-[#0b72aa] to-[#0a9ca6] text-white shadow-[0_15px_33px_#073b7329]">
+            <div className="grid gap-6 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_235px] lg:items-center lg:p-8">
+              <div><div className="flex min-w-0 items-center gap-4">
+                <span className="flex h-[70px] w-[70px] shrink-0 items-center justify-center rounded-[19px] bg-white/20 text-4xl" aria-hidden="true">{selectedLearner.avatar_emoji || "🧑‍🎓"}</span>
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-[#aee2ff]">Learning overview</p>
+                  <p className="text-xs font-bold text-[#aee4ff]">CURRENT LEARNER</p>
                   <h2 className="mt-1 break-words text-2xl font-black sm:text-3xl">{selectedLearner.display_name}</h2>
-                  <p className="mt-1 text-base text-white/80">{selectedLearner.grade || "Grade not set"} · {selectedLearner.account_status === "active" ? "Account enabled" : "Account disabled"}</p>
-                  <SubscriptionBadge learner={selectedLearner} />
+                  <p className="mt-1 text-sm text-[#cae9ff]">{selectedLearner.grade || "Grade not set"} · {selectedLearner.account_status === "active" ? "Account enabled" : "Account disabled"}</p>
                 </div>
-              </div>
+              </div><SubscriptionLine learner={selectedLearner} /></div>
               <div className="flex flex-col gap-2 sm:flex-row lg:flex-col">
-                <Link href={`/parent/history?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-black text-[#073b73] hover:bg-[#eaf5ff]"><History size={18} /> View learning history</Link>
-                <Link href="/parent/upgrade" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/50 px-5 py-3 text-sm font-black text-white hover:bg-white/10"><ShieldCheck size={18} /> {selectedLearner.subscription_status === "active" ? "Manage subscription" : "View Premium options"}</Link>
+                <Link href="/parent/upgrade" className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#ffc436] to-[#ff9d25] px-4 py-3.5 text-sm font-black text-[#2f2b2a] shadow-md hover:brightness-105"><Sparkles size={18} /> {selectedLearner.subscription_status === "active" ? "Manage subscription" : "Upgrade to Premium"}</Link>
+                <Link href={`/parent/history?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/60 bg-white/10 px-4 py-3 text-sm font-black text-white hover:bg-white/20"><History size={18} /> Learning history</Link>
               </div>
             </div>
-            <div className="border-t border-white/20 bg-white/10 px-5 py-4 sm:px-7 lg:px-9"><SubscriptionDetails learner={selectedLearner} /></div>
           </section>
 
-          <section className="mt-6 rounded-3xl border border-[#d8e7f4] bg-white p-5 shadow-sm sm:p-7" aria-labelledby="weekly-progress-title">
-            <div className="flex flex-wrap items-end justify-between gap-2"><div><p className="text-sm font-black uppercase tracking-wide text-[#197fe9]">This week</p><h2 id="weekly-progress-title" className="mt-1 text-xl font-black sm:text-2xl">Learning progress</h2></div>{snapshotLoading && <span className="text-sm font-semibold text-slate-500">Updating…</span>}</div>
-            <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4"><SnapshotMetric label="Questions answered" value={summary ? Number(summary.questions_answered) : 0} /><SnapshotMetric label="Accuracy" value={summary ? `${Math.round(Number(summary.accuracy))}%` : "0%"} /><SnapshotMetric label="Practice days" value={summary ? `${Number(summary.practice_days)}/7` : "0/7"} /><SnapshotMetric label="XP earned" value={summary ? Number(summary.xp_earned) : 0} /></div>
-            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-slate-600"><span className="inline-flex items-center gap-1.5"><Flame size={17} className="text-amber-500" /> {selectedLearner.current_streak} day streak</span><span className="inline-flex items-center gap-1.5"><Trophy size={17} className="text-[#197fe9]" /> {selectedLearner.xp} total XP</span></div>
-          </section>
+          <div className="mt-7 flex items-center justify-between gap-3"><h2 className="text-xl font-black text-[#113354]">This week at a glance</h2><Link href={`/parent/history?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="text-sm font-black text-[#0a74d2] hover:underline">See full history →</Link></div>
+          <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4"><SnapshotMetric icon={ListChecks} color="blue" label="Questions answered" value={summary ? Number(summary.questions_answered) : 0} /><SnapshotMetric icon={CheckCircle2} color="green" label="Accuracy" value={summary ? `${Math.round(Number(summary.accuracy))}%` : "0%"} /><SnapshotMetric icon={CalendarDays} color="orange" label="Practice days" value={summary ? `${Number(summary.practice_days)} / 7` : "0 / 7"} /><SnapshotMetric icon={Zap} color="teal" label="XP earned" value={summary ? Number(summary.xp_earned) : 0} /></div>
 
-          <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(260px,1fr)]">
-            <section className="rounded-3xl border border-[#d8e7f4] bg-white p-5 shadow-sm sm:p-7" aria-labelledby="attention-title">
-              <div className="flex flex-wrap items-center justify-between gap-3"><h2 id="attention-title" className="text-xl font-black">What needs attention</h2><Link href={`/parent/history?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="text-sm font-black text-[#197fe9] hover:underline">Full history</Link></div>
-              <div className="mt-4 space-y-3">{insights.length ? insights.slice(0, 3).map((item, index) => <div key={`${item.insight_type}-${index}`} className="rounded-2xl bg-[#f4f9ff] p-4"><p className="font-black">{item.title}</p><p className="mt-1 text-sm leading-6 text-slate-600">{item.message}</p></div>) : <div className="flex items-start gap-2 rounded-2xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-800"><CheckCircle2 size={18} className="mt-0.5 shrink-0" /> No priority learning signals right now.</div>}</div>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(290px,.9fr)]">
+            <section className="rounded-[19px] border border-[#e0eaf3] bg-white p-5 sm:p-6" aria-labelledby="activity-title">
+              <div className="flex items-center justify-between gap-3"><h2 id="activity-title" className="text-lg font-black text-[#113354]">Learning activity</h2><span className="text-xs font-semibold text-slate-500">Last 7 days</span></div>
+              <ActivityChart days={activity} loading={snapshotLoading} />
+              <div className="mt-5 flex items-center gap-2 rounded-xl bg-[#eff8ff] p-3 text-sm text-[#36526c]"><TrendingUp size={18} className="shrink-0 text-[#147de2]" /><span>{summary && Number(summary.practice_days) > 0 ? `Practised on ${Number(summary.practice_days)} of the last 7 days.` : "Practice will appear here as your learner answers questions."}</span></div>
+              <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold text-slate-600"><span className="inline-flex items-center gap-1"><Flame size={16} className="text-[#e89021]" /> {selectedLearner.current_streak} day streak</span><span className="inline-flex items-center gap-1"><Trophy size={16} className="text-[#147de2]" /> {selectedLearner.xp} total XP</span></p>
             </section>
-            <section className="rounded-3xl border border-[#d8e7f4] bg-white p-5 shadow-sm sm:p-7" aria-labelledby="quick-actions-title">
-              <h2 id="quick-actions-title" className="text-xl font-black">Quick actions</h2>
-              <div className="mt-4 grid gap-3"><Link href={`/parent/goals?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="flex items-center gap-3 rounded-2xl bg-[#eaf5ff] px-4 py-3.5 font-black text-[#073b73] hover:bg-[#dff0ff]"><Target size={20} /> Learning goals</Link><Link href={`/parent/notifications?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="flex items-center gap-3 rounded-2xl bg-[#eaf5ff] px-4 py-3.5 font-black text-[#073b73] hover:bg-[#dff0ff]"><Bell size={20} /> Alerts</Link><Link href="/parent/profile" className="flex items-center gap-3 rounded-2xl bg-[#eaf5ff] px-4 py-3.5 font-black text-[#073b73] hover:bg-[#dff0ff]"><UserRound size={20} /> Parent profile</Link></div>
+            <section className="rounded-[19px] border border-[#e0eaf3] bg-white p-5 sm:p-6" aria-labelledby="attention-title">
+              <div className="flex items-center justify-between gap-3"><h2 id="attention-title" className="text-lg font-black text-[#113354]">Needs attention</h2><Link href={`/parent/history?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="text-sm font-black text-[#0a74d2]">View all →</Link></div>
+              <div className="mt-4 space-y-2">{insights.some(item => item.priority <= 2) ? insights.filter(item => item.priority <= 2).slice(0, 2).map((item, index) => <div key={`${item.insight_type}-${index}`} className="flex gap-3 rounded-xl bg-[#fff8e9] p-4"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#ffe5ad] text-[#925000]"><Lightbulb size={17} /></span><div><p className="text-sm font-black text-[#3b4657]">{item.title}</p><p className="mt-1 text-sm leading-5 text-slate-600">{item.message}</p></div></div>) : <div className="flex gap-2 rounded-xl bg-[#eaf8e9] p-4 text-sm font-semibold text-[#226e45]"><CheckCircle2 size={18} className="shrink-0" /> No priority learning signals right now.</div>}</div>
+              <h3 className="mt-6 text-lg font-black text-[#113354]">Quick actions</h3><div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3"><Link href={`/parent/goals?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="inline-flex items-center gap-2 rounded-xl bg-[#eaf8f8] px-3 py-3 text-sm font-black text-[#087b83]"><Target size={17} /> Goals</Link><Link href="/parent/learners" className="inline-flex items-center gap-2 rounded-xl bg-[#eaf8f8] px-3 py-3 text-sm font-black text-[#087b83]"><Users size={17} /> Learners</Link><Link href="/parent/profile" className="inline-flex items-center gap-2 rounded-xl bg-[#eaf8f8] px-3 py-3 text-sm font-black text-[#087b83]"><UserRound size={17} /> Profile</Link></div>
             </section>
           </div>
           <ParentActionCenter studentId={selectedLearner.learner_id} />
@@ -140,35 +143,12 @@ export default function ParentPage() {
   );
 }
 
-function SubscriptionBadge({ learner }: { learner: LearnerAccount }) {
+function SubscriptionLine({ learner }: { learner: LearnerAccount }) {
   const status = learner.subscription_status;
-  const trial = status === "trialing";
-  const active = status === "active";
-  const expired = status === "expired" || status === "cancelled";
-  const demo = !status || status === "demo";
-  const styles = trial
-    ? "bg-amber-50 text-amber-700 ring-1 ring-amber-100"
-    : active
-      ? "bg-blue-50 text-blue-700 ring-1 ring-blue-100"
-      : expired
-        ? "bg-red-50 text-red-700 ring-1 ring-red-100"
-        : "bg-violet-50 text-violet-700 ring-1 ring-violet-100";
-  const label = trial ? "Free Trial" : active ? "Active Subscription" : expired ? "Expired" : "Demo Access";
-  return <span className={`mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-black ${styles}`}>{label}</span>;
-}
-
-function SubscriptionDetails({ learner }: { learner: LearnerAccount }) {
-  const status = learner.subscription_status;
-  if (status === "trialing") {
-    return <div className="rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3"><div className="flex items-center justify-between gap-3"><p className="text-xs font-black uppercase tracking-wide text-amber-700">Trial access</p><span className="text-xs font-black text-amber-700">{learner.subscription_days_left} {learner.subscription_days_left === 1 ? "day" : "days"} left</span></div><p className="mt-1 text-xs font-semibold text-slate-600">Trial ends {formatDate(learner.trial_ends_at)}.</p></div>;
-  }
-  if (status === "active") {
-    return <div className="rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3"><div className="flex items-center justify-between gap-3"><p className="text-xs font-black uppercase tracking-wide text-blue-700">Monthly access</p><span className="text-xs font-black text-blue-700">{learner.subscription_days_left} {learner.subscription_days_left === 1 ? "day" : "days"} left</span></div><p className="mt-1 text-xs font-semibold text-slate-600">Active until {formatDate(learner.period_ends_at)}.</p></div>;
-  }
-  if (status === "expired" || status === "cancelled") {
-    return <div className="rounded-2xl border border-red-100 bg-red-50/70 px-4 py-3"><p className="text-xs font-black uppercase tracking-wide text-red-700">Subscription expired</p><p className="mt-1 text-xs font-semibold text-slate-600">Please complete the monthly payment to restore access.</p></div>;
-  }
-  return <div className="rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3"><p className="text-xs font-black uppercase tracking-wide text-violet-700">Demo access</p><p className="mt-1 text-xs font-semibold text-slate-600">This existing demo account keeps full access.</p></div>;
+  const days = learner.subscription_days_left;
+  const label = status === "trialing" ? `Free trial · ${days} ${days === 1 ? "day" : "days"} left` : status === "active" ? `Premium active · ${days} ${days === 1 ? "day" : "days"} left` : status === "expired" || status === "cancelled" ? "Subscription expired" : "Demo access";
+  const date = status === "trialing" ? learner.trial_ends_at : status === "active" ? learner.period_ends_at : null;
+  return <div className="mt-6 flex flex-wrap items-center gap-3"><span className="rounded-lg bg-[#fff0c8] px-3 py-2 text-xs font-black text-[#805000]">{label}</span>{date && <span className="text-sm text-[#d9efff]">{status === "trialing" ? "Trial ends" : "Active until"} {formatDate(date)}</span>}</div>;
 }
 
 function formatDate(value: string | null) {
@@ -176,6 +156,14 @@ function formatDate(value: string | null) {
   return new Intl.DateTimeFormat("en-MV", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
 }
 
-function SnapshotMetric({ label, value }: { label: string; value: string | number }) {
-  return <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-100"><p className="text-xs font-black uppercase tracking-wide text-slate-500">{label}</p><p className="mt-2 text-2xl font-black text-[#071b3a]">{value}</p></div>;
+function SnapshotMetric({ icon: Icon, label, value, color }: { icon: typeof ListChecks; label: string; value: string | number; color: "blue" | "green" | "orange" | "teal" }) {
+  const colors = { blue: "bg-[#eaf5ff] text-[#1682dd]", green: "bg-[#eaf8e9] text-[#2ca355]", orange: "bg-[#fff3db] text-[#dd8c19]", teal: "bg-[#e7f8f6] text-[#0ca89e]" };
+  return <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-[#e0eaf3] bg-white p-4"><span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${colors[color]}`}><Icon size={20} /></span><div className="min-w-0"><p className="text-2xl font-black text-[#103456]">{value}</p><p className="text-xs font-semibold text-slate-600">{label}</p></div></div>;
+}
+
+function ActivityChart({ days, loading }: { days: ActivityDay[]; loading: boolean }) {
+  if (loading && !days.length) return <div className="mt-5 flex h-32 items-center justify-center text-sm font-semibold text-slate-500">Loading activity…</div>;
+  if (!days.length) return <div className="mt-5 flex h-32 items-center justify-center text-sm font-semibold text-slate-500">Activity is unavailable right now.</div>;
+  const max = Math.max(1, ...days.map(day => Number(day.questions_answered || 0)));
+  return <div className="mt-5 grid h-36 grid-cols-7 items-end gap-2 sm:gap-3" aria-label="Questions answered each day over the last seven days">{days.map(day => { const count = Number(day.questions_answered || 0); const label = new Date(`${day.activity_date}T12:00:00`).toLocaleDateString("en-MV", { weekday: "short" }); return <div key={day.activity_date} className="flex h-full min-w-0 flex-col items-center justify-end gap-2" title={`${count} questions on ${day.activity_date}`}><div className="flex h-24 w-full max-w-8 items-end overflow-hidden rounded-lg bg-[#eef5fb]"><div className="w-full rounded-t-lg bg-gradient-to-t from-[#1582d6] to-[#13b9a9]" style={{ height: `${count ? Math.max(8, count / max * 100) : 0}%` }} /></div><span className="text-xs font-bold text-slate-500">{label}</span><span className="sr-only">{count} questions</span></div>; })}</div>;
 }
