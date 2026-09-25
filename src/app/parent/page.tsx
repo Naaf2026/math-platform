@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, CalendarDays, CheckCircle2, Flame, GraduationCap, History, Plus, ShieldCheck, Target, Trophy, UserRound } from "lucide-react";
+import { Bell, CheckCircle2, Flame, GraduationCap, History, Plus, ShieldCheck, Target, Trophy, UserRound } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { getMyLearners, type LearnerAccount } from "@/lib/parent-learners";
@@ -60,65 +60,81 @@ export default function ParentPage() {
   }, [selectedLearner]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-5 pb-28 sm:p-8">
+    <main className="min-h-screen bg-[#f3f8ff] px-4 py-6 text-[#102a4d] sm:px-8 sm:py-9">
       <div className="mx-auto max-w-6xl">
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            <Link href="/parent/profile" className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-black text-violet-700 shadow-sm ring-1 ring-violet-100 hover:bg-violet-50"><UserRound size={16} /> My profile</Link>
-            <Link href="/parent/learners" className="inline-flex items-center gap-2 rounded-full bg-[#071b3a] px-4 py-2.5 text-sm font-black text-white shadow-sm hover:bg-[#0d2a52]"><Plus size={16} /> Manage learners</Link>
-            <Link href={`/parent/history${selectedLearner ? `?learner=${encodeURIComponent(selectedLearner.learner_id)}` : ""}`} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-black text-violet-700 shadow-sm ring-1 ring-violet-100 hover:bg-violet-50"><History size={16} /> Learning history</Link>
+        <header className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-black uppercase tracking-[0.14em] text-[#197fe9]">Parent dashboard</p>
+            <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">Your family’s learning</h1>
+            <p className="mt-2 max-w-xl text-base text-slate-600">Follow each learner’s progress and plan what comes next.</p>
           </div>
+          <Link href="/parent/learners" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#073b73] px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-[#12518d]"><Plus size={18} /> Manage learners</Link>
         </header>
 
-        <section className="mt-7 rounded-[2rem] bg-gradient-to-br from-violet-700 via-indigo-600 to-blue-500 p-7 text-white shadow-2xl sm:p-10">
-          <div className="flex items-start gap-4"><div className="rounded-2xl bg-white/15 p-3"><ShieldCheck size={28} /></div><div><p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-100">Parent dashboard</p><h1 className="mt-2 text-4xl font-black tracking-tight sm:text-5xl">Your learners</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-indigo-100">Select a learner to see their individual learning activity, goals and alerts. Each learner keeps their own progress and history.</p></div></div>
-        </section>
+        {error && <div role="alert" className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900">{error}</div>}
 
-        {error && <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">{error}</div>}
+        {loading ? <section className="mt-6 rounded-3xl bg-white p-8 text-center font-bold text-slate-600 shadow-sm">Loading your learners…</section> : learners.length === 0 ? (
+          <section className="mt-6 rounded-3xl border border-[#d8e7f4] bg-white p-7 shadow-sm sm:p-10">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eaf5ff] text-[#197fe9]"><GraduationCap size={30} /></div>
+            <h2 className="mt-5 text-2xl font-black">Add your first learner</h2>
+            <p className="mt-2 max-w-lg text-base text-slate-600">Create a learner account to see practice, progress, and access in one place.</p>
+            <Link href="/parent/learners" className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#197fe9] px-5 py-3 font-black text-white"><Plus size={18} /> Add learner</Link>
+          </section>
+        ) : selectedLearner && <>
+          {learners.length > 1 && <section className="mt-6 rounded-3xl border border-[#d8e7f4] bg-white p-4 shadow-sm sm:p-5" aria-label="Choose a learner">
+            <p className="mb-3 text-sm font-black text-slate-600">Choose a learner</p>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{learners.map(learner => {
+              const selected = learner.learner_id === selectedLearner.learner_id;
+              return <Link key={learner.learner_id} href={`/parent?learner=${encodeURIComponent(learner.learner_id)}`} aria-current={selected ? "page" : undefined} className={`flex min-w-0 items-center gap-3 rounded-2xl border px-4 py-3 transition ${selected ? "border-[#197fe9] bg-[#eaf5ff] text-[#073b73]" : "border-slate-200 bg-white hover:bg-slate-50"}`}>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-2xl" aria-hidden="true">{learner.avatar_emoji || "🧑‍🎓"}</span>
+                <span className="min-w-0"><span className="block truncate font-black">{learner.display_name}</span><span className="block text-sm font-semibold text-slate-500">{learner.grade || "Grade not set"}</span></span>
+                {selected && <CheckCircle2 size={18} className="ml-auto shrink-0 text-[#197fe9]" aria-label="Selected" />}
+              </Link>;
+            })}</div>
+          </section>}
 
-        {loading ? <section className="mt-6 rounded-3xl bg-white p-10 text-center font-bold text-slate-500 shadow-sm">Loading your learners…</section> : learners.length === 0 ? (
-          <section className="mt-6 rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-violet-100"><GraduationCap className="mx-auto text-violet-500" size={46} /><h2 className="mt-4 text-2xl font-black text-[#071b3a]">No learners yet</h2><p className="mt-2 text-sm text-slate-500">Add your first learner to start managing their learning journey.</p><Link href="/parent/learners" className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#071b3a] px-5 py-3 font-black text-white"><Plus size={17} /> Add learner</Link></section>
-        ) : (
-          <>
-            <section className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {learners.map((learner) => {
-                const active = learner.account_status === "active"; const selected = selectedLearner?.learner_id === learner.learner_id;
-                return <article key={learner.learner_id} className={`rounded-3xl bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg ${selected ? "ring-2 ring-violet-500" : "ring-1 ring-violet-100"}`}>
-                  <div className="flex items-center gap-4"><div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-4xl">{learner.avatar_emoji || "🧑‍🎓"}</div><div className="min-w-0"><h2 className="truncate text-xl font-black text-[#071b3a]">{learner.display_name}</h2><p className="mt-1 text-sm font-bold text-violet-600">{learner.grade || "Grade not set"}</p><SubscriptionBadge learner={learner} /><p className="mt-1 text-[11px] font-bold text-slate-400">{active ? "Account enabled" : "Account disabled"}</p></div></div>
-                  <div className="mt-4"><SubscriptionDetails learner={learner} /></div><div className="mt-6 grid grid-cols-3 gap-2"><MiniStat icon={<Trophy size={18} />} value={learner.xp} label="XP" tone="violet" /><MiniStat icon={<Flame size={18} />} value={learner.current_streak} label="Streak" tone="amber" /><MiniStat icon={<CalendarDays size={18} />} value={learner.best_streak} label="Best" tone="cyan" /></div>
-                  <div className="mt-6 flex gap-2"><Link href={`/parent?learner=${encodeURIComponent(learner.learner_id)}`} className={`inline-flex flex-1 items-center justify-center rounded-2xl px-4 py-3 text-sm font-black ${selected ? "bg-violet-600 text-white" : "bg-violet-50 text-violet-700 hover:bg-violet-100"}`}>{selected ? "Selected learner" : `Select ${learner.display_name}`}</Link><Link href={`/parent/history?learner=${encodeURIComponent(learner.learner_id)}`} className="inline-flex items-center justify-center rounded-2xl bg-slate-100 px-4 py-3 text-slate-700 hover:bg-slate-200" aria-label={`View ${learner.display_name}'s history`}><History size={18} /></Link></div>
-                </article>;
-              })}
-            </section>
-
-            {selectedLearner && <>
-              <section className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-violet-100 sm:p-8">
-                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="flex items-center gap-4"><div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-4xl">{selectedLearner.avatar_emoji || "🧑‍🎓"}</div><div><p className="text-xs font-black uppercase tracking-[0.16em] text-violet-600">Selected learner</p><h2 className="mt-1 text-2xl font-black text-[#071b3a]">{selectedLearner.display_name}</h2><p className="mt-1 text-sm font-semibold text-slate-500">{selectedLearner.grade || "Grade not set"} · {selectedLearner.account_status === "active" ? "Active account" : "Account disabled"}</p></div></div>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3"><MiniStat icon={<Trophy size={18} />} value={selectedLearner.xp} label="XP" tone="violet" /><MiniStat icon={<Flame size={18} />} value={selectedLearner.current_streak} label="Streak" tone="amber" /><MiniStat icon={<CalendarDays size={18} />} value={selectedLearner.best_streak} label="Best" tone="cyan" /></div>
+          <section className="mt-6 overflow-hidden rounded-[30px] bg-[#073b73] text-white shadow-lg">
+            <div className="grid gap-6 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:p-9">
+              <div className="flex min-w-0 items-start gap-4">
+                <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-4xl" aria-hidden="true">{selectedLearner.avatar_emoji || "🧑‍🎓"}</span>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-[#aee2ff]">Learning overview</p>
+                  <h2 className="mt-1 break-words text-2xl font-black sm:text-3xl">{selectedLearner.display_name}</h2>
+                  <p className="mt-1 text-base text-white/80">{selectedLearner.grade || "Grade not set"} · {selectedLearner.account_status === "active" ? "Account enabled" : "Account disabled"}</p>
+                  <SubscriptionBadge learner={selectedLearner} />
                 </div>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row lg:flex-col">
+                <Link href={`/parent/history?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-black text-[#073b73] hover:bg-[#eaf5ff]"><History size={18} /> View learning history</Link>
+                <Link href="/parent/upgrade" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/50 px-5 py-3 text-sm font-black text-white hover:bg-white/10"><ShieldCheck size={18} /> {selectedLearner.subscription_status === "active" ? "Manage subscription" : "View Premium options"}</Link>
+              </div>
+            </div>
+            <div className="border-t border-white/20 bg-white/10 px-5 py-4 sm:px-7 lg:px-9"><SubscriptionDetails learner={selectedLearner} /></div>
+          </section>
 
-                <div className="mt-6 rounded-3xl bg-slate-50 p-5 sm:p-6"><div className="flex items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wider text-cyan-700">Learning snapshot</p><h3 className="mt-1 text-xl font-black text-[#071b3a]">Recent performance</h3></div>{snapshotLoading && <span className="text-xs font-bold text-slate-400">Updating…</span>}</div><div className="mt-4 grid gap-3 sm:grid-cols-4"><SnapshotMetric label="Questions this week" value={summary ? Number(summary.questions_answered) : 0} /><SnapshotMetric label="Accuracy" value={summary ? `${Math.round(Number(summary.accuracy))}%` : "0%"} /><SnapshotMetric label="Practice days" value={summary ? `${Number(summary.practice_days)}/7` : "0/7"} /><SnapshotMetric label="XP this week" value={summary ? Number(summary.xp_earned) : 0} /></div></div>
+          <section className="mt-6 rounded-3xl border border-[#d8e7f4] bg-white p-5 shadow-sm sm:p-7" aria-labelledby="weekly-progress-title">
+            <div className="flex flex-wrap items-end justify-between gap-2"><div><p className="text-sm font-black uppercase tracking-wide text-[#197fe9]">This week</p><h2 id="weekly-progress-title" className="mt-1 text-xl font-black sm:text-2xl">Learning progress</h2></div>{snapshotLoading && <span className="text-sm font-semibold text-slate-500">Updating…</span>}</div>
+            <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4"><SnapshotMetric label="Questions answered" value={summary ? Number(summary.questions_answered) : 0} /><SnapshotMetric label="Accuracy" value={summary ? `${Math.round(Number(summary.accuracy))}%` : "0%"} /><SnapshotMetric label="Practice days" value={summary ? `${Number(summary.practice_days)}/7` : "0/7"} /><SnapshotMetric label="XP earned" value={summary ? Number(summary.xp_earned) : 0} /></div>
+            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-slate-600"><span className="inline-flex items-center gap-1.5"><Flame size={17} className="text-amber-500" /> {selectedLearner.current_streak} day streak</span><span className="inline-flex items-center gap-1.5"><Trophy size={17} className="text-[#197fe9]" /> {selectedLearner.xp} total XP</span></div>
+          </section>
 
-                <div className="mt-5 rounded-3xl border border-amber-100 bg-amber-50/60 p-5 sm:p-6"><div className="flex items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wider text-amber-700">Learning signals</p><h3 className="mt-1 text-xl font-black text-[#071b3a]">What needs attention</h3></div><Link href={`/parent/history?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="text-sm font-black text-violet-700 hover:underline">View full history</Link></div><div className="mt-4 space-y-2">{insights.length ? insights.slice(0, 3).map((item, index) => <div key={`${item.insight_type}-${index}`} className="rounded-2xl bg-white p-4"><div className="flex gap-3"><span className={`mt-2 h-2.5 w-2.5 shrink-0 rounded-full ${item.priority <= 1 ? "bg-amber-500" : "bg-violet-500"}`} /><div><p className="font-black text-slate-800">{item.title}</p><p className="mt-1 text-sm leading-6 text-slate-600">{item.message}</p></div></div></div>) : <div className="rounded-2xl bg-white p-4 text-sm font-semibold text-emerald-700"><CheckCircle2 className="mr-2 inline" size={17} /> No priority learning signals right now.</div>}</div></div>
+          <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(260px,1fr)]">
+            <section className="rounded-3xl border border-[#d8e7f4] bg-white p-5 shadow-sm sm:p-7" aria-labelledby="attention-title">
+              <div className="flex flex-wrap items-center justify-between gap-3"><h2 id="attention-title" className="text-xl font-black">What needs attention</h2><Link href={`/parent/history?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="text-sm font-black text-[#197fe9] hover:underline">Full history</Link></div>
+              <div className="mt-4 space-y-3">{insights.length ? insights.slice(0, 3).map((item, index) => <div key={`${item.insight_type}-${index}`} className="rounded-2xl bg-[#f4f9ff] p-4"><p className="font-black">{item.title}</p><p className="mt-1 text-sm leading-6 text-slate-600">{item.message}</p></div>) : <div className="flex items-start gap-2 rounded-2xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-800"><CheckCircle2 size={18} className="mt-0.5 shrink-0" /> No priority learning signals right now.</div>}</div>
+            </section>
+            <section className="rounded-3xl border border-[#d8e7f4] bg-white p-5 shadow-sm sm:p-7" aria-labelledby="quick-actions-title">
+              <h2 id="quick-actions-title" className="text-xl font-black">Quick actions</h2>
+              <div className="mt-4 grid gap-3"><Link href={`/parent/goals?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="flex items-center gap-3 rounded-2xl bg-[#eaf5ff] px-4 py-3.5 font-black text-[#073b73] hover:bg-[#dff0ff]"><Target size={20} /> Learning goals</Link><Link href={`/parent/notifications?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="flex items-center gap-3 rounded-2xl bg-[#eaf5ff] px-4 py-3.5 font-black text-[#073b73] hover:bg-[#dff0ff]"><Bell size={20} /> Alerts</Link><Link href="/parent/profile" className="flex items-center gap-3 rounded-2xl bg-[#eaf5ff] px-4 py-3.5 font-black text-[#073b73] hover:bg-[#dff0ff]"><UserRound size={20} /> Parent profile</Link></div>
+            </section>
+          </div>
+          <ParentActionCenter studentId={selectedLearner.learner_id} />
+        </>}
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-3"><Link href={`/parent/history?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-3.5 font-black text-white hover:bg-violet-700"><History size={18} /> Learning History</Link><Link href={`/parent/goals?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-50 px-5 py-3.5 font-black text-emerald-700 hover:bg-emerald-100"><Target size={18} /> Goals</Link><Link href={`/parent/notifications?learner=${encodeURIComponent(selectedLearner.learner_id)}`} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-50 px-5 py-3.5 font-black text-amber-700 hover:bg-amber-100"><Bell size={18} /> Alerts</Link></div>
-              </section>
-              <ParentActionCenter studentId={selectedLearner.learner_id} />
-            </>}
-          </>
-        )}
-
-        <section className="mt-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100 sm:p-7"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-black uppercase tracking-wider text-violet-600">Learner accounts</p><h2 className="mt-1 text-xl font-black text-[#071b3a]">Need to manage an account?</h2><p className="mt-1 text-sm text-slate-500">Add learners, change passwords or enable and disable learner accounts.</p></div><Link href="/parent/learners" className="inline-flex shrink-0 items-center justify-center rounded-2xl bg-slate-100 px-5 py-3 font-black text-slate-700 hover:bg-slate-200">Manage learner accounts</Link></div></section>
-      <footer className="px-4 pb-28 pt-7 text-center text-[10px] font-medium text-slate-400 sm:text-[11px] lg:pb-8">
-        <p>© Copyright 2026 FAHI VISSNUN LEARNING INSTITUTE. All rights reserved.</p>
-        <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-          <Link href="/about" className="hover:text-[#073b73]">About</Link>
-          <Link href="/privacy" className="hover:text-[#073b73]">Privacy Policy</Link>
-          <Link href="/terms" className="hover:text-[#073b73]">Terms of Service</Link>
-          <Link href="/payment-policy" className="hover:text-[#073b73]">Payment Policy</Link>
-        </div>
-      </footer>
+        <footer className="px-4 pb-8 pt-10 text-center text-xs font-medium text-slate-500">
+          <p>© 2026 Fahi Hisaabu. All rights reserved.</p>
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-2"><Link href="/about" className="hover:text-[#073b73]">About</Link><Link href="/privacy" className="hover:text-[#073b73]">Privacy Policy</Link><Link href="/terms" className="hover:text-[#073b73]">Terms of Service</Link><Link href="/payment-policy" className="hover:text-[#073b73]">Payment Policy</Link></div>
+        </footer>
       </div>
     </main>
   );
@@ -158,11 +174,6 @@ function SubscriptionDetails({ learner }: { learner: LearnerAccount }) {
 function formatDate(value: string | null) {
   if (!value) return "—";
   return new Intl.DateTimeFormat("en-MV", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
-}
-
-function MiniStat({ icon, value, label, tone }: { icon: React.ReactNode; value: number; label: string; tone: "violet" | "amber" | "cyan" }) {
-  const styles = { violet: "bg-violet-50 text-violet-600", amber: "bg-amber-50 text-amber-600", cyan: "bg-cyan-50 text-cyan-600" };
-  return <div className={`rounded-2xl p-3 text-center ${styles[tone]}`}><span className="mx-auto block w-fit">{icon}</span><p className="mt-1 text-lg font-black text-[#071b3a]">{value}</p><p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{label}</p></div>;
 }
 
 function SnapshotMetric({ label, value }: { label: string; value: string | number }) {
