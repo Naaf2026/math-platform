@@ -104,6 +104,7 @@ export default function ParentLearningAlerts() {
     setAlerts(current => current.map(alert =>
       alert.alert_id === alertId ? { ...alert, read_at: new Date().toISOString() } : alert
     ));
+    window.dispatchEvent(new Event("parent-alerts-updated"));
   }
 
   const unread = alerts.filter(alert => !alert.read_at).length;
