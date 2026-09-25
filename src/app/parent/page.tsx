@@ -19,6 +19,7 @@ export default function ParentPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
   const [activity, setActivity] = useState<ActivityDay[]>([]);
+  const [parentName, setParentName] = useState("");
   const [loading, setLoading] = useState(true);
   const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [error, setError] = useState("");
@@ -31,6 +32,21 @@ export default function ParentPage() {
   }
 
   useEffect(() => { void load(); }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadParentName() {
+      const supabase = createClient();
+      if (!supabase) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile, error: profileError } = await supabase.from("profiles")
+        .select("display_name,full_name").eq("id", user.id).maybeSingle();
+      if (!cancelled && !profileError) setParentName((profile?.display_name || profile?.full_name || "").trim());
+    }
+    void loadParentName();
+    return () => { cancelled = true; };
+  }, []);
 
   const selectedLearner = learners.find((learner) => learner.learner_id === requestedLearnerId) ?? learners[0] ?? null;
 
@@ -70,7 +86,7 @@ export default function ParentPage() {
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[#087b92]">Parent dashboard</p>
-            <h1 className="mt-1 text-3xl font-black tracking-tight text-[#0c2c51] sm:text-4xl">Your family’s learning</h1>
+            <h1 className="mt-1 break-words text-3xl font-black tracking-tight text-[#0c2c51] sm:text-4xl">{parentName ? `Welcome, ${parentName}` : "Welcome to your dashboard"}</h1>
             <p className="mt-2 max-w-xl text-base text-slate-600">A clear view of progress, goals and access in one place.</p>
           </div>
           <Link href="/parent/learners" className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#dbe8f2] bg-white px-4 py-3 text-sm font-black text-[#174b7b] hover:bg-[#eff8fb]"><Users size={18} /> Manage learners</Link>
