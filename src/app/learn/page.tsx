@@ -8,6 +8,16 @@ import { createClient } from "@/lib/supabase/client";
 type Topic = { id:string; title:string; description:string; level:string; lessons:number; sort_order:number };
 type Lesson = { id:string; topic_id:string; title:string; sort_order:number };
 type Progress = { lesson_id:string; completed_at:string|null };
+const gradeOneSkills = [
+  {title:"Counting and adding",topic:"g1-numbers-50",skill:"Counting and adding"},
+  {title:"Number names",topic:"g1-numbers-100",skill:"Number names"},
+  {title:"Tens and ones",topic:"g1-numbers-100",skill:"Tens and ones"},
+  {title:"Before and after",topic:"g1-numbers-100",skill:"Before and after"},
+  {title:"Comparing numbers",topic:"g1-numbers-100",skill:"Comparing numbers"},
+  {title:"Ordering numbers",topic:"g1-numbers-100",skill:"Ordering numbers"},
+  {title:"Number patterns",topic:"g1-numbers-100",skill:"Number patterns"},
+  {title:"Skip counting",topic:"g1-numbers-100",skill:"Skip counting"},
+];
 
 export default function LearnPage() {
   const [topics,setTopics]=useState<Topic[]>([]);
@@ -90,6 +100,7 @@ export default function LearnPage() {
             <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4"><span className="text-sm font-semibold text-slate-600">{topicLessons.length?"Lessons and practice":"Practice questions"}</span><span className="inline-flex items-center gap-1 text-sm font-black text-violet-600">{allDone?"Review":topicLessons.length?"View lessons":"Practise"}<ArrowRight size={16}/></span></div>
           </Link>})}</div>:<div className="mt-5 rounded-3xl bg-white p-7 text-slate-600">Topics for {grade} are being prepared.</div>}
       </section>
+      {grade==="Grade 1"&&<section className="mt-9"><p className="text-sm font-black uppercase tracking-[0.15em] text-violet-600">Grade 1 skills</p><h2 className="mt-1 text-2xl font-black">Practise a specific skill</h2><div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{gradeOneSkills.map(item=><Link key={item.skill} href={`/training/practice?topic=${encodeURIComponent(item.topic)}&skill=${encodeURIComponent(item.skill)}&grade=Grade%201`} className="flex min-h-20 items-center justify-between gap-3 rounded-2xl border border-violet-100 bg-white p-4 font-bold shadow-sm hover:border-violet-300 hover:shadow-md"><span>{item.title}</span><ArrowRight size={18} className="shrink-0 text-violet-600"/></Link>)}</div></section>}
     </div>
   </main>;
 }
