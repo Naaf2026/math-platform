@@ -163,7 +163,21 @@ export default function DashboardPage() {
     </div>
   </Link>
 
-  <Link href="/revision" className="order-4 group relative h-auto min-h-[320px] overflow-hidden rounded-[32px] border-2 border-[#67c9a5] bg-[#eafbf4] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[clamp(320px,calc(100dvh-340px),360px)] md:min-h-0">
+  <Link href="/worksheets" className="order-4 group relative h-auto min-h-[320px] overflow-hidden rounded-[32px] border-2 border-[#f0b95b] bg-[#fff8df] text-left shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[clamp(320px,calc(100dvh-340px),360px)] md:min-h-0">
+    <div className="absolute inset-x-0 top-0 flex h-[49%] items-center justify-center overflow-hidden rounded-t-[30px] bg-gradient-to-br from-[#fff1a8] via-[#ffe08a] to-[#ffd36b]" aria-hidden="true">
+      <span className="absolute left-[13%] top-[15%] text-4xl opacity-80">✏️</span>
+      <span className="absolute right-[14%] top-[13%] text-4xl opacity-80">➕</span>
+      <span className="absolute bottom-[14%] right-[18%] text-4xl opacity-75">📏</span>
+      <span className="relative text-[clamp(72px,8vw,105px)] drop-shadow-xl transition duration-300 group-hover:scale-105">📝</span>
+    </div>
+    <div className="absolute bottom-0 left-4 right-4 top-[46%] rounded-t-[42px] bg-[#fffdf4] flex flex-col justify-end px-2 pb-[64px] pt-3">
+      <h2 className="text-[25px] font-black leading-[0.95] text-[#183b68] sm:text-[28px]">Worksheets</h2>
+      <p className="mt-2 text-[13px] font-bold text-[#55708b]">Practise maths with printable worksheets</p>
+      <div className="absolute bottom-3 left-2 right-2 rounded-full bg-[#e8a72c] px-4 py-2.5 text-center text-[16px] font-black text-white shadow-md">Open →</div>
+    </div>
+  </Link>
+
+  <Link href="/revision" className="order-5 group relative h-auto min-h-[320px] overflow-hidden rounded-[32px] border-2 border-[#67c9a5] bg-[#eafbf4] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[clamp(320px,calc(100dvh-340px),360px)] md:min-h-0">
     <div className="absolute inset-x-0 top-0 h-[49%] overflow-hidden rounded-t-[30px] bg-[#a6dcf6]"><img src="/dashboard-assets/dashboard-revision.webp" alt="Boy studying for revision" className="block h-full w-full object-cover object-center" /></div>
     <div className="absolute left-4 right-4 top-[46%] bottom-0 rounded-t-[42px] bg-[#f4fffa] flex flex-col justify-end px-2 pb-[64px] pt-3">
       <h2 className="text-[28px] font-black leading-none text-[#183b68]">Revision</h2>
@@ -172,7 +186,7 @@ export default function DashboardPage() {
     </div>
   </Link>
 
-  <Link href="/peer-challenge" className="order-5 group relative h-auto min-h-[320px] overflow-hidden rounded-[32px] border-2 border-[#ffab8d] bg-[#fff0e9] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[clamp(320px,calc(100dvh-340px),360px)] md:min-h-0">
+  <Link href="/peer-challenge" className="order-6 group relative h-auto min-h-[320px] overflow-hidden rounded-[32px] border-2 border-[#ffab8d] bg-[#fff0e9] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[clamp(320px,calc(100dvh-340px),360px)] md:min-h-0">
     <div className="absolute inset-x-0 top-0 h-[49%] overflow-hidden rounded-t-[30px] bg-[#ff855f]"><img src="/dashboard-assets/dashboard-buddy-challenge.webp" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/dashboard-assets/dashboard-peer.svg"; }} alt="Two young learners enjoying a friendly maths challenge" className="block h-full w-full object-cover object-center" /></div>
     <div className="absolute left-4 right-4 top-[46%] bottom-0 rounded-t-[42px] bg-[#fff3ef] flex flex-col justify-end px-2 pb-[64px] pt-3">
       <h2 className="text-[25px] font-black leading-none sm:text-[28px]">Buddy Challenge</h2>
