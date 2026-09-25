@@ -2,99 +2,30 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CheckCircle2, RotateCcw } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, ChevronRight, FileText, RotateCcw } from "lucide-react";
 
-type Question = { prompt: string; choices: string[]; answer: string; explanation: string; visual?: string };
-type Worksheet = { id: string; title: string; description: string; example: string; questions: Question[] };
-const q = (prompt: string, choices: string[], answer: string, explanation: string, visual?: string): Question => ({ prompt, choices, answer, explanation, visual });
-const sheets: Worksheet[] = [
-  { id: "counting", title: "Count the objects", description: "Count pictures up to 20", example: "Count each object once. Touch each picture as you count.", questions: [
-    q("How many shells are there?",["4","5","6"],"5","There are 5 shells.","🐚 🐚 🐚 🐚 🐚"),
-    q("How many fish are there?",["6","7","8"],"7","There are 7 fish.","🐟 🐟 🐟 🐟 🐟 🐟 🐟"),
-    q("How many stars are there?",["8","9","10"],"9","There are 9 stars.","⭐ ⭐ ⭐ ⭐ ⭐\n⭐ ⭐ ⭐ ⭐"),
-    q("How many coconuts are there?",["3","4","5"],"4","There are 4 coconuts.","🥥 🥥 🥥 🥥"),
-    q("What number comes after 11?",["10","12","13"],"12","Count on one from 11 to get 12."),
-    q("How many turtles are there?",["5","6","7"],"6","There are 6 turtles.","🐢 🐢 🐢 🐢 🐢 🐢"),
-    q("What number comes before 15?",["13","14","16"],"14","Count back one from 15 to get 14."),
-    q("How many flowers are there?",["10","11","12"],"10","There are 10 flowers.","🌼 🌼 🌼 🌼 🌼\n🌼 🌼 🌼 🌼 🌼"),
-    q("Count on: 16, 17, 18, …",["19","20","15"],"19","19 comes after 18."),
-    q("How many shells are there?",["12","13","14"],"12","Two groups of 6 make 12.","🐚 🐚 🐚 🐚 🐚 🐚\n🐚 🐚 🐚 🐚 🐚 🐚")
-  ]},
-  { id: "compare", title: "Compare numbers", description: "More, fewer and equal", example: "Compare the numbers. The larger number represents more objects.", questions: [
-    q("Which number is greater?",["8","12","Equal"],"12","12 is greater than 8."),
-    q("Which number is smaller?",["7","3","Equal"],"3","3 is smaller than 7."),
-    q("Compare 10 and 10.",["10 is greater","10 is smaller","Equal"],"Equal","Both numbers are 10."),
-    q("Which group has more?",["Shells","Fish","Equal"],"Fish","There are 5 fish and 3 shells.","🐚 🐚 🐚\n🐟 🐟 🐟 🐟 🐟"),
-    q("Which number is greater?",["16","19","Equal"],"19","19 is greater than 16."),
-    q("Which number is smaller?",["14","11","Equal"],"11","11 is smaller than 14."),
-    q("Which group has fewer?",["Stars","Turtles","Equal"],"Turtles","There are 4 turtles and 6 stars.","⭐ ⭐ ⭐ ⭐ ⭐ ⭐\n🐢 🐢 🐢 🐢"),
-    q("Compare 15 and 15.",["15 is greater","15 is smaller","Equal"],"Equal","Both numbers are 15."),
-    q("Which number is greater?",["20","18","Equal"],"20","20 is greater than 18."),
-    q("Which number is smaller?",["9","13","Equal"],"9","9 is smaller than 13.")
-  ]},
-  { id: "tens-ones", title: "Tens and ones", description: "Build numbers up to 99", example: "2 tens and 3 ones make 23. Each ten is a group of 10.", questions: [
-    q("2 tens and 7 ones make …",["27","72","9"],"27","2 tens are 20; add 7 ones to make 27."),
-    q("1 ten and 4 ones make …",["14","41","5"],"14","10 + 4 = 14."),
-    q("How many tens are in 30?",["2","3","0"],"3","30 is 3 groups of ten."),
-    q("How many ones are in 46?",["4","6","10"],"6","The last digit of 46 shows 6 ones."),
-    q("5 tens and 2 ones make …",["25","52","7"],"52","50 + 2 = 52."),
-    q("How many tens are in 68?",["6","8","68"],"6","68 has 6 tens and 8 ones."),
-    q("3 tens and 0 ones make …",["3","30","33"],"30","Three groups of ten make 30."),
-    q("How many ones are in 91?",["1","9","10"],"1","91 has 9 tens and 1 one."),
-    q("7 tens and 5 ones make …",["57","75","12"],"75","70 + 5 = 75."),
-    q("How many tens and ones are in 84?",["8 tens, 4 ones","4 tens, 8 ones","8 tens, 0 ones"],"8 tens, 4 ones","84 is 80 + 4.")
-  ]},
-  { id: "addition", title: "Add with pictures", description: "Add within 20", example: "Count the first group, then count on using the second group.", questions: [
-    q("2 + 3 = ?",["4","5","6"],"5","2 and 3 make 5.","🐚 🐚  +  🐚 🐚 🐚"),
-    q("4 + 2 = ?",["5","6","7"],"6","4 and 2 make 6.","⭐ ⭐ ⭐ ⭐  +  ⭐ ⭐"),
-    q("5 + 5 = ?",["9","10","11"],"10","Two groups of 5 make 10."),
-    q("7 + 1 = ?",["7","8","9"],"8","Count on one from 7 to get 8."),
-    q("3 + 6 = ?",["8","9","10"],"9","6, then count on 3: 7, 8, 9."),
-    q("10 + 4 = ?",["13","14","15"],"14","10 and 4 make 14."),
-    q("8 + 2 = ?",["9","10","11"],"10","8, 9, 10: 8 + 2 = 10."),
-    q("6 + 3 = ?",["8","9","10"],"9","Count on from 6: 7, 8, 9."),
-    q("9 + 1 = ?",["9","10","11"],"10","One more than 9 is 10."),
-    q("4 + 4 = ?",["7","8","9"],"8","Double 4 is 8.")
-  ]}
+type Question={prompt:string;choices:string[];answer:string;explanation:string;visual?:string};
+type Worksheet={id:string;topic:string;title:string;description:string;questions:Question[]};
+type Result={score:number;total:number;date:string};
+const q=(prompt:string,choices:string[],answer:string,explanation:string,visual?:string):Question=>({prompt,choices,answer,explanation,visual});
+const worksheets:Worksheet[]=[
+{id:"counting-1",topic:"Numbers",title:"Counting to 20",description:"Count objects and find numbers before and after.",questions:[
+q("How many shells are there?",["4","5","6"],"5","There are 5 shells.","🐚 🐚 🐚 🐚 🐚"),q("How many fish are there?",["6","7","8"],"7","There are 7 fish.","🐟 🐟 🐟 🐟 🐟 🐟 🐟"),q("How many stars are there?",["8","9","10"],"9","There are 9 stars.","⭐ ⭐ ⭐ ⭐ ⭐\n⭐ ⭐ ⭐ ⭐"),q("How many coconuts are there?",["3","4","5"],"4","There are 4 coconuts.","🥥 🥥 🥥 🥥"),q("What number comes after 11?",["10","12","13"],"12","12 comes after 11."),q("How many turtles are there?",["5","6","7"],"6","There are 6 turtles.","🐢 🐢 🐢 🐢 🐢 🐢"),q("What number comes before 15?",["13","14","16"],"14","14 comes before 15."),q("How many flowers are there?",["10","11","12"],"10","There are 10 flowers.","🌼 🌼 🌼 🌼 🌼\n🌼 🌼 🌼 🌼 🌼"),q("Count on: 16, 17, 18, …",["19","20","15"],"19","19 comes after 18."),q("How many shells are there?",["12","13","14"],"12","Two groups of 6 make 12.","🐚 🐚 🐚 🐚 🐚 🐚\n🐚 🐚 🐚 🐚 🐚 🐚")]},
+{id:"compare-1",topic:"Numbers",title:"Comparing Numbers",description:"Choose greater, smaller or equal numbers.",questions:[
+q("Which number is greater?",["8","12","Equal"],"12","12 is greater than 8."),q("Which number is smaller?",["7","3","Equal"],"3","3 is smaller than 7."),q("Compare 10 and 10.",["10 is greater","10 is smaller","Equal"],"Equal","Both are 10."),q("Which group has more?",["Shells","Fish","Equal"],"Fish","There are 5 fish and 3 shells.","🐚 🐚 🐚\n🐟 🐟 🐟 🐟 🐟"),q("Which number is greater?",["16","19","Equal"],"19","19 is greater than 16."),q("Which number is smaller?",["14","11","Equal"],"11","11 is smaller than 14."),q("Which group has fewer?",["Stars","Turtles","Equal"],"Turtles","There are 4 turtles and 6 stars.","⭐ ⭐ ⭐ ⭐ ⭐ ⭐\n🐢 🐢 🐢 🐢"),q("Compare 15 and 15.",["15 is greater","15 is smaller","Equal"],"Equal","Both are 15."),q("Which number is greater?",["20","18","Equal"],"20","20 is greater than 18."),q("Which number is smaller?",["9","13","Equal"],"9","9 is smaller than 13.")]},
+{id:"place-value-1",topic:"Place Value",title:"Tens and Ones",description:"Build numbers using tens and ones.",questions:[
+q("2 tens and 7 ones make …",["27","72","9"],"27","20 + 7 = 27."),q("1 ten and 4 ones make …",["14","41","5"],"14","10 + 4 = 14."),q("How many tens are in 30?",["2","3","0"],"3","30 is 3 tens."),q("How many ones are in 46?",["4","6","10"],"6","46 has 6 ones."),q("5 tens and 2 ones make …",["25","52","7"],"52","50 + 2 = 52."),q("How many tens are in 68?",["6","8","68"],"6","68 has 6 tens."),q("3 tens and 0 ones make …",["3","30","33"],"30","Three tens make 30."),q("How many ones are in 91?",["1","9","10"],"1","91 has 1 one."),q("7 tens and 5 ones make …",["57","75","12"],"75","70 + 5 = 75."),q("How many tens and ones are in 84?",["8 tens, 4 ones","4 tens, 8 ones","8 tens, 0 ones"],"8 tens, 4 ones","84 is 80 + 4.")]},
+{id:"addition-1",topic:"Addition",title:"Addition within 20",description:"Add using pictures and counting on.",questions:[
+q("2 + 3 = ?",["4","5","6"],"5","2 and 3 make 5.","🐚 🐚  +  🐚 🐚 🐚"),q("4 + 2 = ?",["5","6","7"],"6","4 and 2 make 6.","⭐ ⭐ ⭐ ⭐  +  ⭐ ⭐"),q("5 + 5 = ?",["9","10","11"],"10","Two groups of 5 make 10."),q("7 + 1 = ?",["7","8","9"],"8","One more than 7 is 8."),q("3 + 6 = ?",["8","9","10"],"9","3 + 6 = 9."),q("10 + 4 = ?",["13","14","15"],"14","10 + 4 = 14."),q("8 + 2 = ?",["9","10","11"],"10","8 + 2 = 10."),q("6 + 3 = ?",["8","9","10"],"9","6 + 3 = 9."),q("9 + 1 = ?",["9","10","11"],"10","One more than 9 is 10."),q("4 + 4 = ?",["7","8","9"],"8","Double 4 is 8.")]}
 ];
-const key = "fahi-grade-one-worksheets-v1";
-type Result = { score: number; total: number; date: string };
+const storageKey="fahi-grade-one-worksheets-v2";
+const coming=["Number Names","Before & After","Ordering Numbers","Number Patterns","Skip Counting","Subtraction","Shapes","Measurement","Time","Money","Data & Pictographs"];
 
-export default function WorksheetsPage() {
-  const [selected, setSelected] = useState<Worksheet | null>(null);
-  const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number,string>>({});
-  const [submitted, setSubmitted] = useState(false);
-  const [history, setHistory] = useState<Record<string,Result>>({});
-  useEffect(() => {
-    try {
-      const saved: unknown = JSON.parse(localStorage.getItem(key) || "{}");
-      if (saved && typeof saved === "object" && !Array.isArray(saved)) {
-        const valid: Record<string, Result> = {};
-        for (const sheet of sheets) {
-          const result = (saved as Record<string, unknown>)[sheet.id];
-          if (result && typeof result === "object") {
-            const value = result as Result;
-            if (Number.isInteger(value.score) && value.score >= 0 && value.score <= sheet.questions.length && value.total === sheet.questions.length && typeof value.date === "string") valid[sheet.id] = value;
-          }
-        }
-        setHistory(valid);
-      }
-    } catch { /* Storage may be disabled. */ }
-  }, []);
-  const start = (sheet: Worksheet) => { setSelected(sheet); setIndex(0); setAnswers({}); setSubmitted(false); };
-  const submit = () => {
-    if (!selected || Object.keys(answers).length !== selected.questions.length) return;
-    const score = selected.questions.reduce((n,item,i) => n + Number(answers[i] === item.answer),0);
-    const next = { ...history, [selected.id]: { score, total: selected.questions.length, date: new Date().toISOString() } };
-    setHistory(next); setSubmitted(true);
-    try { localStorage.setItem(key, JSON.stringify(next)); } catch { /* The result remains visible for this session. */ }
-  };
-  const question = selected?.questions[index];
-  return <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 px-4 py-7 text-[#15233f] sm:px-6">
-    <div className="mx-auto max-w-5xl">
-      <header className="flex items-center justify-between gap-4"><Link href="/learn" className="inline-flex items-center gap-2 font-bold text-violet-700"><ArrowLeft size={18}/> Learning</Link><span className="rounded-full bg-white px-4 py-2 text-sm font-extrabold shadow-sm">Fahi Hisaabu · Grade 1</span></header>
-      {!selected ? <><section className="mt-7 rounded-[2rem] bg-gradient-to-r from-violet-700 to-cyan-600 p-7 text-white shadow-xl sm:p-10"><p className="font-bold text-cyan-100">LEARN · PRACTISE · GROW</p><h1 className="mt-2 text-3xl font-black sm:text-5xl">Worksheets</h1><p className="mt-3 max-w-2xl text-lg text-violet-50">Short, visual maths practice you can finish at your own pace. Choose a skill to begin.</p></section><section className="mt-8 grid gap-5 sm:grid-cols-2">{sheets.map((sheet,i) => <button key={sheet.id} onClick={() => start(sheet)} className="rounded-3xl border border-violet-100 bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg"><span className="rounded-full bg-violet-50 px-3 py-1 text-sm font-extrabold text-violet-700">Worksheet {i+1} · 10 questions</span><h2 className="mt-5 text-2xl font-black">{sheet.title}</h2><p className="mt-2 text-slate-600">{sheet.description}</p><div className="mt-6 flex items-center justify-between border-t pt-4 font-bold text-violet-700"><span>{history[sheet.id] ? `Last score: ${history[sheet.id].score}/10` : "Start worksheet"}</span><ArrowRight size={19}/></div></button>)}</section><p className="mt-5 text-center text-sm text-slate-500">Worksheet scores are saved in this browser.</p></> : submitted ? <section className="mt-8 rounded-3xl bg-white p-6 shadow-lg sm:p-10"><p className="text-sm font-extrabold uppercase tracking-widest text-violet-700">Worksheet complete</p><h1 className="mt-2 text-3xl font-black">{selected.title}</h1><p className="mt-5 text-5xl font-black text-emerald-600">{history[selected.id]?.score}/{selected.questions.length}</p><p className="mt-2 text-slate-600">Review your answers and try again whenever you are ready.</p><div className="mt-7 space-y-3">{selected.questions.map((item,i) => <div key={i} className={`rounded-2xl border p-4 ${answers[i]===item.answer?"border-emerald-200 bg-emerald-50":"border-amber-200 bg-amber-50"}`}><p className="font-bold">{i+1}. {item.prompt}</p><p className="mt-1 text-sm">Your answer: {answers[i]} · Correct answer: {item.answer}</p><p className="mt-1 text-sm text-slate-600">{item.explanation}</p></div>)}</div><div className="mt-7 flex flex-wrap gap-3"><button onClick={() => start(selected)} className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-5 py-3 font-bold text-white"><RotateCcw size={17}/> Try again</button><button onClick={() => setSelected(null)} className="rounded-xl border px-5 py-3 font-bold">Choose another worksheet</button></div></section> : <section className="mt-8 rounded-3xl bg-white p-5 shadow-lg sm:p-9"><button onClick={() => setSelected(null)} className="text-sm font-bold text-violet-700">← All worksheets</button><div className="mt-5 flex items-center justify-between gap-3"><div><p className="text-sm font-extrabold text-violet-700">{selected.title}</p><h1 className="text-2xl font-black">Question {index+1} of {selected.questions.length}</h1></div><span className="rounded-full bg-cyan-50 px-3 py-2 text-sm font-bold text-cyan-800">{Object.keys(answers).length}/{selected.questions.length} answered</span></div><div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full bg-violet-600" style={{width:`${((index+1)/selected.questions.length)*100}%`}}/></div><p className="mt-6 rounded-2xl bg-violet-50 p-4 text-sm font-semibold text-violet-900">Remember: {selected.example}</p><div className="mt-8 min-h-48"><h2 className="text-xl font-black sm:text-2xl">{question?.prompt}</h2>{question?.visual && <div aria-label={question.visual.replaceAll("\n", " ")} className="mt-5 whitespace-pre-line rounded-2xl bg-cyan-50 p-5 text-center text-3xl leading-[2.1] tracking-wide sm:text-4xl">{question.visual}</div>}<div className="mt-6 grid gap-3 sm:grid-cols-3">{question?.choices.map(choice => <button key={choice} onClick={() => setAnswers({...answers,[index]:choice})} aria-pressed={answers[index]===choice} className={`min-h-16 rounded-2xl border-2 px-4 py-3 text-lg font-black transition ${answers[index]===choice?"border-violet-700 bg-violet-100 text-violet-900":"border-slate-200 bg-white hover:border-violet-400"}`}>{choice}</button>)}</div></div><div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-5"><button disabled={index===0} onClick={() => setIndex(index-1)} className="rounded-xl px-4 py-3 font-bold text-violet-700 disabled:opacity-40">Previous</button>{index < selected.questions.length-1 ? <button onClick={() => setIndex(index+1)} className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-5 py-3 font-bold text-white">Next <ArrowRight size={17}/></button> : <button disabled={Object.keys(answers).length !== selected.questions.length} onClick={submit} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"><CheckCircle2 size={17}/> Submit worksheet</button>}</div>{index===selected.questions.length-1 && Object.keys(answers).length!==selected.questions.length && <p className="mt-3 text-right text-sm text-slate-600">Answer every question before submitting. Use Previous to check skipped questions.</p>}</section>}
-    </div>
-  </main>;
+export default function WorksheetsPage(){
+ const [grade,setGrade]=useState(1); const [selected,setSelected]=useState<Worksheet|null>(null); const [answers,setAnswers]=useState<Record<number,string>>({}); const [submitted,setSubmitted]=useState(false); const [history,setHistory]=useState<Record<string,Result>>({});
+ useEffect(()=>{try{setHistory(JSON.parse(localStorage.getItem(storageKey)||"{}"))}catch{}},[]);
+ const submit=()=>{if(!selected||Object.keys(answers).length!==selected.questions.length)return;const score=selected.questions.reduce((n,item,i)=>n+Number(answers[i]===item.answer),0);const next={...history,[selected.id]:{score,total:selected.questions.length,date:new Date().toISOString()}};setHistory(next);setSubmitted(true);try{localStorage.setItem(storageKey,JSON.stringify(next))}catch{}};
+ const open=(sheet:Worksheet)=>{setSelected(sheet);setAnswers({});setSubmitted(false)};
+ if(selected)return <main className="min-h-screen bg-[#eef2f7] px-4 py-6 text-[#10213d]"><div className="mx-auto max-w-4xl"><button onClick={()=>setSelected(null)} className="inline-flex items-center gap-2 font-black text-violet-700"><ArrowLeft size={18}/> Grade 1 worksheets</button><section className="mt-5 rounded-2xl bg-white p-5 shadow-sm sm:p-9"><div className="border-b border-slate-200 pb-5"><p className="text-sm font-black uppercase tracking-wider text-violet-600">Fahi Hisaabu · Grade 1 · {selected.topic}</p><h1 className="mt-2 text-3xl font-black">{selected.title}</h1><p className="mt-2 text-slate-600">{selected.description} Answer all {selected.questions.length} questions, then check your work.</p></div>{submitted&&<div className="my-6 rounded-2xl bg-emerald-50 p-5 text-center"><p className="font-black text-emerald-700">Worksheet complete</p><p className="mt-1 text-4xl font-black text-emerald-700">{history[selected.id]?.score}/{selected.questions.length}</p></div>}<div className="mt-6 grid gap-x-8 gap-y-7 md:grid-cols-2">{selected.questions.map((item,i)=><div key={i} className="border-b border-slate-100 pb-6"><p className="text-lg font-black"><span className="mr-2 text-violet-600">{i+1}.</span>{item.prompt}</p>{item.visual&&<div className="mt-3 whitespace-pre-line rounded-xl bg-cyan-50 p-3 text-center text-2xl leading-loose">{item.visual}</div>}<div className="mt-3 grid gap-2">{item.choices.map(choice=><button key={choice} disabled={submitted} onClick={()=>setAnswers({...answers,[i]:choice})} className={`rounded-xl border-2 px-3 py-2 text-left font-bold ${answers[i]===choice?"border-violet-600 bg-violet-50":"border-slate-200"} ${submitted&&choice===item.answer?"!border-emerald-500 !bg-emerald-50":""}`}>{choice}</button>)}</div>{submitted&&<p className={`mt-2 text-sm font-bold ${answers[i]===item.answer?"text-emerald-700":"text-amber-700"}`}>{answers[i]===item.answer?"Correct!":`Correct answer: ${item.answer}`} <span className="font-medium text-slate-500">{item.explanation}</span></p>}</div>)}</div><div className="mt-7 flex flex-wrap justify-end gap-3 border-t pt-5">{submitted?<button onClick={()=>open(selected)} className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-5 py-3 font-black text-white"><RotateCcw size={17}/> Try again</button>:<button disabled={Object.keys(answers).length!==selected.questions.length} onClick={submit} className="rounded-xl bg-emerald-600 px-6 py-3 font-black text-white disabled:opacity-40">Check Answers</button>}</div></section></div></main>;
+ return <main className="min-h-screen bg-[#f6f8fc] text-[#10213d]"><div className="mx-auto max-w-6xl px-4 py-6 sm:px-6"><header className="flex items-center justify-between gap-4"><Link href="/learn" className="inline-flex items-center gap-2 font-black text-violet-700"><ArrowLeft size={18}/> Learning</Link><div className="flex items-center gap-2"><span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 font-black text-white">FH</span><div><p className="font-black leading-none">Fahi Hisaabu</p><p className="mt-1 text-xs font-bold text-slate-500">Maths Worksheets</p></div></div></header><section className="mt-6 rounded-[2rem] bg-gradient-to-r from-violet-700 to-cyan-600 p-7 text-white sm:p-10"><p className="text-sm font-black uppercase tracking-widest text-cyan-100">Practise · Improve · Master</p><h1 className="mt-2 text-4xl font-black sm:text-5xl">Maths Worksheets</h1><p className="mt-3 max-w-2xl text-lg text-violet-50">Curriculum-based online worksheets for Maldives primary learners. Choose a grade, topic and worksheet to begin.</p></section><section className="mt-7"><p className="text-sm font-black uppercase tracking-wider text-slate-500">Choose grade</p><div className="mt-3 flex flex-wrap gap-2">{[1,2,3,4,5].map(g=><button key={g} onClick={()=>setGrade(g)} className={`rounded-xl px-5 py-3 font-black ${grade===g?"bg-violet-700 text-white shadow":"border border-slate-200 bg-white"}`}>Grade {g}</button>)}</div></section>{grade!==1?<section className="mt-8 rounded-3xl border border-violet-100 bg-white p-10 text-center shadow-sm"><BookOpen className="mx-auto text-violet-500" size={42}/><h2 className="mt-4 text-2xl font-black">Grade {grade} worksheets are coming soon</h2><p className="mt-2 text-slate-600">We are preparing curriculum-based worksheets for this grade.</p></section>:<><section className="mt-8"><div><p className="text-sm font-black uppercase tracking-wider text-violet-600">Grade 1</p><h2 className="mt-1 text-2xl font-black">Browse worksheets by topic</h2></div><div className="mt-5 space-y-5">{Array.from(new Set(worksheets.map(w=>w.topic))).map(topic=><div key={topic} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="flex items-center gap-3 border-b bg-slate-50 px-5 py-4"><span className="grid h-9 w-9 place-items-center rounded-xl bg-violet-100 text-violet-700"><BookOpen size={19}/></span><h3 className="text-lg font-black">{topic}</h3></div>{worksheets.filter(w=>w.topic===topic).map(sheet=>{const result=history[sheet.id];return <button key={sheet.id} onClick={()=>open(sheet)} className="flex w-full items-center gap-4 border-b border-slate-100 px-5 py-5 text-left last:border-0 hover:bg-violet-50/50"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-cyan-50 text-cyan-700"><FileText size={20}/></span><div className="min-w-0 flex-1"><p className="font-black">{sheet.title}</p><p className="mt-1 text-sm text-slate-500">{sheet.description} · {sheet.questions.length} questions</p></div>{result&&<span className="hidden rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 sm:inline-flex"><CheckCircle2 size={14} className="mr-1"/>{result.score}/{result.total}</span>}<ChevronRight className="shrink-0 text-slate-400" size={20}/></button>})}</div>)}</div></section><section className="mt-8 rounded-3xl border border-dashed border-slate-300 bg-white/70 p-6"><h2 className="font-black">More Grade 1 topics being prepared</h2><div className="mt-4 flex flex-wrap gap-2">{coming.map(item=><span key={item} className="rounded-full bg-slate-100 px-3 py-2 text-sm font-bold text-slate-600">{item}</span>)}</div></section></>}</div></main>
 }
