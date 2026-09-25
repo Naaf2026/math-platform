@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { ArrowLeft, CheckCircle2, Loader2, Mail, UserRound, Users } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Loader2, LockKeyhole, Mail, Phone, ShieldCheck, UserRound, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getMyLearners, type LearnerAccount } from "@/lib/parent-learners";
 
@@ -87,30 +87,40 @@ export default function ParentProfilePage() {
     }
   }
 
+  const initials = savedName.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0].toUpperCase()).join("") || "P";
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-5 sm:p-8">
-      <div className="mx-auto max-w-4xl">
-        <Link href="/parent" className="inline-flex items-center gap-2 font-bold text-slate-600 hover:text-violet-700"><ArrowLeft size={18}/> Parent dashboard</Link>
-        <section className="mt-7 rounded-[2rem] bg-gradient-to-br from-violet-700 via-indigo-600 to-blue-500 p-7 text-white shadow-2xl sm:p-9">
-          <div className="flex items-center gap-4"><div className="rounded-2xl bg-white/15 p-3"><UserRound size={28}/></div><div><p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-100">Family account</p><h1 className="mt-1 text-3xl font-black sm:text-4xl">Parent Profile</h1><p className="mt-2 text-sm text-indigo-100">Manage your account details and your learners in one place.</p></div></div>
-        </section>
-        {loading ? <div className="mt-6 rounded-3xl bg-white p-8 text-center font-bold text-slate-500"><Loader2 className="mx-auto mb-2 animate-spin" size={22}/> Loading profile…</div> : <>
-          <section className="mt-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-violet-100 sm:p-8">
-            <h2 className="text-xl font-black text-[#071b3a]">Your details</h2>
-            <p className="mt-1 text-sm text-slate-500">Your name is displayed on your family account.</p>
-            <form onSubmit={save} className="mt-6 space-y-5">
-              <label className="block"><span className="text-sm font-bold text-slate-700">Full name</span><input required minLength={2} maxLength={100} autoComplete="name" value={name} onChange={e => setName(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100" placeholder="Your full name" /></label>
-              <label className="block"><span className="text-sm font-bold text-slate-700">Email address</span><span className="relative mt-1.5 block"><Mail size={18} className="absolute left-4 top-3.5 text-slate-400"/><input required type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100" /></span><span className="mt-1 block text-xs text-slate-500">Changing your sign-in email requires confirmation by email.</span></label><label className="block"><span className="text-sm font-bold text-slate-700">Mobile phone number <span className="text-red-600">*</span></span><input required type="tel" autoComplete="tel" inputMode="tel" value={mobilePhone} onChange={e => setMobilePhone(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100" placeholder="+9607777777" /><span className="mt-1 block text-xs text-slate-500">Include your country code, for example +9607777777.</span></label>
-              {joined && <p className="text-xs font-semibold text-slate-500">Account created {new Intl.DateTimeFormat("en-MV", { day: "numeric", month: "long", year: "numeric" }).format(new Date(joined))}</p>}
-              {error && <p role="alert" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{error}</p>}
-              {message && <p role="status" className="flex items-center gap-2 rounded-xl bg-emerald-50 p-3 text-sm font-bold text-emerald-800"><CheckCircle2 size={17}/>{message}</p>}
-              <button type="submit" disabled={saving || (name.trim() === savedName && mobilePhone.replace(/[\s()-]/g, "") === savedMobilePhone && email.trim().toLowerCase() === savedEmail.toLowerCase())} className="inline-flex items-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3 font-black text-white disabled:cursor-not-allowed disabled:opacity-50">{saving && <Loader2 className="animate-spin" size={17}/>} {saving ? "Saving…" : "Save changes"}</button>
-            </form>
+    <main className="min-h-screen bg-[#f3f8fd] px-4 py-7 text-[#10294b] sm:px-8 sm:py-9">
+      <div className="mx-auto max-w-6xl">
+        <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div><p className="text-xs font-black uppercase tracking-[0.16em] text-[#087b92]">Parent dashboard / Profile</p><h1 className="mt-1 text-3xl font-black tracking-tight text-[#0c2c51] sm:text-4xl">Your profile</h1><p className="mt-2 text-sm text-slate-600 sm:text-base">Your family account, all in one place.</p></div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#dceaf4] bg-white px-4 py-2.5 text-sm font-bold text-[#285671]"><ShieldCheck size={17} /> Parent account</span>
+        </header>
+
+        {loading ? <div className="rounded-3xl bg-white p-8 text-center font-bold text-slate-500"><Loader2 className="mx-auto mb-2 animate-spin" size={22} /> Loading profile…</div> : <>
+          <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#073e78] via-[#096d9e] to-[#0ca69f] p-6 text-white shadow-[0_17px_33px_#063d722c] sm:p-8" aria-label="Parent account summary">
+            <div className="relative z-10 flex flex-wrap items-center justify-between gap-6"><div className="flex min-w-0 items-center gap-5"><span className="grid h-20 w-20 shrink-0 place-items-center rounded-3xl bg-white text-2xl font-black text-[#0876ab] shadow-lg sm:h-[90px] sm:w-[90px] sm:text-3xl" aria-hidden="true">{initials}</span><div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.12em] text-[#bcf2f4]">Your account</p><h2 className="mt-1 break-words text-2xl font-black sm:text-3xl">{savedName || "Parent account"}</h2><p className="mt-1 break-all text-sm text-[#d7f6fc]">{savedEmail}</p></div></div><div className="text-left sm:text-right"><p className="text-sm text-[#cff3f6]">Family overview</p><p className="mt-1 text-lg font-black">{learners.length} linked {learners.length === 1 ? "learner" : "learners"}</p></div></div>
           </section>
-          <section className="mt-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-violet-100 sm:p-8">
-            <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="flex items-center gap-2 text-xl font-black text-[#071b3a]"><Users className="text-violet-600" size={21}/> Your learners</h2><p className="mt-1 text-sm text-slate-500">{learners.length} {learners.length === 1 ? "learner" : "learners"} linked to this account</p></div><Link href="/parent/learners" className="rounded-xl bg-violet-50 px-4 py-2.5 text-sm font-black text-violet-700 hover:bg-violet-100">Manage learners</Link></div>
-            {learners.length > 0 ? <div className="mt-5 grid gap-3 sm:grid-cols-2">{learners.map(learner => <div key={learner.learner_id} className="flex items-center gap-3 rounded-2xl bg-slate-50 p-4"><span className="text-3xl">{learner.avatar_emoji || "🧑‍🎓"}</span><div className="min-w-0"><p className="truncate font-black text-[#071b3a]">{learner.display_name}</p><p className="text-sm text-slate-500">{learner.grade || "Grade not set"}</p></div></div>)}</div> : <p className="mt-5 text-sm text-slate-500">No learners linked yet. <Link href="/parent/learners" className="font-bold text-violet-700 underline">Add a learner</Link></p>}
-          </section>
+
+          <div className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(280px,.8fr)]">
+            <section className="rounded-[19px] border border-[#e2edf5] bg-white p-5 shadow-sm sm:p-7" aria-labelledby="personal-info-title">
+              <div className="flex items-start justify-between gap-3"><div><h2 id="personal-info-title" className="text-xl font-black text-[#133d5f]">Personal information</h2><p className="mt-1 text-sm text-slate-600">These details appear on your family account.</p></div><UserRound size={22} className="shrink-0 text-[#0aa6a2]" /></div>
+              <form onSubmit={save} className="mt-6">
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <label className="block sm:col-span-2"><span className="inline-flex items-center gap-2 text-sm font-bold text-[#31536d]"><UserRound size={16} className="text-[#0da4a0]" /> Full name</span><input required minLength={2} maxLength={100} autoComplete="name" value={name} onChange={e => setName(e.target.value)} className="mt-2 w-full rounded-xl border border-[#d8e5ef] bg-[#fafdff] px-4 py-3 text-base text-[#133653] outline-none focus:border-[#0aa6a2] focus:ring-2 focus:ring-[#0aa6a2]/20" placeholder="Your full name" /></label>
+                  <label className="block"><span className="inline-flex items-center gap-2 text-sm font-bold text-[#31536d]"><Mail size={16} className="text-[#0da4a0]" /> Email address</span><input required type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-2 w-full rounded-xl border border-[#d8e5ef] bg-[#fafdff] px-4 py-3 text-base text-[#133653] outline-none focus:border-[#0aa6a2] focus:ring-2 focus:ring-[#0aa6a2]/20" /><span className="mt-1.5 block text-xs text-slate-500">Changing email requires confirmation.</span></label>
+                  <label className="block"><span className="inline-flex items-center gap-2 text-sm font-bold text-[#31536d]"><Phone size={16} className="text-[#0da4a0]" /> Mobile number</span><input required type="tel" autoComplete="tel" inputMode="tel" value={mobilePhone} onChange={e => setMobilePhone(e.target.value)} className="mt-2 w-full rounded-xl border border-[#d8e5ef] bg-[#fafdff] px-4 py-3 text-base text-[#133653] outline-none focus:border-[#0aa6a2] focus:ring-2 focus:ring-[#0aa6a2]/20" placeholder="+9607777777" /><span className="mt-1.5 block text-xs text-slate-500">Include your country code, for example +9607777777.</span></label>
+                </div>
+                {error && <p role="alert" className="mt-5 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{error}</p>}
+                {message && <p role="status" className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-50 p-3 text-sm font-bold text-emerald-800"><CheckCircle2 size={17} />{message}</p>}
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#e7eef5] pt-5"><span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500"><LockKeyhole size={16} /> {joined ? `Account created ${new Intl.DateTimeFormat("en-MV", { day: "numeric", month: "long", year: "numeric" }).format(new Date(joined))}` : "Your details are private"}</span><button type="submit" disabled={saving || (name.trim() === savedName && mobilePhone.replace(/[\s()-]/g, "") === savedMobilePhone && email.trim().toLowerCase() === savedEmail.toLowerCase())} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#087bc3] to-[#0da59d] px-5 py-3 text-sm font-black text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-50">{saving ? <Loader2 className="animate-spin" size={17} /> : <CheckCircle2 size={17} />} {saving ? "Saving…" : "Save changes"}</button></div>
+              </form>
+            </section>
+            <aside className="grid gap-5">
+              <section className="rounded-[19px] border border-[#e2edf5] bg-white p-5 shadow-sm sm:p-6" aria-labelledby="linked-learners-title"><h2 id="linked-learners-title" className="text-lg font-black text-[#133d5f]">Your learners</h2><p className="mt-1 text-sm text-slate-600">Accounts linked to you.</p><div className="mt-4 space-y-2">{learners.length ? learners.map(learner => <div key={learner.learner_id} className="flex items-center gap-3 rounded-xl bg-[#f0f9fb] p-3"><span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white text-2xl" aria-hidden="true">{learner.avatar_emoji || "🧑‍🎓"}</span><div className="min-w-0"><p className="truncate text-sm font-black text-[#153e5d]">{learner.display_name}</p><p className="text-xs text-slate-600">{learner.grade || "Grade not set"}{learner.account_status ? ` · ${learner.account_status === "active" ? "Account enabled" : "Account disabled"}` : ""}</p></div></div>) : <p className="rounded-xl bg-[#f0f9fb] p-4 text-sm text-slate-600">No learners linked yet.</p>}</div><Link href="/parent/learners" className="mt-4 flex items-center justify-between rounded-xl bg-[#e9f7f6] px-4 py-3 text-sm font-black text-[#078287] hover:bg-[#dcf2ef]"><span>Manage learners</span><ArrowUpRight size={18} /></Link></section>
+              <section className="rounded-[19px] border border-[#e2edf5] bg-white p-5 shadow-sm sm:p-6"><h2 className="text-lg font-black text-[#133d5f]">Account protection</h2><div className="mt-4 flex items-start gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#e7f8ee] text-[#1eac6e]"><ShieldCheck size={19} /></span><div><p className="text-sm font-bold text-[#264b62]">Your learner information stays connected to your account.</p><p className="mt-1 text-xs leading-5 text-slate-600">Keep your contact details current to receive important account updates.</p></div></div></section>
+            </aside>
+          </div>
         </>}
       </div>
     </main>
