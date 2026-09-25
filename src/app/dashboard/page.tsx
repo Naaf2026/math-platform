@@ -142,7 +142,7 @@ export default function DashboardPage() {
     <div className="absolute left-4 right-4 top-[40%] bottom-0 rounded-t-[48px] bg-white px-2 pt-5">
       <div className="flex items-start justify-between gap-3">
         <h2 className="min-w-0 pr-1 text-[25px] font-black leading-[0.95] text-[#183b68] sm:text-[28px]">Visual<br />Math Lab</h2>
-        <div className="shrink-0 rounded-full bg-[#fff1c7] px-3 py-2 text-xs font-black text-[#9b6a00]"><Crown size={15} className="mr-1 inline" />Premium</div>
+        
       </div>
       <p className="mt-2 text-[13px] font-bold text-[#55708b]">👀 &nbsp;See, explore and solve maths visually</p>
       <div className="absolute bottom-4 left-2 right-2 rounded-full bg-[#735fe6] px-4 py-2.5 text-center text-[16px] font-black text-white shadow-md">Start →</div>
