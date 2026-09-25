@@ -21,7 +21,7 @@ begin
   ) then raise exception 'Parent access required'; end if;
   if char_length(v_name) < 2 or char_length(v_name) > 100 then
     raise exception 'Name must be between 2 and 100 characters'; end if;
-  if v_phone !~ '^\+[1-9][0-9]{7,14}$' then
+  if v_phone !~ '^[+][1-9][0-9]{7,14}$' then
     raise exception 'Enter a mobile number with country code, for example +9607777777'; end if;
   update public.profiles
   set full_name = v_name, display_name = v_name,
@@ -45,7 +45,7 @@ as $$
 declare
   v_phone text := regexp_replace(coalesce(new.raw_user_meta_data->>'mobile_phone', ''), '[[:space:]()-]', '', 'g');
 begin
-  if v_phone ~ '^\+[1-9][0-9]{7,14}$' then
+  if v_phone ~ '^[+][1-9][0-9]{7,14}$' then
     update public.profiles set mobile_phone = v_phone where id = new.id;
   end if;
   return new;
