@@ -61,6 +61,9 @@ export default function ParentProfilePage() {
       if (!supabase) return;
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) return;
+      if (pendingEmail && user.email?.toLowerCase() === pendingEmail.toLowerCase()) {
+        setMessage("Your new email address is verified and ready to use.");
+      }
       setSavedEmail(user.email || "");
       setPendingEmail(user.new_email && user.new_email.toLowerCase() !== user.email?.toLowerCase() ? user.new_email : "");
       // Do not replace an address the parent is currently editing.
@@ -68,7 +71,7 @@ export default function ParentProfilePage() {
     }
     window.addEventListener("focus", refreshEmail);
     return () => window.removeEventListener("focus", refreshEmail);
-  }, [savedEmail]);
+  }, [savedEmail, pendingEmail]);
 
   async function save(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
