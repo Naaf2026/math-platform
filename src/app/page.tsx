@@ -38,6 +38,7 @@ export default function HomePage() {
           </Link>
 
           <div className="ml-auto flex items-center gap-2 lg:ml-1">
+            <Link href="/pricing" className="hidden rounded-xl border-2 border-[#f49c20] px-4 py-2.5 text-sm font-black text-[#a65b00] transition hover:bg-[#fff3df] sm:inline-flex">Pricing</Link>
             <button type="button" onClick={() => setLearnerLoginOpen(true)} className="hidden rounded-xl border-2 border-[#168ff0] px-5 py-2.5 text-sm font-black text-[#07528e] sm:inline-flex">Student Login</button>
             <Link href="/login" className="hidden rounded-xl border-2 border-[#159c89] px-3 py-2.5 text-sm font-black text-[#087966] lg:inline-flex xl:px-4">Parent Login</Link>
             <Link href="/login" className="hidden rounded-xl bg-[#ff6b22] px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-200 sm:inline-flex">Try Fahi Hisaabu for Free!!</Link>
@@ -47,6 +48,7 @@ export default function HomePage() {
         {menuOpen && (
           <div className="border-t border-[#e1eef7] bg-white px-5 py-4 lg:hidden">
             <div className="grid gap-2">
+              <Link href="/pricing" onClick={() => setMenuOpen(false)} className="rounded-xl border-2 border-[#f49c20] px-4 py-3 text-center font-black text-[#a65b00]">Pricing</Link>
               <button type="button" onClick={() => { setMenuOpen(false); setLearnerLoginOpen(true); }} className="rounded-xl border-2 border-[#168ff0] px-4 py-3 text-center font-black text-[#07528e]">Student Login</button>
               <Link href="/login" onClick={() => setMenuOpen(false)} className="rounded-xl border-2 border-[#159c89] px-4 py-3 text-center font-black text-[#087966]">Parent Login</Link>
               <Link href="/login" className="mt-2 rounded-xl bg-[#ff6b22] px-4 py-3 text-center font-black text-white">Try Fahi Hisaabu for Free!!</Link>
