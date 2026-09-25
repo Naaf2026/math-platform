@@ -40,7 +40,7 @@ export default function HomePage() {
           <div className="ml-auto flex items-center gap-2 lg:ml-1">
             <button type="button" onClick={() => setLearnerLoginOpen(true)} className="hidden rounded-xl border-2 border-[#168ff0] px-5 py-2.5 text-sm font-black text-[#07528e] sm:inline-flex">Student Login</button>
             <Link href="/login" className="hidden rounded-xl border-2 border-[#159c89] px-3 py-2.5 text-sm font-black text-[#087966] lg:inline-flex xl:px-4">Parent Login</Link>
-            <Link href="/login" className="hidden rounded-xl bg-[#ff6b22] px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-200 sm:inline-flex">Try Fahi Hisaabu for Free!!</Link>
+            <Link href="/register" className="hidden rounded-xl bg-[#ff6b22] px-5 py-3 text-sm font-black text-white shadow-lg shadow-orange-200 sm:inline-flex">Try Fahi Hisaabu for Free!!</Link>
             <Link href="/pricing" className="hidden rounded-xl border-2 border-[#f49c20] px-4 py-2.5 text-sm font-black text-[#a65b00] transition hover:bg-[#fff3df] sm:inline-flex">Pricing</Link>
             <button onClick={() => setMenuOpen(!menuOpen)} className="grid h-11 w-11 place-items-center rounded-xl bg-[#edf7ff] lg:hidden" aria-label="Menu">{menuOpen ? <X/> : <Menu/>}</button>
           </div>
@@ -51,7 +51,7 @@ export default function HomePage() {
               <Link href="/pricing" onClick={() => setMenuOpen(false)} className="rounded-xl border-2 border-[#f49c20] px-4 py-3 text-center font-black text-[#a65b00]">Pricing</Link>
               <button type="button" onClick={() => { setMenuOpen(false); setLearnerLoginOpen(true); }} className="rounded-xl border-2 border-[#168ff0] px-4 py-3 text-center font-black text-[#07528e]">Student Login</button>
               <Link href="/login" onClick={() => setMenuOpen(false)} className="rounded-xl border-2 border-[#159c89] px-4 py-3 text-center font-black text-[#087966]">Parent Login</Link>
-              <Link href="/login" className="mt-2 rounded-xl bg-[#ff6b22] px-4 py-3 text-center font-black text-white">Try Fahi Hisaabu for Free!!</Link>
+              <Link href="/register" className="mt-2 rounded-xl bg-[#ff6b22] px-4 py-3 text-center font-black text-white">Try Fahi Hisaabu for Free!!</Link>
             </div>
           </div>
         )}
@@ -85,7 +85,7 @@ export default function HomePage() {
                 <div className="flex items-start gap-3"><span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[#fff2c9] text-2xl">⭐</span><div><h3 className="text-[15px] font-black leading-4 text-[#082b61]">See real<br/>progress</h3><p className="mt-2 text-[12px] font-bold leading-4 text-[#5c7891]">Parents can follow learning, practice and improvement.</p><p className="mt-2 text-[13px] font-black leading-4 text-[#1595e7]">• 10,000+ Maths Questions</p></div></div>
               </div>
               <div className="mt-6 inline-flex max-w-full items-center gap-2 rounded-2xl border border-[#ffd1a8] bg-[#fff0de] px-4 py-3 text-[#e6530b] shadow-sm sm:px-5"><span aria-hidden="true" className="text-2xl">📣</span><p className="text-base font-black leading-snug sm:text-lg">Sign Up for a Free 3-Day Trial <span className="whitespace-nowrap">with Fahi Hisaabu</span></p></div>
-              <Link href="/login" className="mt-3 inline-flex min-w-[285px] items-center justify-center gap-2 rounded-full bg-[#ff6b22] px-8 py-3.5 text-base font-black text-white shadow-md">Try Fahi Hisaabu for Free!! <ArrowRight size={19}/></Link>
+              <Link href="/register" className="mt-3 inline-flex min-w-[285px] items-center justify-center gap-2 rounded-full bg-[#ff6b22] px-8 py-3.5 text-base font-black text-white shadow-md">Try Fahi Hisaabu for Free!! <ArrowRight size={19}/></Link>
             </div>
             <div className="h-[330px] overflow-hidden rounded-[24px] bg-[#dff4ff] sm:h-[370px] lg:h-[355px]">
               <img src="/homepage-artwork/parent-confidence.webp" alt="Parent supporting a child with maths learning" className="h-full w-full object-cover object-center"/>
@@ -136,7 +136,7 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2 rounded-full bg-[#ffef9e] px-3 py-1.5 text-xs font-black uppercase tracking-wider text-[#805d00]"><Gift size={15}/> Rewards</div>
             <h2 className="mt-4 text-2xl font-black text-[#082b61] sm:text-3xl">Earn Mind Sparks as you learn!</h2>
             <p className="mt-3 max-w-2xl font-bold leading-7 text-[#477092]">Complete challenges, play games and show your progress to earn Mind Sparks. Use them across the platform and keep your learning journey moving.</p>
-            <Link href="/login" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#ff6b22] px-5 py-3 font-black text-white">Try Fahi Hisaabu for Free!! <ArrowRight size={18}/></Link>
+            <Link href="/register" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#ff6b22] px-5 py-3 font-black text-white">Try Fahi Hisaabu for Free!! <ArrowRight size={18}/></Link>
           </div>
           <div className="flex items-center justify-center gap-4">
             <div className="grid h-28 w-28 place-items-center rounded-full border-[8px] border-[#ffe477] bg-[#ffc928] text-5xl shadow-xl">⭐</div>
