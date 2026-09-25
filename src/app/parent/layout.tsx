@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bell, History, Target, Users, Crown } from "lucide-react";
+import { Bell, History, Target, Users, Crown, UserRound } from "lucide-react";
 import ParentLearningAlerts from "@/components/parent-learning-alerts";
 import ParentLearnerSwitcher from "@/components/parent-learner-switcher";
 import { createClient } from "@/lib/supabase/server";
@@ -31,6 +31,7 @@ export default async function ParentLayout({ children }: { children: React.React
             <Link href="/parent/history" className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-[#071b3a]"><History size={16} /> Learning History</Link>
             <Link href="/parent/goals" className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-[#071b3a]"><Target size={16} /> Goals</Link>
             <Link href="/parent/notifications" className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-[#071b3a]"><Bell size={16} /> Alerts</Link>
+            <Link href="/parent/profile" className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-[#071b3a]"><UserRound size={16} /> Profile</Link>
             <Link href="/parent/upgrade" className="inline-flex items-center gap-2 rounded-full bg-[#197fe9] px-4 py-2 text-white shadow-sm transition hover:bg-[#126dcc]"><Crown size={16} /> Upgrade</Link>
           </div>
         </div>
