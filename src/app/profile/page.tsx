@@ -231,7 +231,7 @@ export default function ProfilePage() {
       <main className="min-h-screen bg-[#eef4ff] text-[#12204a]">
         {isLoading ? (
           <>
-            <header className="h-[76px] bg-[#073b73] shadow-sm lg:h-[90px]">
+            <header className="hidden h-[76px] bg-[#073b73] shadow-sm lg:block lg:h-[90px]">
               <div className="mx-auto flex h-full max-w-[1680px] items-center px-4 sm:px-6 lg:px-12">
                 <img src="/fahi-hisaabu-logo-optimized.webp" alt="Fahi Hisaabu" className="h-[44px] w-auto max-w-[220px] rounded-xl bg-white p-1 lg:h-[57px]"/>
               </div>
@@ -264,7 +264,7 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen bg-[#eef4ff] text-[#12204a]">
-      <header className="sticky top-0 z-40 h-[76px] border-b border-white/10 bg-[#073b73] text-white shadow-sm lg:h-[90px]">
+      <header className="sticky top-0 z-40 hidden h-[76px] lg:block border-b border-white/10 bg-[#073b73] text-white shadow-sm lg:h-[90px]">
         <div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12">
           <Link href="/dashboard" className="flex min-w-0 shrink-0 items-center rounded-2xl bg-white px-3 py-1.5 shadow-md ring-1 ring-white/40 transition hover:shadow-lg"><img src="/fahi-hisaabu-logo-optimized.webp" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }} alt="Fahi Hisaabu" className="h-[44px] w-auto max-w-[200px] object-contain lg:h-[57px] lg:max-w-[220px]" /></Link>
           <nav className="hidden items-center gap-8 lg:flex">
