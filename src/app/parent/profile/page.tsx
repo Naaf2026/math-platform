@@ -10,6 +10,9 @@ export default function ParentProfilePage() {
   const [name, setName] = useState("");
   const [savedName, setSavedName] = useState("");
   const [email, setEmail] = useState("");
+  const [savedEmail, setSavedEmail] = useState("");
+  const [mobilePhone, setMobilePhone] = useState("+960");
+  const [savedMobilePhone, setSavedMobilePhone] = useState("");
   const [joined, setJoined] = useState("");
   const [learners, setLearners] = useState<LearnerAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +29,7 @@ export default function ParentProfilePage() {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) throw new Error("Please sign in again.");
         const [{ data: profile, error: profileError }, linkedLearners] = await Promise.all([
-          supabase.from("profiles").select("full_name,display_name").eq("id", user.id).single(),
+          supabase.from("profiles").select("full_name,display_name,mobile_phone").eq("id", user.id).single(),
           getMyLearners(),
         ]);
         if (profileError) throw new Error(profileError.message);
@@ -35,6 +38,9 @@ export default function ParentProfilePage() {
         setName(displayName);
         setSavedName(displayName);
         setEmail(user.email || "");
+        setSavedEmail(user.email || "");
+        setMobilePhone(profile?.mobile_phone || "+960");
+        setSavedMobilePhone(profile?.mobile_phone || "");
         setJoined(user.created_at || "");
         setLearners(linkedLearners);
       } catch (e) {
@@ -55,12 +61,25 @@ export default function ParentProfilePage() {
     try {
       const supabase = createClient();
       if (!supabase) throw new Error("Account service is unavailable.");
-      const { data, error: saveError } = await supabase.rpc("update_my_parent_profile", { p_full_name: name.trim() });
+      const normalizedPhone = mobilePhone.replace(/[\\s()-]/g, "");
+      if (!/^\\+[1-9]\\d{7,14}$/.test(normalizedPhone)) throw new Error("Enter a mobile number with country code, for example +9607777777.");
+      const { data, error: saveError } = await supabase.rpc("update_my_parent_profile", { p_full_name: name.trim(), p_mobile_phone: normalizedPhone });
       if (saveError) throw new Error(saveError.message);
       const updatedName = String(data);
       setName(updatedName);
       setSavedName(updatedName);
-      setMessage("Your profile has been updated.");
+      setMobilePhone(normalizedPhone);
+      setSavedMobilePhone(normalizedPhone);
+      if (email.trim().toLowerCase() !== savedEmail.toLowerCase()) {
+        const { error: emailError } = await supabase.auth.updateUser({ email: email.trim() });
+        if (emailError) {
+          setError(`Your name and mobile number were saved, but the email change could not be started: ${emailError.message}`);
+          return;
+        }
+        setMessage("Your name and mobile number were saved. Check your email for a confirmation link to finish changing your sign-in address.");
+      } else {
+        setMessage("Your profile has been updated.");
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save your profile.");
     } finally {
@@ -81,11 +100,11 @@ export default function ParentProfilePage() {
             <p className="mt-1 text-sm text-slate-500">Your name is displayed on your family account.</p>
             <form onSubmit={save} className="mt-6 space-y-5">
               <label className="block"><span className="text-sm font-bold text-slate-700">Full name</span><input required minLength={2} maxLength={100} autoComplete="name" value={name} onChange={e => setName(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100" placeholder="Your full name" /></label>
-              <div><span className="text-sm font-bold text-slate-700">Email address</span><div className="mt-1.5 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-600"><Mail size={18}/><span className="break-all">{email || "No email address"}</span></div><p className="mt-1 text-xs text-slate-400">Your sign-in email is shown here for reference.</p></div>
+              <label className="block"><span className="text-sm font-bold text-slate-700">Email address</span><span className="relative mt-1.5 block"><Mail size={18} className="absolute left-4 top-3.5 text-slate-400"/><input required type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100" /></span><span className="mt-1 block text-xs text-slate-500">Changing your sign-in email requires confirmation by email.</span></label><label className="block"><span className="text-sm font-bold text-slate-700">Mobile phone number <span className="text-red-600">*</span></span><input required type="tel" autoComplete="tel" inputMode="tel" value={mobilePhone} onChange={e => setMobilePhone(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100" placeholder="+9607777777" /><span className="mt-1 block text-xs text-slate-500">Include your country code, for example +9607777777.</span></label>
               {joined && <p className="text-xs font-semibold text-slate-500">Account created {new Intl.DateTimeFormat("en-MV", { day: "numeric", month: "long", year: "numeric" }).format(new Date(joined))}</p>}
               {error && <p role="alert" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{error}</p>}
               {message && <p role="status" className="flex items-center gap-2 rounded-xl bg-emerald-50 p-3 text-sm font-bold text-emerald-800"><CheckCircle2 size={17}/>{message}</p>}
-              <button type="submit" disabled={saving || name.trim() === savedName} className="inline-flex items-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3 font-black text-white disabled:cursor-not-allowed disabled:opacity-50">{saving && <Loader2 className="animate-spin" size={17}/>} {saving ? "Saving…" : "Save changes"}</button>
+              <button type="submit" disabled={saving || (name.trim() === savedName && mobilePhone.replace(/[\\s()-]/g, "") === savedMobilePhone && email.trim().toLowerCase() === savedEmail.toLowerCase())} className="inline-flex items-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3 font-black text-white disabled:cursor-not-allowed disabled:opacity-50">{saving && <Loader2 className="animate-spin" size={17}/>} {saving ? "Saving…" : "Save changes"}</button>
             </form>
           </section>
           <section className="mt-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-violet-100 sm:p-8">
