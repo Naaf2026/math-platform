@@ -61,8 +61,8 @@ export default function ParentProfilePage() {
     try {
       const supabase = createClient();
       if (!supabase) throw new Error("Account service is unavailable.");
-      const normalizedPhone = mobilePhone.replace(/[\\s()-]/g, "");
-      if (!/^\\+[1-9]\\d{7,14}$/.test(normalizedPhone)) throw new Error("Enter a mobile number with country code, for example +9607777777.");
+      const normalizedPhone = mobilePhone.replace(/[\s()-]/g, "");
+      if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) throw new Error("Enter a mobile number with country code, for example +9607777777.");
       const { data, error: saveError } = await supabase.rpc("update_my_parent_profile", { p_full_name: name.trim(), p_mobile_phone: normalizedPhone });
       if (saveError) throw new Error(saveError.message);
       const updatedName = String(data);
@@ -104,7 +104,7 @@ export default function ParentProfilePage() {
               {joined && <p className="text-xs font-semibold text-slate-500">Account created {new Intl.DateTimeFormat("en-MV", { day: "numeric", month: "long", year: "numeric" }).format(new Date(joined))}</p>}
               {error && <p role="alert" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{error}</p>}
               {message && <p role="status" className="flex items-center gap-2 rounded-xl bg-emerald-50 p-3 text-sm font-bold text-emerald-800"><CheckCircle2 size={17}/>{message}</p>}
-              <button type="submit" disabled={saving || (name.trim() === savedName && mobilePhone.replace(/[\\s()-]/g, "") === savedMobilePhone && email.trim().toLowerCase() === savedEmail.toLowerCase())} className="inline-flex items-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3 font-black text-white disabled:cursor-not-allowed disabled:opacity-50">{saving && <Loader2 className="animate-spin" size={17}/>} {saving ? "Saving…" : "Save changes"}</button>
+              <button type="submit" disabled={saving || (name.trim() === savedName && mobilePhone.replace(/[\s()-]/g, "") === savedMobilePhone && email.trim().toLowerCase() === savedEmail.toLowerCase())} className="inline-flex items-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3 font-black text-white disabled:cursor-not-allowed disabled:opacity-50">{saving && <Loader2 className="animate-spin" size={17}/>} {saving ? "Saving…" : "Save changes"}</button>
             </form>
           </section>
           <section className="mt-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-violet-100 sm:p-8">
