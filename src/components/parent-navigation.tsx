@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, BookOpen, CreditCard, GraduationCap, Home, Users } from "lucide-react";
+import { BarChart3, BookOpen, CreditCard, GraduationCap, Home, UserRound, Users } from "lucide-react";
 import { usePathname } from "next/navigation";
 import LogoutButton from "@/components/logout-button";
 
 const items = [
   { href: "/parent", label: "Overview", icon: Home },
   { href: "/parent", label: "Progress", icon: BarChart3 },
-  { href: "/parent", label: "Child", icon: Users },
+  { href: "/parent/learners", label: "Child", icon: Users },
   { href: "/parent/history", label: "Learning History", icon: BookOpen },
   { href: "/parent/upgrade", label: "Premium", icon: CreditCard },
+  { href: "/parent/profile", label: "Profile", icon: UserRound },
 ];
 function isActive(pathname: string, href: string, label: string) { if (href === "/parent") return pathname === "/parent" && label === "Overview"; return pathname === href || pathname.startsWith(`${href}/`); }
 
@@ -18,7 +19,7 @@ export default function ParentNavigation() {
   const pathname = usePathname();
   return <>
     <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200/80 bg-slate-50/95 px-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(15,23,42,0.10)] backdrop-blur-xl lg:hidden" aria-label="Parent and guardian navigation">
-      <div className="mx-auto max-w-lg"><div className="grid grid-cols-5 gap-1">{items.map(({href,label,icon:Icon})=>{const active=isActive(pathname,href,label);return <Link key={label} href={href} aria-current={active?"page":undefined} className={`flex min-h-14 flex-col items-center justify-center rounded-2xl text-[10px] font-black transition ${active?"bg-violet-100 text-violet-700":"text-slate-500 hover:bg-white hover:text-violet-600"}`}><Icon size={20} strokeWidth={active?2.7:2.2}/><span className="mt-1 text-center">{label}</span></Link>})}</div><div className="mt-1 flex justify-center"><LogoutButton compact /></div></div>
+      <div className="mx-auto max-w-lg"><div className="grid grid-cols-6 gap-1">{items.map(({href,label,icon:Icon})=>{const active=isActive(pathname,href,label);return <Link key={label} href={href} aria-current={active?"page":undefined} className={`flex min-h-14 flex-col items-center justify-center rounded-2xl text-[10px] font-black transition ${active?"bg-violet-100 text-violet-700":"text-slate-500 hover:bg-white hover:text-violet-600"}`}><Icon size={20} strokeWidth={active?2.7:2.2}/><span className="mt-1 text-center">{label}</span></Link>})}</div><div className="mt-1 flex justify-center"><LogoutButton compact /></div></div>
     </nav>
     <nav className="fixed inset-y-0 left-0 z-50 hidden w-20 flex-col items-center border-r border-slate-200/80 bg-white/90 py-5 shadow-[8px_0_30px_rgba(15,23,42,0.06)] backdrop-blur-xl lg:flex" aria-label="Parent and guardian navigation">
       <Link href="/parent" title="Parent dashboard" className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-500 text-lg font-black text-white shadow-lg shadow-violet-200">F</Link>
