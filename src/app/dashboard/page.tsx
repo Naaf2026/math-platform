@@ -150,12 +150,7 @@ export default function DashboardPage() {
   </button>
 
   <Link href="/homework" className="order-3 group relative h-auto min-h-[320px] overflow-hidden rounded-[32px] border-2 border-[#66b8f2] bg-[#e7f5ff] text-left shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[clamp(320px,calc(100dvh-340px),360px)] md:min-h-0">
-    <div className="absolute inset-x-0 top-0 flex h-[49%] items-center justify-center overflow-hidden rounded-t-[30px] bg-gradient-to-br from-[#9ad8ff] via-[#c3eaff] to-[#e2f6ff]" aria-hidden="true">
-      <span className="absolute left-[12%] top-[12%] text-5xl opacity-75">✏️</span>
-      <span className="absolute right-[13%] top-[16%] text-4xl opacity-80">📐</span>
-      <span className="absolute bottom-[15%] right-[18%] text-4xl opacity-75">⭐</span>
-      <span className="relative text-[clamp(72px,8vw,105px)] drop-shadow-xl transition duration-300 group-hover:scale-105">📚</span>
-    </div>
+    <div className="absolute inset-x-0 top-0 h-[49%] overflow-hidden rounded-t-[30px] bg-[#dff3ff]"><img src="/dashboard-assets/homework-hero.webp" alt="Student completing maths homework" className="block h-full w-full object-cover object-center transition duration-300 group-hover:scale-[1.03]" /></div>
     <div className="absolute bottom-0 left-4 right-4 top-[46%] rounded-t-[42px] bg-[#f5fbff] flex flex-col justify-end px-2 pb-[64px] pt-3">
       <h2 className="text-[25px] font-black leading-[0.95] text-[#183b68] sm:text-[28px]">My<br />Homework</h2>
       <p className="mt-2 text-[13px] font-bold text-[#55708b]">Your maths homework and practice worksheets</p>
