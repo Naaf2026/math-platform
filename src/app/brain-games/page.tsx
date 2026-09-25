@@ -41,7 +41,7 @@ export default function BrainGamesPage() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#eef9ff] text-[#083d78]">
-      <header className="sticky top-0 z-40 h-[54px] border-b border-white/10 bg-[#073b73] text-white shadow-sm sm:h-[64px] lg:h-[90px]"><div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12">
+      <header className="sticky top-0 z-40 hidden h-[90px] border-b border-white/10 bg-[#073b73] text-white shadow-sm lg:block"><div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12">
         <Link href="/dashboard" className="flex min-w-0 shrink-0 items-center rounded-2xl bg-white px-3 py-1.5 shadow-md ring-1 ring-white/40 transition hover:shadow-lg"><img src="/fahi-hisaabu-logo-optimized.webp" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }} alt="Fahi Hisaabu" className="h-[44px] w-auto max-w-[200px] object-contain lg:h-[57px] lg:max-w-[220px]" /></Link>
         <nav className="hidden items-center gap-8 lg:flex"><Link href="/dashboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Home size={25}/>Home</Link><Link href="/brain-games" className="relative flex items-center gap-3 px-4 py-7 text-lg font-black"><Gamepad2 size={25}/>Games<span className="absolute bottom-0 left-4 right-4 h-1 rounded-full bg-yellow-400"/></Link><Link href="/leaderboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Trophy size={25}/>Leaderboard</Link><Link href="/rewards" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Gift size={25}/>Rewards</Link><Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><BarChart3 size={25}/>Progress</Link><Link href="/profile" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><GraduationCap size={25}/>Profile</Link></nav><NotificationBell/>
       </div></header>
@@ -69,7 +69,7 @@ export default function BrainGamesPage() {
           <section className="brain-games-rules" role="dialog" aria-modal="true" aria-labelledby="brain-games-rules-title" onClick={(event) => event.stopPropagation()}>
             <div className="brain-games-rules-art" aria-hidden="true"><span><MindMascot size={82} /></span><i>✦</i><b>✦</b></div>
             <div className="brain-games-rules-copy">
-              <p className="brain-games-rules-kicker">FAHI VISSNUN - MIND GAMES</p>
+              <p className="brain-games-rules-kicker">FAHI HISAABU - MIND GAMES</p>
               <h2 id="brain-games-rules-title">Rules of Main Games</h2>
               <ol>
                 <li><span>1</span><p>Mind Games are open from <b>10:00 a.m. to 8:00 p.m.</b> every day.</p></li>
