@@ -12,6 +12,9 @@ export default function ParentProfilePage() {
   const [email, setEmail] = useState("");
   const [savedEmail, setSavedEmail] = useState("");
   const [pendingEmail, setPendingEmail] = useState("");
+  const [emailCode, setEmailCode] = useState("");
+  const [verifyingEmail, setVerifyingEmail] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
   const [mobilePhone, setMobilePhone] = useState("");
   const [savedMobilePhone, setSavedMobilePhone] = useState("");
   const [joined, setJoined] = useState("");
@@ -107,7 +110,8 @@ export default function ParentProfilePage() {
         if (emailData.user.email?.toLowerCase() === requestedEmail.toLowerCase()) {
           setMessage("Your email address has been updated.");
         } else {
-          setMessage("Verification requested. Follow the confirmation link sent to your new email address to finish the change.");
+          setEmailCode("");
+          setMessage("Verification code sent. Enter the 6-digit code from your new email address below.");
         }
       } else if (profileChanged) {
         setMessage("Your profile has been updated.");
@@ -117,6 +121,46 @@ export default function ParentProfilePage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function verifyEmailCode() {
+    if (!pendingEmail || !/^\\d{6}$/.test(emailCode)) {
+      setError("Enter the 6-digit verification code from your email.");
+      return;
+    }
+    setError("");
+    setMessage("");
+    setVerifyingEmail(true);
+    try {
+      const supabase = createClient();
+      if (!supabase) throw new Error("Account service is unavailable.");
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({ email: pendingEmail, token: emailCode, type: "email_change" });
+      if (verifyError) throw new Error(verifyError.message);
+      const verifiedEmail = data.user?.email || pendingEmail;
+      setSavedEmail(verifiedEmail);
+      setEmail(verifiedEmail);
+      setPendingEmail("");
+      setEmailCode("");
+      setMessage("Your new email address has been verified and is now your sign-in email.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "The verification code is invalid or has expired.");
+    } finally { setVerifyingEmail(false); }
+  }
+
+  async function resendEmailCode() {
+    if (!pendingEmail) return;
+    setError(""); setMessage(""); setResendingEmail(true);
+    try {
+      const supabase = createClient();
+      if (!supabase) throw new Error("Account service is unavailable.");
+      const { data, error: resendError } = await supabase.auth.updateUser({ email: pendingEmail });
+      if (resendError) throw new Error(resendError.message);
+      setPendingEmail(data.user.new_email || pendingEmail);
+      setEmailCode("");
+      setMessage("A new verification code has been sent to your new email address.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not resend the verification code yet. Please try again shortly.");
+    } finally { setResendingEmail(false); }
   }
 
   const initials = savedName.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0].toUpperCase()).join("") || "P";
@@ -143,7 +187,18 @@ export default function ParentProfilePage() {
                   <label className="block"><span className="inline-flex items-center gap-2 text-sm font-bold text-[#31536d]"><Mail size={16} className="text-[#0da4a0]" /> Email address</span><input required type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="mt-2 w-full rounded-xl border border-[#d8e5ef] bg-[#fafdff] px-4 py-3 text-base text-[#133653] outline-none focus:border-[#0aa6a2] focus:ring-2 focus:ring-[#0aa6a2]/20" /><span className="mt-1.5 block text-xs text-slate-500">A new address must be confirmed before it becomes your sign-in email.</span></label>
                   <label className="block"><span className="inline-flex items-center gap-2 text-sm font-bold text-[#31536d]"><Phone size={16} className="text-[#0da4a0]" /> Mobile number</span><input type="tel" autoComplete="tel" inputMode="tel" value={mobilePhone} onChange={e => setMobilePhone(e.target.value)} className="mt-2 w-full rounded-xl border border-[#d8e5ef] bg-[#fafdff] px-4 py-3 text-base text-[#133653] outline-none focus:border-[#0aa6a2] focus:ring-2 focus:ring-[#0aa6a2]/20" placeholder="+9607777777" /><span className="mt-1.5 block text-xs text-slate-500">Include your country code, for example +9607777777.</span></label>
                 </div>
-                {pendingEmail && <div role="status" className="mt-5 rounded-xl border border-[#bde6e4] bg-[#effafa] p-4 text-sm text-[#17475c]"><p className="font-black">Email verification pending</p><p className="mt-1 break-all">New address: <strong>{pendingEmail}</strong></p><p className="mt-2">Open the confirmation email sent to your new address. You may also need to confirm a message at your current address. Until the change is verified, sign in with {savedEmail}.</p></div>}
+                {pendingEmail && <div role="status" className="mt-5 rounded-xl border border-[#bde6e4] bg-[#effafa] p-4 text-sm text-[#17475c]">
+                  <p className="font-black">Verify your new email</p>
+                  <p className="mt-1 break-all">We sent a 6-digit code to <strong>{pendingEmail}</strong>.</p>
+                  <p className="mt-1 text-xs text-slate-600">Your current email <strong>{savedEmail}</strong> remains active until verification is complete.</p>
+                  <div className="mt-4 flex flex-wrap items-end gap-3">
+                    <label className="min-w-[210px] flex-1"><span className="text-xs font-bold text-[#31536d]">Verification code</span>
+                      <input value={emailCode} onChange={e => setEmailCode(e.target.value.replace(/\\D/g, "").slice(0, 6))} onPaste={e => { const pasted = e.clipboardData.getData("text").replace(/\\D/g, "").slice(0, 6); if (pasted) { e.preventDefault(); setEmailCode(pasted); } }} inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000" className="mt-1.5 w-full rounded-xl border border-[#b9dfe2] bg-white px-4 py-3 text-center text-xl font-black tracking-[0.35em] text-[#133653] outline-none focus:border-[#0aa6a2] focus:ring-2 focus:ring-[#0aa6a2]/20" />
+                    </label>
+                    <button type="button" onClick={verifyEmailCode} disabled={verifyingEmail || emailCode.length !== 6} className="rounded-xl bg-[#087bc3] px-5 py-3 font-black text-white disabled:cursor-not-allowed disabled:opacity-50">{verifyingEmail ? "Verifying…" : "Verify email"}</button>
+                  </div>
+                  <button type="button" onClick={resendEmailCode} disabled={resendingEmail} className="mt-3 text-xs font-black text-[#087b92] underline underline-offset-2 disabled:opacity-50">{resendingEmail ? "Sending…" : "Resend code"}</button>
+                </div>}
                 {error && <p role="alert" className="mt-5 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{error}</p>}
                 {message && <p role="status" className="mt-5 flex items-center gap-2 rounded-xl bg-emerald-50 p-3 text-sm font-bold text-emerald-800"><CheckCircle2 size={17} />{message}</p>}
                 <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#e7eef5] pt-5"><span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500"><LockKeyhole size={16} /> {joined ? `Account created ${new Intl.DateTimeFormat("en-MV", { day: "numeric", month: "long", year: "numeric" }).format(new Date(joined))}` : "Your details are private"}</span><button type="submit" disabled={saving || (name.trim() === savedName && mobilePhone.replace(/[\s()-]/g, "") === savedMobilePhone && (email.trim().toLowerCase() === savedEmail.toLowerCase() || email.trim().toLowerCase() === pendingEmail.toLowerCase()))} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#087bc3] to-[#0da59d] px-5 py-3 text-sm font-black text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-50">{saving ? <Loader2 className="animate-spin" size={17} /> : <CheckCircle2 size={17} />} {saving ? "Saving…" : "Save changes"}</button></div>
