@@ -78,10 +78,16 @@ export default function SubscriptionPage() {
   }, []);
 
   useEffect(() => {
-    if (searchParams.get("startTrial") !== "1" || trialStartHandled) return;
-    setTrialStartHandled(true);
-    router.replace("/subscription");
-    void startTrial();
+    if (trialStartHandled) return;
+    if (searchParams.get("startTrial") === "1") {
+      setTrialStartHandled(true);
+      router.replace("/subscription");
+      void startTrial();
+    } else if (searchParams.get("upgrade") === "1") {
+      setTrialStartHandled(true);
+      router.replace("/subscription");
+      setShowUpgradeConfirm(true);
+    }
   // Only run once when returning from login.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, trialStartHandled]);
@@ -94,6 +100,17 @@ export default function SubscriptionPage() {
   const remaining = daysLeft(trialEnds);
   const trialing = subscriptionStatus === "trialing" && remaining > 0;
   const active = subscriptionStatus === "active";
+  async function openUpgrade() {
+    const supabase = createClient();
+    if (!supabase) { setMessage("Subscription service is temporarily unavailable."); return; }
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+      router.push("/login?next=%2Fsubscription%3Fupgrade%3D1");
+      return;
+    }
+    setShowUpgradeConfirm(true);
+  }
+
   async function requestUpgrade() {
     setUpgradeRequesting(true);
     setMessage("");
@@ -103,8 +120,21 @@ export default function SubscriptionPage() {
       setUpgradeRequesting(false);
       return;
     }
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      setUpgradeRequesting(false);
+      setShowUpgradeConfirm(false);
+      router.push("/login?next=%2Fsubscription%3Fupgrade%3D1");
+      return;
+    }
     const { error } = await supabase.rpc("request_premium_upgrade");
     if (error) {
+      if (/not authenticated|jwt|unauthorized|auth session missing/i.test(error.message)) {
+        setUpgradeRequesting(false);
+        setShowUpgradeConfirm(false);
+        router.push("/login?next=%2Fsubscription%3Fupgrade%3D1");
+        return;
+      }
       setMessage(error.message || "We could not send the request.");
     } else {
       setMessage("");
@@ -238,7 +268,7 @@ export default function SubscriptionPage() {
               {premiumFeatures.map((feature) => <div key={feature} className="flex items-start gap-2 rounded-xl bg-[#fffaf0] px-3 py-2.5 text-sm font-bold"><Check size={17} className="mt-0.5 shrink-0 text-[#13a56f]" />{feature}</div>)}
             </div>
             <button
-              onClick={() => setShowUpgradeConfirm(true)}
+              onClick={openUpgrade}
               disabled={active || upgradeRequesting}
               className="mt-7 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#20265b] px-5 py-4 font-black text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-[#171b49] disabled:cursor-not-allowed disabled:opacity-60"
             >
