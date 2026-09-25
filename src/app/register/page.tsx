@@ -9,6 +9,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [mobilePhone, setMobilePhone] = useState("+960");
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
@@ -47,11 +48,18 @@ export default function RegisterPage() {
       return;
     }
 
+    const normalizedPhone = mobilePhone.replace(/[\s()-]/g, "");
+    if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) {
+      setStatus("Enter a mobile number with country code, for example +9607777777.");
+      setBusy(false);
+      return;
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        data: { display_name: name.trim(), full_name: name.trim(), requested_role: "parent" },
+        data: { display_name: name.trim(), full_name: name.trim(), requested_role: "parent", mobile_phone: normalizedPhone },
       },
     });
 
@@ -97,6 +105,7 @@ export default function RegisterPage() {
           <form onSubmit={submit} className="space-y-4">
             <label className="block"><span className="mb-1.5 block text-sm font-semibold">Parent / guardian name</span><input required autoComplete="name" value={name} onChange={e => setName(e.target.value)} className="w-full rounded-full border-[1.5px] border-[#344159] bg-[#f6f9ff] px-5 py-3 text-base outline-none focus:border-[#168ff0] focus:ring-2 focus:ring-[#168ff0]/15" placeholder="Your full name" /></label>
             <label className="block"><span className="mb-1.5 block text-sm font-semibold">Email</span><input required type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full rounded-full border-[1.5px] border-[#344159] bg-[#f6f9ff] px-5 py-3 text-base outline-none focus:border-[#168ff0] focus:ring-2 focus:ring-[#168ff0]/15" placeholder="name@example.com" /></label>
+            <label className="block"><span className="mb-1.5 block text-sm font-semibold">Mobile phone number <span className="text-red-600">*</span></span><input required type="tel" autoComplete="tel" inputMode="tel" value={mobilePhone} onChange={e => setMobilePhone(e.target.value)} className="w-full rounded-full border-[1.5px] border-[#344159] bg-[#f6f9ff] px-5 py-3 text-base outline-none focus:border-[#168ff0] focus:ring-2 focus:ring-[#168ff0]/15" placeholder="+9607777777" /><span className="mt-1 block text-xs text-[#718096]">Include your country code.</span></label>
             <label className="block"><span className="mb-1.5 block text-sm font-semibold">Password</span><span className="relative block"><input required minLength={6} type={showPassword ? "text" : "password"} autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} className="w-full rounded-full border-[1.5px] border-[#dce5f0] bg-[#fbfcff] px-5 py-3 pr-12 text-base outline-none focus:border-[#168ff0] focus:ring-2 focus:ring-[#168ff0]/15" placeholder="At least 6 characters" /><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-3 text-[#56677e]">{showPassword ? <EyeOff size={21}/> : <Eye size={21}/>}</button></span></label>
             {status && <p role="alert" className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{status}</p>}
             <button type="submit" disabled={busy} className="mt-2 flex w-full items-center justify-center gap-2 rounded-full border-[2px] border-[#263449] bg-[#ff6b22] px-4 py-3 text-base font-black text-white shadow-[0_5px_0_#263449] transition active:translate-y-1 active:shadow-none disabled:opacity-60">{busy && <Loader2 className="animate-spin" size={18}/>}{busy ? "Creating account…" : "Create parent account"}</button>
