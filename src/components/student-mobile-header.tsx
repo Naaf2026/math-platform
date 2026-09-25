@@ -1,0 +1,12 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Menu, X, Home, BookOpen, ClipboardCheck, Gamepad2, Trophy, Gift, BarChart3, GraduationCap } from "lucide-react";
+import NotificationBell from "@/components/learner-notification-bell";
+const links=[{href:"/dashboard",label:"Home",icon:Home},{href:"/learn",label:"Learn",icon:BookOpen},{href:"/homework",label:"Homework",icon:ClipboardCheck},{href:"/brain-games",label:"Games",icon:Gamepad2},{href:"/leaderboard",label:"Leaderboard",icon:Trophy},{href:"/rewards",label:"Rewards",icon:Gift},{href:"/progress",label:"Progress",icon:BarChart3},{href:"/profile",label:"Profile",icon:GraduationCap}];
+export default function StudentMobileHeader(){
+ const path=usePathname(),[open,setOpen]=useState(false);
+ useEffect(()=>setOpen(false),[path]);
+ return <div className="relative z-[90] lg:hidden"><header className="flex h-[68px] items-center justify-between gap-3 bg-[#0869c5] px-4 text-white shadow-md sm:h-[76px]"><Link href="/dashboard" aria-label="Fahi Hisaabu dashboard" className="min-w-0"><img src="/fahi-hisaabu-logo-optimized.webp" onError={e=>{e.currentTarget.onerror=null;e.currentTarget.src="/fahi-hisaabu-logo.png"}} alt="Fahi Hisaabu" className="h-11 max-w-[210px] object-contain sm:h-14 sm:max-w-[290px]"/></Link><div className="flex shrink-0 items-center gap-2"><NotificationBell/><button type="button" aria-label={open?"Close menu":"Open menu"} aria-expanded={open} aria-controls="student-mobile-menu" onClick={()=>setOpen(v=>!v)} className="grid h-11 w-11 place-items-center rounded-xl hover:bg-white/15">{open?<X size={30}/>:<Menu size={30}/>}</button></div></header>{open&&<><button type="button" aria-label="Close menu" onClick={()=>setOpen(false)} className="fixed inset-0 z-[91] bg-[#072d54]/40"/><nav id="student-mobile-menu" aria-label="Student navigation" className="absolute inset-x-0 top-full z-[92] max-h-[calc(100dvh-80px)] overflow-y-auto rounded-b-3xl border-t border-white/20 bg-[#0869c5] p-3 shadow-xl"><div className="grid grid-cols-2 gap-2 sm:grid-cols-4">{links.map(({href,label,icon:Icon})=><Link key={href} href={href} onClick={()=>setOpen(false)} aria-current={path===href?"page":undefined} className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 text-base font-bold text-white ${path===href?"bg-[#28a6f4]":"bg-white/10 hover:bg-white/20"}`}><Icon size={23}/>{label}</Link>)}</div></nav></>}</div>;
+}
