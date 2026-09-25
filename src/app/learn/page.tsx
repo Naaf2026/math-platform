@@ -1,7 +1,95 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Flame, Sparkles, Target, Zap } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle2, Sparkles, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-type Topic={id:string;title:string;description:string;level:string;lessons:number;sort_order:number}; type Progress={topic_id:string;questions_answered:number;correct_answers:number;completed_at:string|null};
-export default function LearnPage(){const[topics,setTopics]=useState<Topic[]>([]),[progress,setProgress]=useState<Progress[]>([]),[xp,setXp]=useState(0),[loading,setLoading]=useState(true);useEffect(()=>{const supabase=createClient();if(!supabase){window.location.href="/login";return;}(async()=>{const{data:{user}}=await supabase.auth.getUser();if(!user){window.location.href="/login";return;}const[{data:t},{data:p},{data:profile}]=await Promise.all([supabase.from("learning_topics").select("id,title,description,level,lessons,sort_order").order("sort_order"),supabase.from("topic_progress").select("topic_id,questions_answered,correct_answers,completed_at").eq("user_id",user.id),supabase.from("profiles").select("xp").eq("id",user.id).maybeSingle()]);setTopics(t??[]);setProgress(p??[]);setXp(profile?.xp??0);setLoading(false)})();},[]);if(loading)return <main className="flex min-h-screen items-center justify-center bg-violet-50"><p className="font-bold text-[#071b3a]">Loading your learning path…</p></main>;return <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50"><header className="border-b border-white bg-white/90"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-cyan-400 font-black text-white">F</div><div><p className="text-sm font-black tracking-wide text-[#071b3a]">FAHI VISSNUN</p><p className="text-xs text-slate-500">Math Adventure</p></div></div><Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-bold text-violet-600"><ArrowLeft size={16}/> Dashboard</Link></div></header><div className="mx-auto max-w-7xl px-5 py-8 lg:px-8"><section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-500 p-7 text-white shadow-2xl sm:p-10"><div className="absolute -right-10 -top-16 h-56 w-56 rounded-full bg-fuchsia-400/20 blur-2xl"/><div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between"><div><p className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-black uppercase tracking-wider"><Sparkles size={14}/> Your learning journey</p><h1 className="mt-3 text-3xl font-black sm:text-4xl">Learn. Practise. Grow. 🚀</h1><p className="mt-3 max-w-2xl text-indigo-100">Build confidence one topic at a time — then test your skills in a focused daily mission.</p><div className="mt-5 flex flex-wrap gap-3"><span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 font-bold"><Zap size={18} className="text-yellow-300"/>{xp} XP</span><span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 font-bold"><BookOpen size={18} className="text-cyan-200"/>{topics.length} topics</span></div></div><Link href="/mission" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-yellow-300 px-5 py-3.5 font-black text-violet-950 shadow-lg hover:bg-yellow-200"><Target size={19}/> Start Daily Mission <ArrowRight size={18}/></Link></div></section><section className="mt-8"><p className="text-sm font-black uppercase tracking-[0.15em] text-violet-600">Learning path</p><h2 className="mt-1 text-2xl font-black text-[#071b3a]">Choose your next topic</h2><div className="mt-5 grid gap-5 md:grid-cols-2">{topics.map((topic,index)=>{const p=progress.find(x=>x.topic_id===topic.id),answered=p?.questions_answered??0,correct=p?.correct_answers??0,done=Boolean(p?.completed_at);return <Link key={topic.id} href={`/learn/${topic.id}`} className="group rounded-3xl border border-white bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"><div className="flex items-start justify-between gap-4"><span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-extrabold text-violet-600">{topic.level}</span>{done?<CheckCircle2 className="text-emerald-500" size={21}/>:<span className="text-sm font-bold text-slate-400">0{index+1}</span>}</div><h3 className="mt-5 text-xl font-black text-[#071b3a]">{topic.title}</h3><p className="mt-2 text-sm leading-6 text-slate-500">{topic.description}</p><div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400" style={{width:`${Math.min((correct/2)*100,100)}%`}}/></div><div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-4"><span className="text-sm font-semibold text-slate-500">{answered?`${correct} correct • ${answered} attempts`:`${topic.lessons} lessons`}</span><span className="inline-flex items-center gap-1 text-sm font-black text-violet-600">{done?"Review":"Continue"} <ArrowRight size={16}/></span></div></Link>})}</div></section><section className="mt-8 rounded-3xl border border-amber-100 bg-gradient-to-r from-amber-50 to-orange-50 p-6"><div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-black uppercase tracking-wider text-orange-600">Build the habit</p><h2 className="mt-1 text-xl font-black text-[#071b3a]">10 questions. Instant feedback. More confidence.</h2><p className="mt-1 text-sm text-slate-600">Use the Daily Mission for a quick focused practice session.</p></div><Link href="/mission" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-orange-500 px-5 py-3 font-black text-white shadow-lg shadow-orange-100 hover:bg-orange-600">Practise now <ArrowRight size={17}/></Link></div></section></div></main>}
+
+type Topic = { id:string; title:string; description:string; level:string; lessons:number; sort_order:number };
+type Lesson = { id:string; topic_id:string; title:string; sort_order:number };
+type Progress = { lesson_id:string; completed_at:string|null };
+
+export default function LearnPage() {
+  const [topics,setTopics]=useState<Topic[]>([]);
+  const [lessons,setLessons]=useState<Lesson[]>([]);
+  const [progress,setProgress]=useState<Progress[]>([]);
+  const [questionTopics,setQuestionTopics]=useState<Set<string>>(new Set());
+  const [grade,setGrade]=useState("");
+  const [xp,setXp]=useState(0);
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState("");
+
+  useEffect(()=>{
+    const supabase=createClient();
+    if(!supabase){setError("Learning is unavailable right now.");setLoading(false);return;}
+    (async()=>{
+      const {data:{user},error:authError}=await supabase.auth.getUser();
+      if(authError||!user){window.location.href="/login";return;}
+      const {data:profile,error:profileError}=await supabase.from("profiles").select("grade,xp").eq("id",user.id).maybeSingle();
+      if(profileError){setError("Your learning path could not be loaded.");setLoading(false);return;}
+      const match=String(profile?.grade??"").match(/(?:grade|primary)?\s*([1-5])/i);
+      if(!match){setError("Set your grade in your profile to see your learning path.");setLoading(false);return;}
+      const learnerGrade=`Grade ${match[1]}`;
+      const [{data:t,error:topicsError},{data:l,error:lessonsError},{data:p,error:progressError}]=await Promise.all([
+        supabase.from("learning_topics").select("id,title,description,level,lessons,sort_order").order("sort_order"),
+        supabase.from("learning_lessons").select("id,topic_id,title,sort_order").order("sort_order"),
+        supabase.from("lesson_progress").select("lesson_id,completed_at").eq("user_id",user.id),
+      ]);
+      if(topicsError||lessonsError||progressError){setError("Your learning path could not be loaded.");setLoading(false);return;}
+      const gradeTopics=(t??[]).filter(topic=>learnerGrade==="Grade 3"
+        ? topic.level==="Foundation"||topic.level==="Development"
+        : topic.level===learnerGrade) as Topic[];
+      const counts=await Promise.all(gradeTopics.map(topic=>supabase.from("learning_questions")
+        .select("id",{count:"exact",head:true}).eq("topic_id",topic.id).eq("grade_level",learnerGrade).eq("status","published")));
+      if(counts.some(result=>result.error)){setError("Your learning path could not be loaded.");setLoading(false);return;}
+      const available=new Set(gradeTopics.filter((_,index)=>(counts[index].count??0)>0).map(topic=>topic.id));
+      const allLessons=(l??[]) as Lesson[];
+      setTopics(gradeTopics.filter(topic=>available.has(topic.id)||allLessons.some(lesson=>lesson.topic_id===topic.id)));
+      setQuestionTopics(available);
+      setLessons(allLessons);
+      setProgress((p??[]) as Progress[]);
+      setGrade(learnerGrade);
+      setXp(profile?.xp??0);
+      setLoading(false);
+    })();
+  },[]);
+
+  if(loading)return <main className="flex min-h-screen items-center justify-center bg-violet-50"><p className="font-bold text-[#071b3a]">Loading your learning path…</p></main>;
+  if(error)return <main className="grid min-h-screen place-items-center bg-violet-50 p-6"><div className="rounded-3xl bg-white p-8 text-center"><p className="font-bold text-[#071b3a]">{error}</p><Link href="/profile" className="mt-4 inline-block font-bold text-violet-600">Go to Profile</Link></div></main>;
+
+  const completed=new Set(progress.filter(item=>item.completed_at).map(item=>item.lesson_id));
+  const nextLesson=topics.flatMap(topic=>lessons.filter(lesson=>lesson.topic_id===topic.id).map(lesson=>({topic,lesson}))).find(({lesson})=>!completed.has(lesson.id));
+  const nextTopic=topics.find(topic=>questionTopics.has(topic.id));
+  const continueHref=nextLesson?`/learn/${nextLesson.topic.id}/lesson/${nextLesson.lesson.id}`:nextTopic?`/learn/${nextTopic.id}`:"";
+  const continueTitle=nextLesson?nextLesson.lesson.title:nextTopic?nextTopic.title:"";
+
+  return <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 text-[#071b3a]">
+    <div className="mx-auto max-w-7xl px-5 py-7 lg:px-8 lg:py-10">
+      <section className="rounded-[2rem] bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-500 p-7 text-white shadow-xl sm:p-10">
+        <p className="text-sm font-black text-cyan-100">{grade} · Fahi Hisaabu</p>
+        <h1 className="mt-3 text-3xl font-black sm:text-4xl">Your learning path</h1>
+        <p className="mt-2 max-w-2xl text-base leading-7 text-indigo-100">Learn one topic at a time and practise what you know.</p>
+        <div className="mt-5 flex flex-wrap gap-3"><span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 font-bold"><Zap size={18} className="text-yellow-300"/>{xp} XP</span><span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 font-bold"><BookOpen size={18} className="text-cyan-200"/>{topics.length} topics</span></div>
+      </section>
+
+      {continueHref&&<section className="mt-6 flex flex-col gap-4 rounded-3xl border border-violet-100 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div><p className="text-sm font-black uppercase tracking-wide text-violet-600">Continue learning</p><h2 className="mt-1 text-2xl font-black">{continueTitle}</h2><p className="mt-1 text-sm text-slate-600">{nextLesson?nextLesson.topic.title:`Practise ${nextTopic?.title}`}</p></div>
+        <Link href={continueHref} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#ffcc37] px-5 py-3 font-black text-[#15233f]">{nextLesson?"Continue lesson":"Start practice"}<ArrowRight size={18}/></Link>
+      </section>}
+
+      <section className="mt-8"><p className="text-sm font-black uppercase tracking-[0.15em] text-violet-600">{grade} topics</p><h2 className="mt-1 text-2xl font-black">Choose a topic</h2>
+        {topics.length?<div className="mt-5 grid gap-5 md:grid-cols-2">{topics.map((topic,index)=>{
+          const topicLessons=lessons.filter(lesson=>lesson.topic_id===topic.id);
+          const done=topicLessons.filter(lesson=>completed.has(lesson.id)).length;
+          const percent=topicLessons.length?Math.round(done/topicLessons.length*100):0;
+          const allDone=topicLessons.length>0&&done===topicLessons.length;
+          return <Link key={topic.id} href={`/learn/${topic.id}`} className="group rounded-3xl border border-white bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+            <div className="flex items-start justify-between gap-4"><span className="rounded-full bg-violet-50 px-3 py-1 text-sm font-bold text-violet-600">{topic.level}</span>{allDone?<CheckCircle2 className="text-emerald-500" size={22}/>:<span className="text-sm font-bold text-slate-400">{String(index+1).padStart(2,"0")}</span>}</div>
+            <h3 className="mt-5 text-xl font-black">{topic.title}</h3><p className="mt-2 text-base leading-6 text-slate-600">{topic.description}</p>
+            {topicLessons.length>0&&<><div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-400" style={{width:`${percent}%`}}/></div><p className="mt-2 text-sm font-semibold text-slate-600">{done} of {topicLessons.length} lessons complete</p></>}
+            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4"><span className="text-sm font-semibold text-slate-600">{topicLessons.length?"Lessons and practice":"Practice questions"}</span><span className="inline-flex items-center gap-1 text-sm font-black text-violet-600">{allDone?"Review":topicLessons.length?"View lessons":"Practise"}<ArrowRight size={16}/></span></div>
+          </Link>})}</div>:<div className="mt-5 rounded-3xl bg-white p-7 text-slate-600">Topics for {grade} are being prepared.</div>}
+      </section>
+    </div>
+  </main>;
+}
