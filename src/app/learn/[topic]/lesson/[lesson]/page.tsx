@@ -2,59 +2,55 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CheckCircle2, CircleHelp, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Lightbulb } from "lucide-react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-type Lesson={id:string;topic_id:string;title:string;objective:string;lesson_number:number};
-type Topic={id:string;title:string;level:string};
-type Question={id:string;prompt:string;options:string[];answer:string;explanation:string;sort_order:number};
+type Lesson = { id:string; topic_id:string; title:string; objective:string; lesson_number:number };
+type Topic = { id:string; title:string; level:string };
+type LessonContent = { idea:string; steps:string[]; example:string; explanation:string; remember:string };
 
-function matchesLesson(question:Question, topicId:string, lessonId:string){
-  if(topicId!=="place-value")return true;
-  const prompt=question.prompt.toLowerCase();
-  if(lessonId==="pv-l1")return /value of|place value|digit|tens and ones|hundreds/.test(prompt)&&!/expanded form/.test(prompt);
-  if(lessonId==="pv-l2")return /read|write|number name|which number has|greater|smaller|compare/.test(prompt)&&!/expanded form/.test(prompt);
-  if(lessonId==="pv-l3")return /expanded form/.test(prompt);
-  return true;
-}
-
-function usableQuestion(raw:Question){
-  if(!raw.id||!raw.prompt?.trim()||!raw.answer?.trim()||!Array.isArray(raw.options))return false;
-  const options=raw.options.filter((option):option is string=>typeof option==="string"&&!!option.trim());
-  return options.length>=2&&new Set(options).size===options.length&&options.includes(raw.answer);
-}
+const content:Record<string,LessonContent> = {
+  "pv-l1":{idea:"The position of a digit tells us its value.",steps:["Read the number from right to left: ones, tens, hundreds, then thousands.","A digit in the tens place counts groups of ten.","Name the place before finding the value."],example:"In 347, the 4 is in the tens place. Its value is 40.",explanation:"347 is 3 hundreds + 4 tens + 7 ones, or 300 + 40 + 7.",remember:"A digit and its value are different: 4 tens means 40."},
+  "pv-l2":{idea:"Group digits into thousands, hundreds, tens and ones to read a large number.",steps:["Split the number into groups of three digits from the right.","Read the thousands group, then the remaining group.","To compare two numbers, compare the leftmost digits first."],example:"4,306 is four thousand, three hundred and six.",explanation:"4 thousands + 3 hundreds + 0 tens + 6 ones = 4,306. Since 4,306 has more thousands than 3,999, it is greater.",remember:"A zero holds an empty place so the other digits keep their values."},
+  "pv-l3":{idea:"Expanded form shows what each digit is worth.",steps:["Find the place of each digit.","Write the value of every nonzero digit.","Join the values with plus signs."],example:"582 = 500 + 80 + 2.",explanation:"The 5 represents five hundreds, the 8 represents eight tens, and the 2 represents two ones.",remember:"Add the expanded parts to check that you get the original number."},
+  "pv-l4":{idea:"Use place values to solve mixed number problems.",steps:["Mark the ones, tens and hundreds places.","Work from the largest place to the smallest.","Check your answer by rebuilding the number."],example:"Which is larger, 462 or 426? 462 is larger.",explanation:"Both have 4 hundreds. Compare the tens next: 6 tens is greater than 2 tens.",remember:"Compare from the left; the first different digit decides."},
+  "as-l1":{idea:"Break numbers into tens and ones to add more easily.",steps:["Add the tens.","Add the ones.","Combine both parts."],example:"34 + 25 = (30 + 20) + (4 + 5) = 59.",explanation:"50 plus 9 makes 59.",remember:"You can regroup when the ones total ten or more."},
+  "as-l2":{idea:"Subtraction finds how much remains or the difference between numbers.",steps:["Subtract the tens and ones when possible.","If needed, split one ten into ten ones.","Add the remaining parts to check your result."],example:"56 − 23 = (50 − 20) + (6 − 3) = 33.",explanation:"Three tens and three ones remain.",remember:"Check by adding: 33 + 23 = 56."},
+  "as-l3":{idea:"Regrouping trades one ten for ten ones without changing the number.",steps:["Line up digits by place.","When there are not enough ones, trade one ten for ten ones.","Subtract the ones, then the tens."],example:"42 − 18: trade 1 ten so 42 becomes 3 tens and 12 ones. 12 − 8 = 4; 3 − 1 = 2. Answer: 24.",explanation:"3 tens and 12 ones still make 42.",remember:"A trade changes the way the number is written, not its value."},
+  "as-l4":{idea:"An inverse operation helps check an answer.",steps:["Add to check subtraction, or subtract to check addition.","Estimate first to see whether the answer is sensible.","Compare the check with the original numbers."],example:"27 + 15 = 42. Check: 42 − 15 = 27.",explanation:"The subtraction takes away the 15 that was added.",remember:"An answer should also be close to your estimate."},
+  "as-l5":{idea:"Choose addition for combining and subtraction for taking away or finding a difference.",steps:["Read what the problem asks.","Pick the operation and write a number sentence.","Calculate and check with the inverse."],example:"You have 18 shells and find 7 more. 18 + 7 = 25 shells.",explanation:"Finding more shells combines two amounts, so we add.",remember:"Write the answer with its unit."},
+  "mul-l1":{idea:"Multiplication counts equal groups.",steps:["Count how many groups there are.","Count how many items are in each group.","Multiply or add the same amount repeatedly."],example:"3 groups of 4 shells: 4 + 4 + 4 = 12, so 3 × 4 = 12.",explanation:"Each group has the same number of shells.",remember:"The groups must be equal to use multiplication this way."},
+  "mul-l2":{idea:"Known multiplication facts make new problems quicker.",steps:["Start with a fact you know.","Use equal groups, doubling or skip counting.","Check by counting the groups."],example:"6 × 4 = 24, because 4 + 4 + 4 + 4 + 4 + 4 = 24.",explanation:"Six groups with four in each group make 24.",remember:"Changing the order does not change the product: 6 × 4 = 4 × 6."},
+  "mul-l3":{idea:"A difficult multiplication fact can be split into easier facts.",steps:["Split one factor into two friendly parts.","Multiply each part.","Add the two products."],example:"7 × 6 = (5 × 6) + (2 × 6) = 30 + 12 = 42.",explanation:"Seven groups are five groups plus two groups.",remember:"Splitting a factor keeps the total number of groups the same."},
+  "mul-l4":{idea:"Use tens and ones for mental multiplication.",steps:["Split the larger number into tens and ones.","Multiply both parts by the other number.","Add the products."],example:"3 × 14 = (3 × 10) + (3 × 4) = 30 + 12 = 42.",explanation:"Three groups of 14 equal three groups of 10 and three groups of 4.",remember:"Estimate first to check your mental answer."},
+  "mul-l5":{idea:"Look for equal groups in a story problem.",steps:["Identify the number of groups and the size of each group.","Write a multiplication sentence.","Solve and include the unit."],example:"There are 4 boats with 3 passengers in each. 4 × 3 = 12 passengers.",explanation:"Four equal groups of three make twelve.",remember:"Draw groups if you are unsure what to multiply."},
+  "mul-l6":{idea:"Choose a useful multiplication strategy for each problem.",steps:["Look for equal groups.","Use a fact you know or split a factor.","Check by repeated addition or a rough estimate."],example:"8 × 7 = (4 × 7) + (4 × 7) = 28 + 28 = 56.",explanation:"Eight groups can be split into two sets of four groups.",remember:"Explain your strategy, not just your answer."},
+  "fr-l1":{idea:"A fraction names equal parts of one whole.",steps:["Check that the whole is split into equal parts.","The bottom number says how many equal parts make the whole.","The top number says how many parts we have."],example:"If a pizza is cut into 4 equal slices and you take 1, you have 1/4.",explanation:"Four equal quarters make one whole pizza.",remember:"Parts must be equal for a fraction such as 1/4 to make sense."},
+  "fr-l2":{idea:"Equivalent fractions describe the same amount.",steps:["Draw or imagine the same whole.","Split each part into the same number of smaller pieces.","Multiply the top and bottom by the same number."],example:"1/2 = 2/4.",explanation:"Two quarters cover exactly the same part of the whole as one half.",remember:"The size of the whole must stay the same."},
+  "fr-l3":{idea:"Use equal sized wholes when comparing fractions.",steps:["Draw the fractions or use a shared denominator.","Compare how much of the whole each covers.","Use <, > or = to show the result."],example:"1/2 > 1/4.",explanation:"A half covers more of the same whole than a quarter.",remember:"With the same numerator, more equal pieces means smaller pieces."},
+  "fr-l4":{idea:"Fractions can mark positions between whole numbers on a number line.",steps:["Mark 0 and 1.","Split the distance into equal intervals.","Count intervals from 0 to place the fraction."],example:"To place 3/4, divide 0 to 1 into four equal intervals and count three from 0.",explanation:"The denominator gives the number of intervals; the numerator tells how many to count.",remember:"The intervals must have equal length."},
+  "fr-l5":{idea:"Pictures and number lines help us reason about fractions.",steps:["Draw the same sized whole for each fraction.","Split it into equal parts.","Shade or mark the fraction, then compare."],example:"2/3 is greater than 1/3 because two equal thirds cover more than one.",explanation:"When denominators match, compare the numerators.",remember:"A model can help you check a fraction rule."},
+  "fr-l6":{idea:"Use equal parts to explain fraction answers.",steps:["Identify the whole.","Check that parts are equal.","Use a picture, number line or equivalent fraction to solve."],example:"If 3 of 6 equal pieces are shaded, the shaded part is 3/6 = 1/2.",explanation:"Three of six pieces cover half of the whole.",remember:"State what the whole is before naming its fraction."},
+};
 
 export default function LessonPage(){
   const params=useParams<{topic:string;lesson:string}>();
-  const topicId=params.topic, lessonId=params.lesson;
-  const [lesson,setLesson]=useState<Lesson|null>(null),[topic,setTopic]=useState<Topic|null>(null),[questions,setQuestions]=useState<Question[]>([]),[step,setStep]=useState(0),[selected,setSelected]=useState<string|null>(null),[loading,setLoading]=useState(true),[done,setDone]=useState(false),[error,setError]=useState("");
-
+  const topicId=params.topic,lessonId=params.lesson;
+  const [lesson,setLesson]=useState<Lesson|null>(null),[topic,setTopic]=useState<Topic|null>(null);
+  const [loading,setLoading]=useState(true),[done,setDone]=useState(false),[error,setError]=useState("");
   useEffect(()=>{
     const supabase=createClient();
     if(!supabase){window.location.href="/login";return;}
     (async()=>{
       const {data:{user}}=await supabase.auth.getUser();
       if(!user){window.location.href="/login";return;}
-      const [{data:l,error:le},{data:t,error:te},{data:p,error:pe}]=await Promise.all([
+      const [{data:l,error:le},{data:t,error:te}]=await Promise.all([
         supabase.from("learning_lessons").select("id,topic_id,title,objective,lesson_number").eq("id",lessonId).eq("topic_id",topicId).maybeSingle(),
-        supabase.from("learning_topics").select("id,title,level").eq("id",topicId).maybeSingle(),
-        supabase.from("profiles").select("grade").eq("id",user.id).maybeSingle()
+        supabase.from("learning_topics").select("id,title,level").eq("id",topicId).maybeSingle()
       ]);
-      if(le||te||pe||!l||!t){setError("This lesson is not available yet.");}
-      else {
-        const grade=String(p?.grade??"").match(/(?:grade|primary)?\s*([1-7])/i);
-        if(!grade){setError("Please set your grade in your profile to see lesson questions.");}
-        else {
-          const {data:q,error:qe}=await supabase.from("learning_questions")
-            .select("id,prompt,options,answer,explanation,sort_order")
-            .eq("topic_id",topicId).eq("grade_level",`Grade ${grade[1]}`)
-            .eq("status","published").eq("question_type","multiple_choice")
-            .order("sort_order").limit(500);
-          if(qe)setError("Lesson questions could not be loaded.");
-          else {setLesson(l);setTopic(t);setQuestions(((q??[]) as Question[]).filter(usableQuestion).filter(question=>matchesLesson(question,topicId,lessonId)).slice(0,10));}
-        }
-      }
+      if(le||te||!l||!t)setError("This lesson is not available yet.");
+      else {setLesson(l);setTopic(t);}
       setLoading(false);
     })();
   },[topicId,lessonId]);
@@ -66,22 +62,22 @@ export default function LessonPage(){
     if(e){setError(e.message);return;}
     setDone(true);
   }
-
   if(loading)return <main className="flex min-h-screen items-center justify-center bg-[#f7f9fc]"><p className="font-bold text-[#071b3a]">Loading lesson…</p></main>;
-  if(error||!lesson||!topic)return <main className="flex min-h-screen items-center justify-center bg-[#f7f9fc] p-6"><div className="rounded-3xl bg-white p-8 text-center shadow-sm"><h1 className="text-xl font-black text-[#071b3a]">Lesson unavailable</h1><p className="mt-2 text-sm text-slate-500">{error}</p><Link href={`/learn/${topicId}`} className="mt-5 inline-block font-bold text-[#0d666b]">Back to topic</Link></div></main>;
-
-  const question=questions[step];
-  const answered=selected!==null;
-  const correct=answered&&selected===question?.answer;
-
+  if(!lesson||!topic)return <main className="grid min-h-screen place-items-center bg-[#f7f9fc] p-6"><div className="rounded-3xl bg-white p-8 text-center"><h1 className="text-xl font-black">Lesson unavailable</h1><p className="mt-2 text-slate-500">{error}</p><Link href={`/learn/${topicId}`} className="mt-5 inline-block font-bold text-[#0d666b]">Back to topic</Link></div></main>;
+  const material=content[lesson.id];
   return <main className="min-h-screen bg-[#f7f9fc]">
-    <header className="border-b border-slate-200 bg-white"><div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4"><Link href={`/learn/${topicId}`} className="inline-flex items-center gap-2 text-sm font-bold text-[#0d666b]"><ArrowLeft size={16}/> {topic.title}</Link><span className="text-sm font-bold text-slate-500">Lesson {lesson.lesson_number}</span></div></header>
-    <div className="mx-auto max-w-4xl px-5 py-8">
-      {done?<section className="rounded-3xl bg-white p-8 text-center shadow-xl sm:p-12"><div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100"><CheckCircle2 className="text-emerald-600" size={40}/></div><p className="mt-6 text-sm font-bold uppercase tracking-[0.15em] text-[#0d666b]">Lesson complete</p><h1 className="mt-2 text-3xl font-black text-[#071b3a]">{lesson.title}</h1><p className="mx-auto mt-3 max-w-xl text-slate-500">{lesson.objective}</p><div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row"><Link href={`/learn/${topicId}`} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3 font-bold text-white">Back to lessons <ArrowRight size={17}/></Link>{questions.length>0&&<Link href={`/learn/${topicId}?practice=1`} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3 font-bold text-[#071b3a]">Continue practising <Sparkles size={17}/></Link>}</div></section>:<section className="rounded-3xl bg-white p-6 shadow-xl sm:p-9">
-        <div className="rounded-2xl bg-[#071b3a] p-6 text-white"><p className="text-xs font-bold uppercase tracking-[0.15em] text-[#e2b75d]">{topic.level} • Lesson {lesson.lesson_number}</p><h1 className="mt-2 text-2xl font-black sm:text-3xl">{lesson.title}</h1><p className="mt-2 text-sm leading-6 text-slate-300">{lesson.objective}</p></div>
-        {questions.length>0?<><div className="mt-7 flex items-center justify-between"><div className="inline-flex items-center gap-2 text-sm font-bold text-[#0d666b]"><CircleHelp size={18}/> Quick check</div><span className="text-sm font-bold text-slate-500">{step+1}/{questions.length}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0d666b] transition-all" style={{width:`${((step+1)/questions.length)*100}%`}}/></div><h2 className="mt-7 text-2xl font-black leading-tight text-[#071b3a]">{question.prompt}</h2><div className="mt-6 grid gap-3">{question.options.map(option=>{const isAnswer=option===question.answer,isSelected=selected===option;let cls="border-slate-200 bg-white hover:border-[#0d666b]";if(answered&&isAnswer)cls="border-emerald-400 bg-emerald-50";else if(answered&&isSelected)cls="border-red-400 bg-red-50";return <button key={option} disabled={answered} onClick={()=>setSelected(option)} className={`flex items-center justify-between rounded-2xl border p-4 text-left font-bold text-[#071b3a] transition ${cls}`}><span>{option}</span>{answered&&isAnswer&&<CheckCircle2 className="text-emerald-600" size={20}/>}</button>})}</div>{answered&&<div className={`mt-6 rounded-2xl p-5 ${correct?"bg-emerald-50":"bg-amber-50"}`}><p className="font-black text-[#071b3a]">{correct?"Correct!":"Keep going — review the idea."}</p><p className="mt-1 text-sm leading-6 text-slate-600">{question.explanation}</p></div>}<div className="mt-7 flex justify-end">{answered&&<button onClick={()=>{if(step+1<questions.length){setStep(v=>v+1);setSelected(null)}else complete()}} className="inline-flex items-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3 font-bold text-white">{step+1<questions.length?"Next check":"Complete lesson"}<ArrowRight size={17}/></button>}</div></>:<><div className="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-6"><p className="font-black text-[#071b3a]">Lesson objective</p><p className="mt-2 text-sm leading-7 text-slate-600">{lesson.objective} No quick-check questions are available for this lesson yet.</p></div><button onClick={complete} className="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#0d666b] px-5 py-3 font-bold text-white">Mark lesson complete <CheckCircle2 size={17}/></button></>}
+    <header className="border-b border-slate-200 bg-white"><div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4"><Link href={`/learn/${topicId}`} className="inline-flex items-center gap-2 text-sm font-bold text-[#0d666b]"><ArrowLeft size={16}/>{topic.title}</Link><span className="text-sm font-bold text-slate-500">Lesson {lesson.lesson_number}</span></div></header>
+    <div className="mx-auto max-w-3xl px-5 py-8">
+      {done?<section className="rounded-3xl bg-white p-8 text-center shadow-sm"><CheckCircle2 className="mx-auto text-emerald-600" size={42}/><h1 className="mt-4 text-3xl font-black text-[#071b3a]">Lesson complete</h1><p className="mt-2 text-slate-600">{lesson.title}</p><Link href={`/learn/${topicId}`} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3 font-bold text-white">More lessons <ArrowRight size={17}/></Link></section>:
+      <article className="rounded-3xl bg-white p-6 shadow-sm sm:p-9">
+        <div className="rounded-2xl bg-[#071b3a] p-6 text-white"><p className="text-xs font-bold uppercase tracking-widest text-[#e2b75d]">{topic.level} · Lesson {lesson.lesson_number}</p><h1 className="mt-3 text-3xl font-black">{lesson.title}</h1><p className="mt-3 leading-7 text-slate-200">{lesson.objective}</p></div>
+        {material?<><section className="mt-8"><div className="flex items-center gap-2 font-black text-[#0d666b]"><Lightbulb size={21}/>The big idea</div><p className="mt-3 text-xl leading-8 text-[#071b3a]">{material.idea}</p></section>
+          <section className="mt-8"><h2 className="flex items-center gap-2 text-xl font-black text-[#071b3a]"><BookOpen size={21}/>Learn it step by step</h2><ol className="mt-4 space-y-3">{material.steps.map((step,index)=><li key={index} className="flex gap-4 rounded-2xl bg-slate-50 p-4 leading-7 text-slate-700"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0d666b] font-black text-white">{index+1}</span>{step}</li>)}</ol></section>
+          <section className="mt-8 rounded-2xl bg-cyan-50 p-6"><h2 className="font-black text-[#0d666b]">Worked example</h2><p className="mt-3 text-xl font-bold leading-8 text-[#071b3a]">{material.example}</p><p className="mt-3 leading-7 text-slate-700">{material.explanation}</p></section>
+          <p className="mt-6 rounded-2xl bg-amber-50 p-5 leading-7 text-[#60451c]"><strong>Remember:</strong> {material.remember}</p>
+          <button onClick={complete} className="mt-8 inline-flex items-center gap-2 rounded-xl bg-[#0d666b] px-5 py-3 font-bold text-white">I have learned this <CheckCircle2 size={18}/></button></>:<div className="mt-8 rounded-2xl bg-slate-50 p-6 text-slate-600">Learning material for this lesson is being prepared. <Link href={`/learn/${topicId}`} className="font-bold text-[#0d666b]">Back to lessons</Link></div>}
         {error&&<p className="mt-4 text-sm font-semibold text-red-600">{error}</p>}
-      </section>}
+      </article>}
     </div>
   </main>;
 }
