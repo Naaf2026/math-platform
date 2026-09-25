@@ -1,6 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
-import CompactStudentNav from "@/components/compact-student-nav";
+import StudentMobileHeader from "@/components/student-mobile-header";
 import StudentNavigation from "@/components/student-navigation";
 import TeacherNavigation from "@/components/teacher-navigation";
 import ParentNavigation from "@/components/parent-navigation";
@@ -11,5 +11,5 @@ export default function RoleNavigation(){
  if(pathname.startsWith("/teacher"))return <TeacherNavigation/>;
  if(pathname.startsWith("/parent"))return <ParentNavigation/>;
  if(pathname.startsWith("/admin"))return <AdminNavigation/>;
- return <><CompactStudentNav/>{!["/dashboard","/homework"].includes(pathname)&&<div className="hidden lg:block"><StudentNavigation/></div>}</>;
+ return <><StudentMobileHeader/>{!["/dashboard","/homework"].includes(pathname)&&<div className="hidden lg:block"><StudentNavigation/></div>}</>;
 }
