@@ -233,7 +233,7 @@ export default function ProfilePage() {
           <>
             <header className="h-[76px] bg-[#073b73] shadow-sm lg:h-[90px]">
               <div className="mx-auto flex h-full max-w-[1680px] items-center px-4 sm:px-6 lg:px-12">
-                <img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[44px] w-auto max-w-[220px] lg:h-[57px] lg:max-w-none"/>
+                <img src="/fahi-hisaabu-logo-optimized.webp" alt="Fahi Hisaabu" className="h-[44px] w-auto max-w-[220px] rounded-xl bg-white p-1 lg:h-[57px]"/>
               </div>
             </header>
             <div className="mx-auto max-w-[1340px] px-4 py-8 sm:px-6 lg:px-12">
@@ -266,7 +266,7 @@ export default function ProfilePage() {
     <main className="min-h-screen bg-[#eef4ff] text-[#12204a]">
       <header className="sticky top-0 z-40 h-[76px] border-b border-white/10 bg-[#073b73] text-white shadow-sm lg:h-[90px]">
         <div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12">
-          <Link href="/dashboard"><img src="/dashboard-assets/dashboard-logo.svg" alt="FAHI VISSNUN Math Learning Platform" className="h-[44px] w-auto max-w-[220px] lg:h-[57px] lg:max-w-none"/></Link>
+          <Link href="/dashboard" className="flex min-w-0 shrink-0 items-center rounded-2xl bg-white px-3 py-1.5 shadow-md ring-1 ring-white/40 transition hover:shadow-lg"><img src="/fahi-hisaabu-logo-optimized.webp" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }} alt="Fahi Hisaabu" className="h-[44px] w-auto max-w-[200px] object-contain lg:h-[57px] lg:max-w-[220px]" /></Link>
           <nav className="hidden items-center gap-8 lg:flex">
             <Link href="/dashboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Home size={25}/>Home</Link>
             <Link href="/brain-games" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Gamepad2 size={25}/>Games</Link>
@@ -279,11 +279,7 @@ export default function ProfilePage() {
         </div>
       </header>
       <div className="mx-auto flex max-w-[1680px]">
-        <aside className="hidden min-h-[calc(100vh-90px)] w-[245px] shrink-0 flex-col border-r border-[#dcecf6] bg-[#f5fbff] px-7 py-9 lg:flex">
-          <div className="flex flex-col items-center text-center">{avatarUrl?<img src={avatarUrl} alt="" className="h-[148px] w-[148px] rounded-full border-4 border-white object-cover shadow-lg"/>:<div className="grid h-[148px] w-[148px] place-items-center rounded-full border-4 border-white bg-[#dff7ff] text-5xl shadow-lg">{avatarEmoji||"🧑‍🎓"}</div>}<h2 className="mt-5 text-[34px] font-black">{firstName}</h2><p className="mt-1 text-[19px] font-bold"><GraduationCap size={22} className="mr-2 inline"/>{profile?.grade||"Student"}</p></div>
-          <div className="mt-7 border-t border-[#dcecf6] pt-5"><p className="py-2 text-[17px] font-black">🔥 {currentStreak} Day Streak</p><p className="py-2 text-[17px] font-black">⭐ {xp} XP</p></div>
-          <button onClick={signOut} className="mt-auto flex items-center justify-center gap-2 rounded-2xl border border-[#dcecf6] bg-white px-4 py-3 font-black text-[#6685a4] hover:text-[#083d78]"><LogOut size={18}/>Logout</button>
-        </aside>
+        
         <section className="min-w-0 flex-1 px-4 py-6 pb-24 sm:px-6 lg:px-12 lg:py-10">
           <div className="mx-auto max-w-[1340px]">
             <div className="mb-7"><p className="text-sm font-black uppercase tracking-[.18em] text-[#735fe6]">Learner Profile</p><h1 className="mt-1 text-[38px] font-black tracking-tight text-[#083d78] sm:text-[48px] lg:text-[54px]">My Profile 👤</h1><p className="mt-2 text-[18px] font-semibold text-[#6685a4] sm:text-[21px]">Your learning identity, achievements and journey.</p></div>
