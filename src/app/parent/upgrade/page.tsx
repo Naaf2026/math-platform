@@ -83,7 +83,7 @@ export default function ParentUpgradePage() {
 
   return <main className="min-h-screen bg-[#eef9ff] px-4 py-8 text-[#083d78] sm:px-6 lg:px-10">
     <div className="mx-auto max-w-5xl">
-      <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-black text-[#176a9c]"><ArrowLeft size={17}/> Learner dashboard</Link>
+      <Link href="/parent" className="inline-flex items-center gap-2 text-sm font-black text-[#176a9c]"><ArrowLeft size={17}/> Parent dashboard</Link>
       <div className="mt-5 rounded-[30px] bg-[#073b73] p-7 text-white shadow-xl sm:p-10">
         <p className="text-sm font-black uppercase tracking-widest text-yellow-300">Premium access</p>
         <h1 className="mt-2 text-4xl font-black">Upgrade each learner</h1>
@@ -95,9 +95,9 @@ export default function ParentUpgradePage() {
           <div><p className="text-xs font-black uppercase tracking-widest text-[#197fe9]">Learner subscriptions</p><h2 className="mt-1 text-2xl font-black">Access overview</h2></div>
           <p className="text-sm font-bold text-slate-500">{learners.length} learner{learners.length === 1 ? "" : "s"}</p>
         </div>
-        <div className="mt-5 overflow-x-auto">
-          <table className="w-full min-w-[720px] border-separate border-spacing-0">
-            <thead><tr className="text-left text-xs font-black uppercase tracking-wider text-slate-500">
+        <div className="mt-5">
+          <table className="w-full border-separate border-spacing-0">
+            <thead className="hidden md:table-header-group"><tr className="text-left text-xs font-black uppercase tracking-wider text-slate-500">
               <th className="border-b border-slate-100 px-4 py-3">Learner</th><th className="border-b border-slate-100 px-4 py-3">Status</th><th className="border-b border-slate-100 px-4 py-3">Monthly fee</th><th className="border-b border-slate-100 px-4 py-3 text-right">Action</th>
             </tr></thead>
             <tbody>
@@ -112,11 +112,11 @@ export default function ParentUpgradePage() {
                 else if (state?.status === "trialing") { const d = state.days_left ?? 0; statusText = `Trial – ${d} day${d === 1 ? "" : "s"} left`; statusClass = "bg-blue-50 text-blue-700"; }
                 else if (state?.status === "active") { statusText = "Premium active"; statusClass = "bg-emerald-50 text-emerald-700"; action = "Renew"; }
                 else if (state?.status === "expired" || state?.payment_required) { statusText = "Access disabled"; statusClass = "bg-red-50 text-red-700"; }
-                return <tr key={learner.learner_id}>
-                  <td className="border-b border-slate-100 px-4 py-4"><div className="font-black text-[#083d78]">{learner.name}</div><div className="text-xs font-bold text-slate-400">{learner.username}{learner.grade ? ` · ${learner.grade}` : ""}</div></td>
-                  <td className="border-b border-slate-100 px-4 py-4"><span className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${statusClass}`}>{state?.reason === "grandfathered" ? <ShieldCheck size={14}/> : pending ? <Clock3 size={14}/> : state?.status === "active" ? <CheckCircle2 size={14}/> : null}{statusText}</span></td>
-                  <td className="border-b border-slate-100 px-4 py-4 font-black text-[#083d78]">MVR 150</td>
-                  <td className="border-b border-slate-100 px-4 py-4 text-right"><button onClick={() => { if (action === "Retry") { void load(); } else { setSelectedLearner(learner.learner_id); } }} disabled={action === "View"} className="inline-flex items-center gap-2 rounded-xl bg-[#197fe9] px-4 py-2.5 text-sm font-black text-white shadow-sm hover:opacity-90 disabled:cursor-default disabled:bg-emerald-100 disabled:text-emerald-700 disabled:shadow-none">{action === "Renew" ? <RefreshCw size={16}/> : action === "Included" ? <ShieldCheck size={16}/> : <Eye size={16}/>} {action}</button></td>
+                return <tr key={learner.learner_id} className="mb-3 block rounded-2xl border border-[#d7eaf7] bg-[#f8fcff] p-4 last:mb-0 md:table-row md:rounded-none md:border-0 md:bg-transparent md:p-0">
+                  <td className="block min-w-0 pb-3 md:table-cell md:border-b md:border-slate-100 md:px-4 md:py-4"><div className="break-words font-black text-[#083d78]">{learner.name}</div><div className="break-all text-xs font-bold text-slate-500">{learner.username}{learner.grade ? ` · ${learner.grade}` : ""}</div></td>
+                  <td className="block pb-3 md:table-cell md:border-b md:border-slate-100 md:px-4 md:py-4"><span className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500 md:hidden">Status</span><span className={`inline-flex max-w-full flex-wrap items-center gap-2 rounded-full px-3 py-2 text-sm font-black md:text-xs ${statusClass}`}>{state?.reason === "grandfathered" ? <ShieldCheck size={14}/> : pending ? <Clock3 size={14}/> : state?.status === "active" ? <CheckCircle2 size={14}/> : null}{statusText}</span></td>
+                  <td className="block pb-4 font-black text-[#083d78] md:table-cell md:border-b md:border-slate-100 md:px-4 md:py-4"><span className="mr-2 text-xs font-bold uppercase tracking-wide text-slate-500 md:hidden">Monthly fee</span>MVR 150</td>
+                  <td className="block md:table-cell md:border-b md:border-slate-100 md:px-4 md:py-4 md:text-right"><button onClick={() => { if (action === "Retry") { void load(); } else { setSelectedLearner(learner.learner_id); } }} disabled={action === "View"} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#197fe9] px-4 py-3 text-sm font-black text-white shadow-sm hover:opacity-90 disabled:cursor-default disabled:bg-emerald-100 disabled:text-emerald-700 disabled:shadow-none md:w-auto md:py-2.5">{action === "Renew" ? <RefreshCw size={16}/> : action === "Included" ? <ShieldCheck size={16}/> : <Eye size={16}/>} {action}</button></td>
                 </tr>;
               })}
             </tbody>
