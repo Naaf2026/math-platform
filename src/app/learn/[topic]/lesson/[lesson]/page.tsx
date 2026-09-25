@@ -10,6 +10,21 @@ type Lesson={id:string;topic_id:string;title:string;objective:string;lesson_numb
 type Topic={id:string;title:string;level:string};
 type Question={id:string;prompt:string;options:string[];answer:string;explanation:string;sort_order:number};
 
+function matchesLesson(question:Question, topicId:string, lessonId:string){
+  if(topicId!=="place-value")return true;
+  const prompt=question.prompt.toLowerCase();
+  if(lessonId==="pv-l1")return /value of|place value|digit|tens and ones|hundreds/.test(prompt)&&!/expanded form/.test(prompt);
+  if(lessonId==="pv-l2")return /read|write|number name|which number has|greater|smaller|compare/.test(prompt)&&!/expanded form/.test(prompt);
+  if(lessonId==="pv-l3")return /expanded form/.test(prompt);
+  return true;
+}
+
+function usableQuestion(raw:Question){
+  if(!raw.id||!raw.prompt?.trim()||!raw.answer?.trim()||!Array.isArray(raw.options))return false;
+  const options=raw.options.filter((option):option is string=>typeof option==="string"&&!!option.trim());
+  return options.length>=2&&new Set(options).size===options.length&&options.includes(raw.answer);
+}
+
 export default function LessonPage(){
   const params=useParams<{topic:string;lesson:string}>();
   const topicId=params.topic, lessonId=params.lesson;
@@ -21,13 +36,25 @@ export default function LessonPage(){
     (async()=>{
       const {data:{user}}=await supabase.auth.getUser();
       if(!user){window.location.href="/login";return;}
-      const [{data:l,error:le},{data:t,error:te},{data:q,error:qe}]=await Promise.all([
+      const [{data:l,error:le},{data:t,error:te},{data:p,error:pe}]=await Promise.all([
         supabase.from("learning_lessons").select("id,topic_id,title,objective,lesson_number").eq("id",lessonId).eq("topic_id",topicId).maybeSingle(),
         supabase.from("learning_topics").select("id,title,level").eq("id",topicId).maybeSingle(),
-        supabase.from("learning_questions").select("id,prompt,options,answer,explanation,sort_order").eq("topic_id",topicId).order("sort_order")
+        supabase.from("profiles").select("grade").eq("id",user.id).maybeSingle()
       ]);
-      if(le||te||qe||!l||!t){setError("This lesson is not available yet.");}
-      else {setLesson(l);setTopic(t);setQuestions((q??[]) as Question[]);}
+      if(le||te||pe||!l||!t){setError("This lesson is not available yet.");}
+      else {
+        const grade=String(p?.grade??"").match(/(?:grade|primary)?\s*([1-7])/i);
+        if(!grade){setError("Please set your grade in your profile to see lesson questions.");}
+        else {
+          const {data:q,error:qe}=await supabase.from("learning_questions")
+            .select("id,prompt,options,answer,explanation,sort_order")
+            .eq("topic_id",topicId).eq("grade_level",`Grade ${grade[1]}`)
+            .eq("status","published").eq("question_type","multiple_choice")
+            .order("sort_order").limit(500);
+          if(qe)setError("Lesson questions could not be loaded.");
+          else {setLesson(l);setTopic(t);setQuestions(((q??[]) as Question[]).filter(usableQuestion).filter(question=>matchesLesson(question,topicId,lessonId)).slice(0,10));}
+        }
+      }
       setLoading(false);
     })();
   },[topicId,lessonId]);
@@ -52,7 +79,7 @@ export default function LessonPage(){
     <div className="mx-auto max-w-4xl px-5 py-8">
       {done?<section className="rounded-3xl bg-white p-8 text-center shadow-xl sm:p-12"><div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100"><CheckCircle2 className="text-emerald-600" size={40}/></div><p className="mt-6 text-sm font-bold uppercase tracking-[0.15em] text-[#0d666b]">Lesson complete</p><h1 className="mt-2 text-3xl font-black text-[#071b3a]">{lesson.title}</h1><p className="mx-auto mt-3 max-w-xl text-slate-500">{lesson.objective}</p><div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row"><Link href={`/learn/${topicId}`} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3 font-bold text-white">Back to lessons <ArrowRight size={17}/></Link>{questions.length>0&&<Link href={`/learn/${topicId}?practice=1`} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3 font-bold text-[#071b3a]">Continue practising <Sparkles size={17}/></Link>}</div></section>:<section className="rounded-3xl bg-white p-6 shadow-xl sm:p-9">
         <div className="rounded-2xl bg-[#071b3a] p-6 text-white"><p className="text-xs font-bold uppercase tracking-[0.15em] text-[#e2b75d]">{topic.level} • Lesson {lesson.lesson_number}</p><h1 className="mt-2 text-2xl font-black sm:text-3xl">{lesson.title}</h1><p className="mt-2 text-sm leading-6 text-slate-300">{lesson.objective}</p></div>
-        {questions.length>0?<><div className="mt-7 flex items-center justify-between"><div className="inline-flex items-center gap-2 text-sm font-bold text-[#0d666b]"><CircleHelp size={18}/> Quick check</div><span className="text-sm font-bold text-slate-500">{step+1}/{questions.length}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0d666b] transition-all" style={{width:`${((step+1)/questions.length)*100}%`}}/></div><h2 className="mt-7 text-2xl font-black leading-tight text-[#071b3a]">{question.prompt}</h2><div className="mt-6 grid gap-3">{question.options.map(option=>{const isAnswer=option===question.answer,isSelected=selected===option;let cls="border-slate-200 bg-white hover:border-[#0d666b]";if(answered&&isAnswer)cls="border-emerald-400 bg-emerald-50";else if(answered&&isSelected)cls="border-red-400 bg-red-50";return <button key={option} disabled={answered} onClick={()=>setSelected(option)} className={`flex items-center justify-between rounded-2xl border p-4 text-left font-bold text-[#071b3a] transition ${cls}`}><span>{option}</span>{answered&&isAnswer&&<CheckCircle2 className="text-emerald-600" size={20}/>}</button>})}</div>{answered&&<div className={`mt-6 rounded-2xl p-5 ${correct?"bg-emerald-50":"bg-amber-50"}`}><p className="font-black text-[#071b3a]">{correct?"Correct!":"Keep going — review the idea."}</p><p className="mt-1 text-sm leading-6 text-slate-600">{question.explanation}</p></div>}<div className="mt-7 flex justify-end">{answered&&<button onClick={()=>{if(step+1<questions.length){setStep(v=>v+1);setSelected(null)}else complete()}} className="inline-flex items-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3 font-bold text-white">{step+1<questions.length?"Next check":"Complete lesson"}<ArrowRight size={17}/></button>}</div></>:<><div className="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-6"><p className="font-black text-[#071b3a]">Lesson objective</p><p className="mt-2 text-sm leading-7 text-slate-600">{lesson.objective} This lesson is ready for guided content and practice activities as the curriculum expands.</p></div><button onClick={complete} className="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#0d666b] px-5 py-3 font-bold text-white">Mark lesson complete <CheckCircle2 size={17}/></button></>}
+        {questions.length>0?<><div className="mt-7 flex items-center justify-between"><div className="inline-flex items-center gap-2 text-sm font-bold text-[#0d666b]"><CircleHelp size={18}/> Quick check</div><span className="text-sm font-bold text-slate-500">{step+1}/{questions.length}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0d666b] transition-all" style={{width:`${((step+1)/questions.length)*100}%`}}/></div><h2 className="mt-7 text-2xl font-black leading-tight text-[#071b3a]">{question.prompt}</h2><div className="mt-6 grid gap-3">{question.options.map(option=>{const isAnswer=option===question.answer,isSelected=selected===option;let cls="border-slate-200 bg-white hover:border-[#0d666b]";if(answered&&isAnswer)cls="border-emerald-400 bg-emerald-50";else if(answered&&isSelected)cls="border-red-400 bg-red-50";return <button key={option} disabled={answered} onClick={()=>setSelected(option)} className={`flex items-center justify-between rounded-2xl border p-4 text-left font-bold text-[#071b3a] transition ${cls}`}><span>{option}</span>{answered&&isAnswer&&<CheckCircle2 className="text-emerald-600" size={20}/>}</button>})}</div>{answered&&<div className={`mt-6 rounded-2xl p-5 ${correct?"bg-emerald-50":"bg-amber-50"}`}><p className="font-black text-[#071b3a]">{correct?"Correct!":"Keep going — review the idea."}</p><p className="mt-1 text-sm leading-6 text-slate-600">{question.explanation}</p></div>}<div className="mt-7 flex justify-end">{answered&&<button onClick={()=>{if(step+1<questions.length){setStep(v=>v+1);setSelected(null)}else complete()}} className="inline-flex items-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3 font-bold text-white">{step+1<questions.length?"Next check":"Complete lesson"}<ArrowRight size={17}/></button>}</div></>:<><div className="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-6"><p className="font-black text-[#071b3a]">Lesson objective</p><p className="mt-2 text-sm leading-7 text-slate-600">{lesson.objective} No quick-check questions are available for this lesson yet.</p></div><button onClick={complete} className="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#0d666b] px-5 py-3 font-bold text-white">Mark lesson complete <CheckCircle2 size={17}/></button></>}
         {error&&<p className="mt-4 text-sm font-semibold text-red-600">{error}</p>}
       </section>}
     </div>
