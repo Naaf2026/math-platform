@@ -78,7 +78,10 @@ export default function ParentNotificationsPage() {
     }));
     if (results.some(result => result.generationError)) setRefreshWarning("New smart alerts could not be refreshed right now. Your existing alerts are still available.");
     if (results.every(result => result.alertError)) setError(results[0].alertError?.message || "Could not load alerts.");
-    else setAlerts(results.flatMap(result => result.data).sort((a, b) => b.created_at.localeCompare(a.created_at)));
+    else {
+      setAlerts(results.flatMap(result => result.data).sort((a, b) => b.created_at.localeCompare(a.created_at)));
+      window.dispatchEvent(new Event("parent-alerts-updated"));
+    }
     setLoading(false);
   }, []);
 
