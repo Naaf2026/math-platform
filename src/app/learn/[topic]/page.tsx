@@ -25,10 +25,11 @@ export default function TopicPage(){
     (async()=>{
       const {data:{user}}=await supabase.auth.getUser();
       if(!user){window.location.href="/login";return;}
-      const [{data:t,error:te},{data:l,error:le},{data:p}]=await Promise.all([
+      const [{data:t,error:te},{data:l,error:le},{data:p},{data:profile}]=await Promise.all([
         supabase.from("learning_topics").select("id,title,level,lessons,description").eq("id",topicId).maybeSingle(),
         supabase.from("learning_lessons").select("id,title,objective,lesson_number").eq("topic_id",topicId).order("sort_order"),
-        supabase.from("lesson_progress").select("lesson_id,completed_at").eq("user_id",user.id)
+        supabase.from("lesson_progress").select("lesson_id,completed_at").eq("user_id",user.id),
+        supabase.from("profiles").select("grade").eq("id",user.id).maybeSingle()
       ]);
       if(te||le||!t){setError("This learning topic is not available yet.");}
       else {setTopic(t);setLessons((l??[]) as Lesson[]);setProgress((p??[]) as Progress[]);}
@@ -60,7 +61,7 @@ export default function TopicPage(){
         <div className="mt-5 grid gap-4">
           {lessons.map((lesson,index)=>{const done=progress.some(p=>p.lesson_id===lesson.id&&p.completed_at);return <Link key={lesson.id} href={`/learn/${topic.id}/lesson/${lesson.id}`} className="group flex gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg sm:p-6"><div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl font-black ${done?"bg-emerald-100 text-emerald-700":"bg-[#0d666b]/10 text-[#0d666b]"}`}>{done?<CheckCircle2 size={22}/>:String(index+1).padStart(2,"0")}</div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="font-black text-[#071b3a]">{lesson.title}</h3>{done&&<span className="rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700">Completed</span>}</div><p className="mt-1 text-sm leading-6 text-slate-500">{lesson.objective}</p><span className="mt-3 inline-flex items-center gap-1 text-sm font-black text-[#0d666b]">{done?"Review lesson":"Start lesson"}<ArrowRight size={15}/></span></div></Link>})}
         </div>
-        {lessons.length===0&&<div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center"><p className="font-bold text-[#071b3a]">Lessons are being prepared.</p><p className="mt-1 text-sm text-slate-500">Practice questions are already available for this topic.</p><Link href={`/learn/${topic.id}/practice`} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#0d666b] px-4 py-2 font-bold text-white">Start practice <ArrowRight size={16}/></Link></div>}
+        {lessons.length===0&&<div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center"><p className="font-bold text-[#071b3a]">Lessons are being prepared.</p><p className="mt-1 text-sm text-slate-500">Practice questions are already available for this topic.</p>{profile?.grade&&<Link href={`/training/practice?topic=${encodeURIComponent(topic.id)}&grade=${encodeURIComponent(String(profile.grade))}`} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#0d666b] px-4 py-2 font-bold text-white">Start practice <ArrowRight size={16}/></Link>}</div>}
       </section>
       {percent===100&&<section className="mt-8 rounded-3xl bg-white p-7 text-center shadow-sm"><Trophy className="mx-auto text-[#c9952e]" size={32}/><h2 className="mt-3 text-xl font-black text-[#071b3a]">Topic learning complete</h2><p className="mt-1 text-sm text-slate-500">Excellent work. Keep practising to strengthen your skills.</p><Link href="/learn" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#071b3a] px-5 py-3 font-bold text-white">Next topic <ArrowRight size={16}/></Link></section>}
     </div>
