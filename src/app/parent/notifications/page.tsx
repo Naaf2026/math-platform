@@ -63,25 +63,22 @@ export default function ParentNotificationsPage() {
       .select("student_id")
       .eq("related_user_id", user.id)
       .in("relationship", ["parent", "guardian"])
-      .eq("status", "active")
-      .limit(1);
+      .eq("status", "active");
 
     if (linkError) { setError(linkError.message); setLoading(false); return; }
-    const studentId = links?.[0]?.student_id;
-    if (!studentId) { setError("No linked student found."); setLoading(false); return; }
+    const studentIds = [...new Set((links ?? []).map(link => link.student_id))];
+    if (!studentIds.length) { setError("No linked student found."); setLoading(false); return; }
 
     // Alert generation is best-effort. Existing notifications should remain
     // visible even if a fresh smart-alert calculation temporarily fails.
-    const { error: generationError } = await s.rpc("generate_parent_smart_alerts", { p_student_id: studentId });
-    if (generationError) setRefreshWarning("New smart alerts could not be refreshed right now. Your existing alerts are still available.");
-
-    const { data, error: alertError } = await s.rpc("get_parent_learning_alerts", {
-      p_student_id: studentId,
-      p_limit: 50,
-    });
-
-    if (alertError) setError(alertError.message);
-    else setAlerts((data ?? []) as Alert[]);
+    const results = await Promise.all(studentIds.map(async studentId => {
+      const { error: generationError } = await s.rpc("generate_parent_smart_alerts", { p_student_id: studentId });
+      const { data, error: alertError } = await s.rpc("get_parent_learning_alerts", { p_student_id: studentId, p_limit: 50 });
+      return { data: (data ?? []) as Alert[], generationError, alertError };
+    }));
+    if (results.some(result => result.generationError)) setRefreshWarning("New smart alerts could not be refreshed right now. Your existing alerts are still available.");
+    if (results.every(result => result.alertError)) setError(results[0].alertError?.message || "Could not load alerts.");
+    else setAlerts(results.flatMap(result => result.data).sort((a, b) => b.created_at.localeCompare(a.created_at)));
     setLoading(false);
   }, []);
 
@@ -93,6 +90,7 @@ export default function ParentNotificationsPage() {
     const { error: markError } = await s.rpc("mark_parent_learning_alert_read", { p_alert_id: alertId });
     if (markError) { setError(markError.message); return; }
     setAlerts(current => current.map(a => a.alert_id === alertId ? { ...a, read_at: new Date().toISOString() } : a));
+    window.dispatchEvent(new Event("parent-alerts-updated"));
   }
 
   async function markAllRead() {
