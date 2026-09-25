@@ -131,7 +131,7 @@ export default function DashboardPage() {
     <div className="absolute left-4 right-4 top-[37%] bottom-0 rounded-t-[48px] bg-[#fffaf0] px-2 pt-4">
       <h2 className="text-[25px] font-black leading-[0.95] sm:text-[28px]">Daily<br />Challenge</h2>
       <p className="mt-2 text-[13px] font-bold text-[#55708b]">📋 &nbsp;10 Questions • Earn XP</p>
-      <div className="absolute mt-4 w-full rounded-full bg-[#ffad16] px-4 py-2.5 text-center text-[16px] font-black text-white shadow-md">Start →</div>
+      <div className="absolute bottom-3 left-2 right-2 rounded-full bg-[#ffad16] px-4 py-2.5 text-center text-[16px] font-black text-white shadow-md">Start →</div>
     </div>
   </button>
 
@@ -145,7 +145,7 @@ export default function DashboardPage() {
         
       </div>
       <p className="mt-2 text-[13px] font-bold text-[#55708b]">👀 &nbsp;See, explore and solve maths visually</p>
-      <div className="absolute mt-4 w-full rounded-full bg-[#735fe6] px-4 py-2.5 text-center text-[16px] font-black text-white shadow-md">Start →</div>
+      <div className="absolute bottom-3 left-2 right-2 rounded-full bg-[#735fe6] px-4 py-2.5 text-center text-[16px] font-black text-white shadow-md">Start →</div>
     </div>
   </button>
 
@@ -159,7 +159,7 @@ export default function DashboardPage() {
     <div className="absolute bottom-0 left-4 right-4 top-[37%] rounded-t-[48px] bg-[#f5fbff] px-2 pt-4">
       <h2 className="text-[25px] font-black leading-[0.95] text-[#183b68] sm:text-[28px]">My<br />Homework</h2>
       <p className="mt-2 text-[13px] font-bold text-[#55708b]">Your maths homework and practice worksheets</p>
-      <div className="absolute mt-4 w-full rounded-full bg-[#197fe9] px-4 py-2.5 text-center text-[16px] font-black text-white shadow-md">Open →</div>
+      <div className="absolute bottom-3 left-2 right-2 rounded-full bg-[#197fe9] px-4 py-2.5 text-center text-[16px] font-black text-white shadow-md">Open →</div>
     </div>
   </Link>
 
@@ -168,7 +168,7 @@ export default function DashboardPage() {
     <div className="absolute left-4 right-4 top-[37%] bottom-0 rounded-t-[48px] bg-[#f4fffa] px-2 pt-4">
       <h2 className="text-[28px] font-black leading-none text-[#183b68]">Revision</h2>
       <p className="mt-2 text-[14px] font-bold text-[#55708b]">Review mistakes and try again</p>
-      <div className="absolute mt-4 w-full rounded-full bg-[#35ad82] px-4 py-2.5 text-center text-[16px] font-black text-white shadow-md">Revise →</div>
+      <div className="absolute bottom-3 left-2 right-2 rounded-full bg-[#35ad82] px-4 py-2.5 text-center text-[16px] font-black text-white shadow-md">Revise →</div>
     </div>
   </Link>
 
@@ -177,7 +177,7 @@ export default function DashboardPage() {
     <div className="absolute left-4 right-4 top-[37%] bottom-0 rounded-t-[48px] bg-[#fff3ef] px-2 pt-4">
       <h2 className="text-[25px] font-black leading-none sm:text-[28px]">Buddy Challenge</h2>
       <p className="mt-2 text-[14px] font-bold text-[#55708b]">Challenge a friend</p>
-      <div className="absolute mt-4 w-full rounded-full bg-[#ff6035] px-4 py-2.5 text-center text-[16px] font-black text-white shadow-md">Play →</div>
+      <div className="absolute bottom-3 left-2 right-2 rounded-full bg-[#ff6035] px-4 py-2.5 text-center text-[16px] font-black text-white shadow-md">Play →</div>
     </div>
   </Link>
 </div></div></section></div>}
