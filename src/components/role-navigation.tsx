@@ -11,5 +11,5 @@ export default function RoleNavigation(){
  if(pathname.startsWith("/teacher"))return <TeacherNavigation/>;
  if(pathname.startsWith("/parent"))return <ParentNavigation/>;
  if(pathname.startsWith("/admin"))return <AdminNavigation/>;
- return <><StudentMobileHeader/>{!["/dashboard","/homework","/brain-games","/leaderboard","/rewards","/progress","/profile"].includes(pathname)&&!pathname.startsWith("/brain-games/")&&<div className="hidden lg:block"><StudentNavigation/></div>}</>;
+ return <><StudentMobileHeader/>{!["/dashboard","/homework","/brain-games","/leaderboard","/rewards","/progress","/profile","/worksheets"].includes(pathname)&&!pathname.startsWith("/brain-games/")&&!pathname.startsWith("/worksheets/")&&<div className="hidden lg:block"><StudentNavigation/></div>}</>;
 }
