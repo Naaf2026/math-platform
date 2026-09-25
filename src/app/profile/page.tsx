@@ -280,7 +280,7 @@ export default function ProfilePage() {
       </header>
       <div className="mx-auto flex max-w-[1680px]">
         
-        <section className="min-w-0 flex-1 px-4 py-6 pb-24 sm:px-6 lg:px-12 lg:py-10">
+        <section className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-12 lg:py-10">
           <div className="mx-auto max-w-[1340px]">
             <div className="mb-7"><p className="text-sm font-black uppercase tracking-[.18em] text-[#735fe6]">Learner Profile</p><h1 className="mt-1 text-[38px] font-black tracking-tight text-[#083d78] sm:text-[48px] lg:text-[54px]">My Profile 👤</h1><p className="mt-2 text-[18px] font-semibold text-[#6685a4] sm:text-[21px]">Your learning identity, achievements and journey.</p></div>
 
@@ -433,7 +433,6 @@ export default function ProfilePage() {
           <Link href="/payment-policy" className="hover:text-[#073b73]">Payment Policy</Link>
         </div>
       </footer>
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#cfe4f2] bg-white/95 px-2 pb-[calc(env(safe-area-inset-bottom)+6px)] pt-2 shadow-[0_-6px_20px_rgba(8,61,120,.10)] lg:hidden"><div className="mx-auto grid max-w-lg grid-cols-6"><Link href="/dashboard" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Home size={22}/><span className="text-[11px] font-black">Home</span></Link><Link href="/brain-games" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Gamepad2 size={22}/><span className="text-[11px] font-black">Games</span></Link><Link href="/leaderboard" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Trophy size={22}/><span className="text-[11px] font-black">Leaderboard</span></Link><Link href="/rewards" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Gift size={22}/><span className="text-[11px] font-black">Rewards</span></Link><Link href="/progress" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><BarChart3 size={22}/><span className="text-[11px] font-black">Progress</span></Link><Link href="/profile" className="flex flex-col items-center gap-1 py-1.5 text-[#197fe9]"><GraduationCap size={22}/><span className="text-[11px] font-black">Profile</span></Link></div></nav>
     </main>
   );
 }
