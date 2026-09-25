@@ -41,7 +41,7 @@ export default function PricingPage() {
         {menuOpen && <div className="border-t border-[#e1eef7] bg-white px-5 py-4 lg:hidden"><div className="grid gap-2">
           <Link href="/" onClick={() => setMenuOpen(false)} className="rounded-xl border-2 border-[#168ff0] px-4 py-3 text-center font-black text-[#07528e]">Home</Link>
           <Link href="/login" onClick={() => setMenuOpen(false)} className="rounded-xl border-2 border-[#159c89] px-4 py-3 text-center font-black text-[#087966]">Parent Login</Link>
-          <Link href="/login" onClick={() => setMenuOpen(false)} className="mt-2 rounded-xl bg-[#ff6b22] px-4 py-3 text-center font-black text-white">Try Fahi Hisaabu for Free!!</Link>
+          <Link href="/register" onClick={() => setMenuOpen(false)} className="mt-2 rounded-xl bg-[#ff6b22] px-4 py-3 text-center font-black text-white">Try Fahi Hisaabu for Free!!</Link>
         </div></div>}
       </header>
       <div className="mx-auto max-w-4xl px-5 pb-20 pt-12 sm:pt-16">
