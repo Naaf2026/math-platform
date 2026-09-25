@@ -96,11 +96,11 @@ export default function ParentUpgradePage() {
           <p className="text-sm font-bold text-slate-500">{learners.length} learner{learners.length === 1 ? "" : "s"}</p>
         </div>
         <div className="mt-5">
-          <table className="w-full border-separate border-spacing-0">
+          <table className="block w-full border-separate border-spacing-0 md:table">
             <thead className="hidden md:table-header-group"><tr className="text-left text-xs font-black uppercase tracking-wider text-slate-500">
               <th className="border-b border-slate-100 px-4 py-3">Learner</th><th className="border-b border-slate-100 px-4 py-3">Status</th><th className="border-b border-slate-100 px-4 py-3">Monthly fee</th><th className="border-b border-slate-100 px-4 py-3 text-right">Action</th>
             </tr></thead>
-            <tbody>
+            <tbody className="block md:table-row-group">
               {learners.map(learner => {
                 const state = accessStates[learner.learner_id];
                 const latest = payments.find(p => p.learner_id === learner.learner_id);
@@ -112,7 +112,7 @@ export default function ParentUpgradePage() {
                 else if (state?.status === "trialing") { const d = state.days_left ?? 0; statusText = `Trial – ${d} day${d === 1 ? "" : "s"} left`; statusClass = "bg-blue-50 text-blue-700"; }
                 else if (state?.status === "active") { statusText = "Premium active"; statusClass = "bg-emerald-50 text-emerald-700"; action = "Renew"; }
                 else if (state?.status === "expired" || state?.payment_required) { statusText = "Access disabled"; statusClass = "bg-red-50 text-red-700"; }
-                return <tr key={learner.learner_id} className="mb-3 block rounded-2xl border border-[#d7eaf7] bg-[#f8fcff] p-4 last:mb-0 md:table-row md:rounded-none md:border-0 md:bg-transparent md:p-0">
+                return <tr key={learner.learner_id} className="mb-3 block w-full rounded-2xl border border-[#d7eaf7] bg-[#f8fcff] p-4 last:mb-0 md:table-row md:rounded-none md:border-0 md:bg-transparent md:p-0">
                   <td className="block min-w-0 pb-3 md:table-cell md:border-b md:border-slate-100 md:px-4 md:py-4"><div className="break-words font-black text-[#083d78]">{learner.name}</div><div className="break-all text-xs font-bold text-slate-500">{learner.username}{learner.grade ? ` · ${learner.grade}` : ""}</div></td>
                   <td className="block pb-3 md:table-cell md:border-b md:border-slate-100 md:px-4 md:py-4"><span className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500 md:hidden">Status</span><span className={`inline-flex max-w-full flex-wrap items-center gap-2 rounded-full px-3 py-2 text-sm font-black md:text-xs ${statusClass}`}>{state?.reason === "grandfathered" ? <ShieldCheck size={14}/> : pending ? <Clock3 size={14}/> : state?.status === "active" ? <CheckCircle2 size={14}/> : null}{statusText}</span></td>
                   <td className="block pb-4 font-black text-[#083d78] md:table-cell md:border-b md:border-slate-100 md:px-4 md:py-4"><span className="mr-2 text-xs font-bold uppercase tracking-wide text-slate-500 md:hidden">Monthly fee</span>MVR 150</td>
