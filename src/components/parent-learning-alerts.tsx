@@ -84,6 +84,7 @@ export default function ParentLearningAlerts() {
       setError(true);
     } else {
       setAlerts((data ?? []) as Alert[]);
+      window.dispatchEvent(new Event("parent-alerts-updated"));
       // A generation failure is only shown when there are no usable alerts.
       if (generationError && !(data ?? []).length) setError(true);
     }
