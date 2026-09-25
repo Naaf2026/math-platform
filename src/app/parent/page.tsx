@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Bell, CalendarDays, CheckCircle2, Flame, GraduationCap, History, Plus, ShieldCheck, Target, Trophy, UserRound } from "lucide-react";
+import { Bell, CalendarDays, CheckCircle2, Flame, GraduationCap, History, Plus, ShieldCheck, Target, Trophy, UserRound } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { getMyLearners, type LearnerAccount } from "@/lib/parent-learners";
@@ -63,7 +63,6 @@ export default function ParentPage() {
     <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-5 pb-28 sm:p-8">
       <div className="mx-auto max-w-6xl">
         <header className="flex flex-wrap items-center justify-between gap-3">
-          <Link href="/dashboard" className="inline-flex items-center gap-2 font-bold text-slate-600 hover:text-violet-700"><ArrowLeft size={18} /> Dashboard</Link>
           <div className="flex flex-wrap gap-2">
             <Link href="/parent/profile" className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-black text-violet-700 shadow-sm ring-1 ring-violet-100 hover:bg-violet-50"><UserRound size={16} /> My profile</Link>
             <Link href="/parent/learners" className="inline-flex items-center gap-2 rounded-full bg-[#071b3a] px-4 py-2.5 text-sm font-black text-white shadow-sm hover:bg-[#0d2a52]"><Plus size={16} /> Manage learners</Link>
