@@ -58,7 +58,7 @@ export default function PricingPage() {
           </div>
           <h2 className="mt-5 text-3xl font-black">Maths</h2>
           <p className="mx-auto mt-3 max-w-sm text-base italic leading-relaxed text-slate-600">Based on the Maldives Ministry of Education’s Mathematics Syllabus</p>
-          <Link href="/parents#try-it" className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-[#f49c20] px-8 py-4 text-lg font-extrabold text-white transition hover:bg-[#db8410] sm:w-auto sm:min-w-56">Try Now</Link>
+          <Link href="/login" className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-[#f49c20] px-8 py-4 text-lg font-extrabold text-white transition hover:bg-[#db8410] sm:w-auto sm:min-w-56">Try Now</Link>
         </section>
 
         <section className="mx-auto mt-16 max-w-2xl">
@@ -75,7 +75,7 @@ export default function PricingPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-10 text-center"><Link href="/subscription" className="font-extrabold italic text-[#1675d1] underline decoration-2 underline-offset-4 hover:text-[#0d5298]">Ready to subscribe without a trial? Click here.</Link></p>
+          <p className="mt-10 text-center"><Link href="/login" className="font-extrabold italic text-[#1675d1] underline decoration-2 underline-offset-4 hover:text-[#0d5298]">Ready to subscribe without a trial? Click here.</Link></p>
         </section>
 
         <section className="mx-auto mt-16 max-w-2xl border-t border-slate-200 pt-12">
@@ -91,7 +91,7 @@ export default function PricingPage() {
             ))}
           </div>
         </section>
-        <div className="mt-12 text-center"><Link href="/parents#try-it" className="inline-flex items-center justify-center rounded-full bg-[#f49c20] px-9 py-4 font-extrabold text-white hover:bg-[#db8410]">Start Your Free 3-Day Trial</Link></div>
+        <div className="mt-12 text-center"><Link href="/login" className="inline-flex items-center justify-center rounded-full bg-[#f49c20] px-9 py-4 font-extrabold text-white hover:bg-[#db8410]">Start Your Free 3-Day Trial</Link></div>
       </div>
     </main>
   );
