@@ -47,7 +47,7 @@ export default function BrainGamesPage() {
       </div></header>
       <div className="mx-auto flex max-w-[1680px]">
         
-        <section className="min-w-0 flex-1 px-0 py-0 pb-20 sm:px-6 sm:py-5 lg:px-10 lg:py-8 lg:pb-8">
+        <section className="min-w-0 flex-1 px-0 py-0 sm:px-6 sm:py-5 lg:px-10 lg:py-8 lg:pb-8">
           <div className="mx-auto w-full max-w-[1380px]">
             <div className="relative overflow-hidden bg-white sm:rounded-[28px] sm:border sm:border-[#cde7f4] sm:shadow-[0_20px_55px_rgba(8,61,120,.14)]">
               <picture className="block">
@@ -63,7 +63,6 @@ export default function BrainGamesPage() {
           </div>
         </section>
       </div>
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#cfe4f2] bg-white/95 px-2 pb-[calc(env(safe-area-inset-bottom)+6px)] pt-2 shadow-[0_-6px_20px_rgba(8,61,120,.10)] lg:hidden"><div className="mx-auto grid max-w-lg grid-cols-6"><Link href="/dashboard" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Home size={22}/><span className="text-[11px] font-black">Home</span></Link><Link href="/brain-games" className="flex flex-col items-center gap-1 py-1.5 text-[#197fe9]"><Gamepad2 size={22}/><span className="text-[11px] font-black">Games</span></Link><Link href="/leaderboard" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Trophy size={22}/><span className="text-[11px] font-black">Leaderboard</span></Link><Link href="/rewards" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><Gift size={22}/><span className="text-[11px] font-black">Rewards</span></Link><Link href="/progress" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><BarChart3 size={22}/><span className="text-[11px] font-black">Progress</span></Link><Link href="/profile" className="flex flex-col items-center gap-1 py-1.5 text-[#526f89]"><GraduationCap size={22}/><span className="text-[11px] font-black">Profile</span></Link></div></nav>
       {selectedChallenge && (
         <div className="brain-games-rules-backdrop" role="presentation" onClick={() => setSelectedChallenge(null)}>
           <section className="brain-games-rules" role="dialog" aria-modal="true" aria-labelledby="brain-games-rules-title" onClick={(event) => event.stopPropagation()}>
