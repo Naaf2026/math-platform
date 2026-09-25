@@ -192,7 +192,7 @@ export default function SubscriptionPage() {
         {menuOpen && <div className="border-t border-[#e1eef7] bg-white px-5 py-4 lg:hidden"><div className="grid gap-2">
           <button type="button" onClick={() => { setMenuOpen(false); setLearnerLoginOpen(true); }} className="rounded-xl border-2 border-[#168ff0] px-4 py-3 text-center font-black text-[#07528e]">Student Login</button>
           <Link href="/login" onClick={() => setMenuOpen(false)} className="rounded-xl border-2 border-[#159c89] px-4 py-3 text-center font-black text-[#087966]">Parent Login</Link>
-          <Link href="/login" onClick={() => setMenuOpen(false)} className="rounded-xl bg-[#ff6b22] px-4 py-3 text-center font-black text-white">Try Fahi Hisaabu for Free!!</Link>
+          <Link href="/register" onClick={() => setMenuOpen(false)} className="rounded-xl bg-[#ff6b22] px-4 py-3 text-center font-black text-white">Try Fahi Hisaabu for Free!!</Link>
           <Link href="/pricing" onClick={() => setMenuOpen(false)} className="rounded-xl border-2 border-[#f49c20] px-4 py-3 text-center font-black text-[#a65b00]">Pricing</Link>
         </div></div>}
       </header>
