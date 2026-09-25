@@ -55,8 +55,8 @@ export default function ParentLearnersPage() {
     setBusy(true); setStatus(""); setCredentials(null);
     try {
       if (!phoneReady) {
-        const normalizedPhone = mobilePhone.replace(/[\\s()-]/g, "");
-        if (!/^\\+[1-9]\\d{7,14}$/.test(normalizedPhone)) throw new Error("Enter a mobile number with country code, for example +9607777777.");
+        const normalizedPhone = mobilePhone.replace(/[\s()-]/g, "");
+        if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) throw new Error("Enter a mobile number with country code, for example +9607777777.");
         const supabase = createClient();
         if (!supabase) throw new Error("Could not connect. Please try again.");
         const { error } = await supabase.rpc("update_my_parent_profile", { p_full_name: parentName, p_mobile_phone: normalizedPhone });
