@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Your child's learning, progress and revision in one place.",
   manifest: "/parent-app.webmanifest",
   appleWebApp: { capable: true, title: "Fahi Parent", statusBarStyle: "default" },
-  icons: { apple: "/fahi-hisaabu-logo.png" },
+  icons: { icon: "/parent-app-icon-192.png", apple: "/parent-app-icon-192.png" },
 };
 
 export default function ParentAppLayout({ children }: { children: React.ReactNode }) {
