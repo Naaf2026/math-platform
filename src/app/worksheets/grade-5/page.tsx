@@ -4,12 +4,12 @@ import Link from "next/link";
 import {createClient} from "@/lib/supabase/client";
 type Item={q:string;a:string;hint:string;visual?:string};
 const topics=[
-["6-digit numbers","5A · Number Concept"],["Place value","5A · Number Concept"],["Comparing large numbers","5A · Number Concept"],["Rounding and estimation","5A · Number Concept"],["Counting in thousands","5A · Number Concept"],
-["Addition and subtraction","5A · Addition and Subtraction"],["Multiplication","5A · Multiplication and Division"],["Division","5A · Multiplication and Division"],["Money (MVR)","5A · Money"],["Negative numbers","5A · Negative Numbers"],
-["Fractions","5A · Fractions, Decimals and Percentages"],["Equivalent fractions","5A · Fractions, Decimals and Percentages"],["Adding fractions","5A · Fractions, Decimals and Percentages"],["Decimals","5A · Fractions, Decimals and Percentages"],["Percentages","5A · Fractions, Decimals and Percentages"],["Ratio","5A · Ratio and Proportion"],
+["6-digit numbers","5A · Number Concept"],["Place value","5A · Number Concept"],["Comparing large numbers","5A · Number Concept"],["Rounding and estimation","5A · Number Concept"],["Counting in thousands","5A · Number Concept"],["Number words","5A · Number Concept"],
+["Addition and subtraction","5A · Addition and Subtraction"],["Multiplication","5A · Multiplication and Division"],["Division","5A · Multiplication and Division"],["Money (MVR)","5A · Money"],["Rufiyaa and laari","5A · Money"],["Negative numbers","5A · Negative Numbers"],
+["Fractions","5A · Fractions, Decimals and Percentages"],["Ordering fractions","5A · Fractions, Decimals and Percentages"],["Equivalent fractions","5A · Fractions, Decimals and Percentages"],["Adding fractions","5A · Fractions, Decimals and Percentages"],["Decimals","5A · Fractions, Decimals and Percentages"],["Percentages","5A · Fractions, Decimals and Percentages"],["Ratio","5A · Ratio and Proportion"],
 ["Length","5B · Measurement"],["Mass","5B · Measurement"],["Capacity","5B · Measurement"],["Perimeter","5B · Perimeter, Area and Volume"],["Area","5B · Perimeter, Area and Volume"],["Volume","5B · Perimeter, Area and Volume"],["Time","5B · Time"],
-["3-D shapes","5B · Shape and Space"],["2-D shapes","5B · Shape and Space"],["Positions and directions","5B · Shape and Space"],["Angles","5B · Shape and Space"],
-["Handling data","5B · Handling Data"],["Number patterns","5B · Patterning and Algebra"],["Simple algebra","5B · Patterning and Algebra"]
+["3-D shapes","5B · Shape and Space"],["Symmetry","5B · Shape and Space"],["2-D shapes","5B · Shape and Space"],["Positions and directions","5B · Shape and Space"],["Angles","5B · Shape and Space"],
+["Handling data","5B · Handling Data"],["Mode and range","5B · Handling Data"],["Probability","5B · Handling Data"],["Number patterns","5B · Patterning and Algebra"],["Prime numbers","5B · Patterning and Algebra"],["Lowest common multiple","5B · Patterning and Algebra"],["Simple algebra","5B · Patterning and Algebra"]
 ] as const;
 function make(topic:string,i:number,seed:number):Item{
  const n=i+seed*43+1,a=100000+(n*7919)%850000,b=10000+(n*3791)%85000,x=3+n%16,y=2+(n*7)%11,z=1+n%8;
@@ -17,6 +17,7 @@ function make(topic:string,i:number,seed:number):Item{
  case "6-digit numbers":return{q:`Write the number immediately before ${a.toLocaleString("en-US")}.`,a:String(a-1),hint:"Subtract one."};
  case "Comparing large numbers":return{q:`Write >, < or = : ${a.toLocaleString("en-US")} ___ ${(a+(n%3-1)*1000).toLocaleString("en-US")}.`,a:n%3===0?">":n%3===1?"=":"<",hint:"Compare from the hundred-thousands place."};
  case "Counting in thousands":return{q:`Count on by ${[100,1000,10000][n%3]}: ${a.toLocaleString("en-US")}, ___ .`,a:String(a+[100,1000,10000][n%3]),hint:"Add the given interval."};
+ case "Number words":{const v=[100000,200000,300000,400000,500000,600000,700000,800000,900000][n%9];return{q:`Write ${v.toLocaleString("en-US")} in words.`,a:["one hundred thousand","two hundred thousand","three hundred thousand","four hundred thousand","five hundred thousand","six hundred thousand","seven hundred thousand","eight hundred thousand","nine hundred thousand"][n%9],hint:"Read the hundred-thousands digit."}}
  case "Place value":{const place=[1,10,100,1000,10000,100000][n%6];return{q:`What is the value of digit ${Math.floor(a/place)%10} in ${a.toLocaleString("en-US")}?`,a:String(Math.floor(a/place)%10*place),hint:"Find the digit's place value."}}
  case "Rounding and estimation":{const u=[10,100,1000,10000][n%4];return{q:`Round ${a.toLocaleString("en-US")} to the nearest ${u.toLocaleString("en-US")}.`,a:String(Math.round(a/u)*u),hint:"Look at the next digit to decide whether to round up."}}
  case "Factors and multiples":return{q:`What is the smallest multiple of ${x} greater than ${x*y}?`,a:String(x*(y+1)),hint:"Add the number to its previous multiple."};
@@ -25,12 +26,14 @@ function make(topic:string,i:number,seed:number):Item{
  case "Multiplication":return{q:`${x*12} × ${y} = ?`,a:String(x*12*y),hint:"Use partial products or long multiplication."};
  case "Division":return{q:`${x*y*z} ÷ ${x} = ?`,a:String(y*z),hint:"Divide or use inverse multiplication."};
  case "Order of operations":return{q:`${x} + ${y} × ${z} = ?`,a:String(x+y*z),hint:"Multiply before adding."};
+ case "Ordering fractions":{const d=5+n%8,p=1+n%3,q=p+1;return{q:`Which is larger: ${p}/${d} or ${q}/${d}?`,a:`${q}/${d}`,hint:"With equal denominators, compare numerators."}}
  case "Fractions":return{q:`What is ${z}/${z+1} of ${(z+1)*x}?`,a:String(z*x),hint:"Divide by the denominator, then multiply by the numerator."};
  case "Equivalent fractions":return{q:`Complete: ${z}/${z+2} = ___/${(z+2)*y}.`,a:String(z*y),hint:"Multiply numerator and denominator by the same number."};
- case "Adding fractions":{const den=5+n%7,p=1+n%2,q=1+n%2;return{q:`Calculate ${p}/${den} + ${q}/${den}. Give the numerator over ${den}.`,a:String(p+q),hint:"For like denominators, add the numerators."}}
+ case "Adding fractions":{const den=5+n%7,p=1+n%2,q=1+(n*3)%3;return{q:`Calculate ${p}/${den} + ${q}/${den}. Give your answer as a fraction.`,a:`${p+q}/${den}`,hint:"For like denominators, add the numerators."}}
  case "Decimals":{const v=(x*10+y)/10;return{q:`${v.toFixed(1)} + ${(z/10).toFixed(1)} = ?`,a:(v+z/10).toFixed(1),hint:"Line up the decimal points."}}
  case "Percentages":return{q:`What is ${[10,20,25,50][n%4]}% of ${[10,20,25,50][n%4]===25?x*4*10:x*100}?`,a:String([10,20,25,50][n%4]*([10,20,25,50][n%4]===25?x*4*10:x*100)/100),hint:"Percent means per hundred."};
  case "Ratio":return{q:`Red to blue counters are in the ratio ${x}:${y}. If there are ${x*z} red counters, how many blue counters are there?`,a:String(y*z),hint:"Find the multiplier, then multiply the other part."};
+ case "Rufiyaa and laari":{const v=x*100+y*5;return{q:`Convert ${v} laari to rufiyaa (write a number with two decimal places).`,a:(v/100).toFixed(2),hint:"100 laari = MVR 1."}}
  case "Money (MVR)":{const price=x*25,payment=price+(n%5+1)*10;return{q:`A bag costs MVR ${price}. You pay MVR ${payment}. What is your change in rufiyaa?`,a:String(payment-price),hint:"Subtract the cost from the amount paid."}}
  case "Negative numbers":return{q:`Calculate ${-x} + ${y+15}.`,a:String(-x+y+15),hint:"Move right for a positive number."};
  case "Length":return{q:`Convert ${x} m ${y*10} cm to centimetres.`,a:String(x*100+y*10),hint:"1 m = 100 cm."};
@@ -42,10 +45,15 @@ function make(topic:string,i:number,seed:number):Item{
  case "Time":{const duration=30+n%4*15;return{q:`A lesson starts at 09:00 and lasts ${duration} minutes. What time does it end? (HH:MM)`,a:`${String(9+Math.floor(duration/60)).padStart(2,"0")}:${String(duration%60).padStart(2,"0")}`,hint:"Add the minutes to 09:00."}}
  case "Angles":{const v=[45,90,115,180,70,135][n%6];return{q:`Classify a ${v}° angle: acute, right, obtuse or straight.`,a:v===90?"right":v===180?"straight":v<90?"acute":"obtuse",hint:"Acute < 90°, right = 90°, obtuse between 90° and 180°."}}
  case "2-D shapes":{const v=[3,4,5,6,8][n%5];return{q:`How many sides does a ${["triangle","quadrilateral","pentagon","hexagon","octagon"][n%5]} have?`,a:String(v),hint:"Count the straight edges."}}
+ case "Symmetry":{const v=["square","rectangle","equilateral triangle","regular pentagon"][n%4];return{q:`How many lines of symmetry does a ${v} have?`,a:String([4,2,3,5][n%4]),hint:"Count the reflection lines."}}
  case "3-D shapes":{const k=n%3;return{q:`How many faces does a ${["cube","triangular prism","square-based pyramid"][k]} have?`,a:String([6,5,5][k]),hint:"Count all flat faces."}}
  case "Positions and directions":return{q:`You are facing north. Turn ${n%2?"90° clockwise":"90° anticlockwise"}. Which direction are you now facing?`,a:n%2?"east":"west",hint:"Clockwise turns right; anticlockwise turns left."};
+ case "Mode and range":{const v=[x,y,x,z,x+2];return{q:`Find the range of the data: ${v.join(", ")}.`,a:String(Math.max(...v)-Math.min(...v)),hint:"Range = highest value − lowest value."}}
+ case "Probability":{const red=2+n%4,blue=red+2;return{q:`A bag has ${red} red and ${blue} blue counters. What is the probability of picking a red counter? Answer as a fraction.`,a:`${red}/${red+blue}`,hint:"Favourable outcomes / total outcomes."}}
  case "Handling data":return{q:`A class recorded ${x} apples, ${y} bananas and ${z} oranges. How many pieces of fruit in total?`,a:String(x+y+z),hint:"Add all three categories.",visual:`Apples: ${"■".repeat(x)}\nBananas: ${"■".repeat(y)}\nOranges: ${"■".repeat(z)}`};
  case "Simple algebra":return{q:`Solve for n: n + ${x} = ${x+y}.`,a:String(y),hint:"Subtract the known number from both sides."};
+ case "Prime numbers":{const v=[11,12,13,15,17,19,21,23,25,29][n%10];return{q:`Is ${v} prime or composite?`,a:[11,13,17,19,23,29].includes(v)?"prime":"composite",hint:"Prime numbers have exactly two positive factors."}}
+ case "Lowest common multiple":{const u=2+n%7,v=2+(n*3)%6;let k=Math.max(u,v);while(k%u!==0||k%v!==0)k++;return{q:`Find the lowest common multiple (LCM) of ${u} and ${v}.`,a:String(k),hint:"Find the smallest positive number divisible by both."}}
  default:return{q:`Find the next term: ${x}, ${x+y}, ${x+2*y}, ___`,a:String(x+3*y),hint:`Add ${y} each time.`};
  }
 }
@@ -58,7 +66,8 @@ useEffect(()=>{const finish=()=>setPrintMode(null);window.addEventListener("afte
 const print=(mode:"blank"|"completed"|"answer")=>{if(mode==="answer"&&!worksheetCompleted)return;setPrintMode(mode);setTimeout(()=>window.print(),150)};
 const reset=()=>{setAnswers({});setChecked(false);setPrintMode(null)};
 const worksheetCompleted=checked&&questions.length>0&&questions.every((_,i)=>(answers[i]??"").trim().length>0);
-const score=questions.filter((p,i)=>answers[i]?.trim().toLowerCase()===p.a.toLowerCase()).length;
+const normalise=(value:string)=>value.trim().toLowerCase().replace(/,/g,"").replace(/\s+/g," ");
+const score=questions.filter((p,i)=>normalise(answers[i]??"")===normalise(p.a)).length;
 return <main className={embedded?"bg-[#f8f5e9] text-[#17234b] print:bg-white":"min-h-screen bg-[#f8f5e9] text-[#17234b] print:bg-white"}>
  <div className="mx-auto max-w-6xl px-3 py-6 sm:px-6 print:max-w-none print:p-0">
  {!embedded&&<div className="mb-5 flex gap-5 print:hidden"><Link href="/dashboard" className="font-bold text-[#073b73]">← Home</Link><Link href="/worksheets" className="font-bold text-[#073b73]">All worksheets</Link></div>}
@@ -86,7 +95,7 @@ return <main className={embedded?"bg-[#f8f5e9] text-[#17234b] print:bg-white":"m
   <div className="mt-5 flex items-end gap-3"><span className="font-black">Name:</span><span className="min-h-7 flex-1 border-b border-slate-500 px-2 pb-1 font-bold">{learnerName}</span></div>
   {checked&&<div className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-center font-black text-emerald-800 print:hidden">Score: {score} / {count} ({Math.round(score/count*100)}%)</div>}
   <div className="mt-5 grid gap-4 md:grid-cols-2 print:grid-cols-2">
-   {questions.map((p,i)=>{const correct=answers[i]?.trim().toLowerCase()===p.a.toLowerCase();return <div key={i} className="break-inside-avoid rounded-2xl border border-violet-100 bg-white p-4">
+   {questions.map((p,i)=>{const correct=normalise(answers[i]??"")===normalise(p.a);return <div key={i} className="break-inside-avoid rounded-2xl border border-violet-100 bg-white p-4">
     <div className="flex items-start gap-3">
      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-100 font-black text-violet-700">{i+1}</span>
      <div className="min-w-0 flex-1">
