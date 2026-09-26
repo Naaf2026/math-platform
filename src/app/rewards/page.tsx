@@ -20,17 +20,21 @@ export default function RewardsPage(){
   const {data:{user}}=await db.auth.getUser();if(!user){window.location.href="/login";return;}
   // Existing achievement reconciliation; never show badges as earned without stored progress.
   const refreshed=await db.rpc("refresh_learning_achievements");
-  const [p,a,e,m]=await Promise.all([
+  const [p,a,e,m,lessons]=await Promise.all([
    db.from("profiles").select("xp,current_streak").eq("id",user.id).maybeSingle(),
    db.from("learning_achievements").select("id,title,description,icon,sort_order").order("sort_order"),
    db.from("student_achievements").select("achievement_key,completed").eq("user_id",user.id).eq("completed",true),
-   db.rpc("get_mind_spark_status")
+   db.rpc("get_mind_spark_status"),
+   db.from("lesson_progress").select("lesson_id").eq("user_id",user.id).not("completed_at","is",null).limit(1)
   ]);
   if(!active)return;
   if(p.error||a.error||e.error){setError(p.error?.message||a.error?.message||e.error?.message||"Rewards could not load.");setLoading(false);return;}
   setProfile({xp:p.data?.xp??0,current_streak:p.data?.current_streak??0});
   setAchievements((a.data??[]) as Achievement[]);
-  setEarned(new Set((e.data??[]).map((row:{achievement_key:string})=>row.achievement_key)));
+  const verifiedBadges=new Set((e.data??[]).map((row:{achievement_key:string})=>row.achievement_key));
+  // Verify completed lessons directly for the signed-in student, even if the badge sync is delayed.
+  if(!lessons.error && (lessons.data?.length??0)>0)verifiedBadges.add("first-lesson");
+  setEarned(verifiedBadges);
   const status=Array.isArray(m.data)?m.data[0]:m.data;
   setSparks(Number(status?.balance??0));
   if(refreshed.error)console.warn("Achievement refresh unavailable",refreshed.error.message);
