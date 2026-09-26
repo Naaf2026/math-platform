@@ -167,6 +167,11 @@ export default function DashboardPage() {
     </div>
   </Link>
 
+  <Link href="/assigned-revision" className="order-5 group relative flex min-h-[320px] flex-col justify-between overflow-hidden rounded-[32px] border-2 border-[#64bfcb] bg-gradient-to-b from-[#d4f5fd] to-[#f0fffa] p-6 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:min-h-[320px]">
+    <div className="flex items-center justify-between"><span className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#087b92]">From your parent</span><span className="text-5xl">📚</span></div>
+    <div className="mt-7"><h2 className="text-[28px] font-black text-[#183b68]">My Assignments</h2><p className="mt-2 text-[14px] font-bold text-[#55708b]">Complete the revision papers your parent has assigned</p><div className="mt-6 rounded-full bg-[#0a9c91] px-4 py-3 text-center text-[16px] font-black text-white shadow-md">View revision →</div></div>
+  </Link>
+
   <Link href="/revision" className="order-5 group relative h-auto min-h-[320px] overflow-hidden rounded-[32px] border-2 border-[#67c9a5] bg-[#eafbf4] shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[clamp(320px,calc(100dvh-340px),360px)] md:min-h-0">
     <div className="absolute inset-x-0 top-0 h-[49%] overflow-hidden rounded-t-[30px] bg-[#a6dcf6]"><img src="/dashboard-assets/dashboard-revision.webp" alt="Boy studying for revision" className="block h-full w-full object-cover object-center" /></div>
     <div className="absolute left-4 right-4 top-[46%] bottom-0 rounded-t-[42px] bg-[#f4fffa] flex flex-col justify-end px-2 pb-[64px] pt-3">
