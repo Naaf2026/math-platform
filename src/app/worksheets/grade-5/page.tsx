@@ -4,18 +4,19 @@ import Link from "next/link";
 import {createClient} from "@/lib/supabase/client";
 type Item={q:string;a:string;hint:string;visual?:string};
 const topics=[
-["Numbers to a million","Number Concept"],["Place value","Number Concept"],["Rounding and estimation","Number Concept"],["Factors and multiples","Number Concept"],["Prime and composite numbers","Number Concept"],
-["Addition and subtraction","Operations"],["Multiplication","Operations"],["Division","Operations"],["Order of operations","Operations"],
-["Fractions","Fractions and Decimals"],["Equivalent fractions","Fractions and Decimals"],["Adding fractions","Fractions and Decimals"],["Decimals","Fractions and Decimals"],["Percentages","Fractions and Decimals"],
-["Ratio","Ratio and Proportion"],["Money (MVR)","Money"],["Negative numbers","Integers"],
-["Length and mass","Measurement"],["Capacity","Measurement"],["Perimeter","Measurement"],["Area","Measurement"],["Volume","Measurement"],["Time","Measurement"],
-["Angles","Geometry"],["2-D shapes","Geometry"],["3-D shapes","Geometry"],["Coordinates","Geometry"],
-["Handling data","Data"],["Probability","Data"],["Number patterns","Algebra"]
+["6-digit numbers","5A · Number Concept"],["Place value","5A · Number Concept"],["Comparing large numbers","5A · Number Concept"],["Rounding and estimation","5A · Number Concept"],["Counting in thousands","5A · Number Concept"],
+["Addition and subtraction","5A · Addition and Subtraction"],["Multiplication","5A · Multiplication and Division"],["Division","5A · Multiplication and Division"],["Money (MVR)","5A · Money"],["Negative numbers","5A · Negative Numbers"],
+["Fractions","5A · Fractions, Decimals and Percentages"],["Equivalent fractions","5A · Fractions, Decimals and Percentages"],["Adding fractions","5A · Fractions, Decimals and Percentages"],["Decimals","5A · Fractions, Decimals and Percentages"],["Percentages","5A · Fractions, Decimals and Percentages"],["Ratio","5A · Ratio and Proportion"],
+["Length","5B · Measurement"],["Mass","5B · Measurement"],["Capacity","5B · Measurement"],["Perimeter","5B · Perimeter, Area and Volume"],["Area","5B · Perimeter, Area and Volume"],["Volume","5B · Perimeter, Area and Volume"],["Time","5B · Time"],
+["3-D shapes","5B · Shape and Space"],["2-D shapes","5B · Shape and Space"],["Positions and directions","5B · Shape and Space"],["Angles","5B · Shape and Space"],
+["Handling data","5B · Handling Data"],["Number patterns","5B · Patterning and Algebra"],["Simple algebra","5B · Patterning and Algebra"]
 ] as const;
 function make(topic:string,i:number,seed:number):Item{
  const n=i+seed*43+1,a=100000+(n*7919)%850000,b=10000+(n*3791)%85000,x=3+n%16,y=2+(n*7)%11,z=1+n%8;
  switch(topic){
- case "Numbers to a million":return{q:`Write the number immediately before ${a.toLocaleString("en-US")}.`,a:String(a-1),hint:"Subtract one."};
+ case "6-digit numbers":return{q:`Write the number immediately before ${a.toLocaleString("en-US")}.`,a:String(a-1),hint:"Subtract one."};
+ case "Comparing large numbers":return{q:`Write >, < or = : ${a.toLocaleString("en-US")} ___ ${(a+(n%3-1)*1000).toLocaleString("en-US")}.`,a:n%3===0?">":n%3===1?"=":"<",hint:"Compare from the hundred-thousands place."};
+ case "Counting in thousands":return{q:`Count on by ${[100,1000,10000][n%3]}: ${a.toLocaleString("en-US")}, ___ .`,a:String(a+[100,1000,10000][n%3]),hint:"Add the given interval."};
  case "Place value":{const place=[1,10,100,1000,10000,100000][n%6];return{q:`What is the value of digit ${Math.floor(a/place)%10} in ${a.toLocaleString("en-US")}?`,a:String(Math.floor(a/place)%10*place),hint:"Find the digit's place value."}}
  case "Rounding and estimation":{const u=[10,100,1000,10000][n%4];return{q:`Round ${a.toLocaleString("en-US")} to the nearest ${u.toLocaleString("en-US")}.`,a:String(Math.round(a/u)*u),hint:"Look at the next digit to decide whether to round up."}}
  case "Factors and multiples":return{q:`What is the smallest multiple of ${x} greater than ${x*y}?`,a:String(x*(y+1)),hint:"Add the number to its previous multiple."};
@@ -30,20 +31,21 @@ function make(topic:string,i:number,seed:number):Item{
  case "Decimals":{const v=(x*10+y)/10;return{q:`${v.toFixed(1)} + ${(z/10).toFixed(1)} = ?`,a:(v+z/10).toFixed(1),hint:"Line up the decimal points."}}
  case "Percentages":return{q:`What is ${[10,20,25,50][n%4]}% of ${[10,20,25,50][n%4]===25?x*4*10:x*100}?`,a:String([10,20,25,50][n%4]*([10,20,25,50][n%4]===25?x*4*10:x*100)/100),hint:"Percent means per hundred."};
  case "Ratio":return{q:`Red to blue counters are in the ratio ${x}:${y}. If there are ${x*z} red counters, how many blue counters are there?`,a:String(y*z),hint:"Find the multiplier, then multiply the other part."};
- case "Money (MVR)":return{q:`A bag costs MVR ${x*25}. You pay MVR ${x*25+50}. What is your change?`,a:"50",hint:"Subtract the cost from the amount paid."};
+ case "Money (MVR)":{const price=x*25,payment=price+(n%5+1)*10;return{q:`A bag costs MVR ${price}. You pay MVR ${payment}. What is your change in rufiyaa?`,a:String(payment-price),hint:"Subtract the cost from the amount paid."}}
  case "Negative numbers":return{q:`Calculate ${-x} + ${y+15}.`,a:String(-x+y+15),hint:"Move right for a positive number."};
- case "Length and mass":return{q:`Convert ${x} kg ${y*100} g to grams.`,a:String(x*1000+y*100),hint:"1 kg = 1,000 g."};
+ case "Length":return{q:`Convert ${x} m ${y*10} cm to centimetres.`,a:String(x*100+y*10),hint:"1 m = 100 cm."};
+ case "Mass":return{q:`Convert ${x} kg ${y*100} g to grams.`,a:String(x*1000+y*100),hint:"1 kg = 1,000 g."};
  case "Capacity":return{q:`Convert ${x} L ${y*100} mL to millilitres.`,a:String(x*1000+y*100),hint:"1 L = 1,000 mL."};
  case "Perimeter":return{q:`A rectangle is ${x+8} cm long and ${y+3} cm wide. Find its perimeter in cm.`,a:String(2*(x+y+11)),hint:"Perimeter = 2 × (length + width)."};
  case "Area":return{q:`Find the area of a rectangle measuring ${x+4} cm by ${y+3} cm (cm²).`,a:String((x+4)*(y+3)),hint:"Area = length × width."};
  case "Volume":return{q:`Find the volume of a cuboid ${x} cm × ${y} cm × ${z} cm (cm³).`,a:String(x*y*z),hint:"Multiply length × width × height."};
- case "Time":return{q:`A lesson starts at 09:00 and lasts ${30+n%4*15} minutes. How many minutes does it last?`,a:String(30+n%4*15),hint:"Read the duration in the question."};
+ case "Time":{const duration=30+n%4*15;return{q:`A lesson starts at 09:00 and lasts ${duration} minutes. What time does it end? (HH:MM)`,a:`${String(9+Math.floor(duration/60)).padStart(2,"0")}:${String(duration%60).padStart(2,"0")}`,hint:"Add the minutes to 09:00."}}
  case "Angles":{const v=[45,90,115,180,70,135][n%6];return{q:`Classify a ${v}° angle: acute, right, obtuse or straight.`,a:v===90?"right":v===180?"straight":v<90?"acute":"obtuse",hint:"Acute < 90°, right = 90°, obtuse between 90° and 180°."}}
  case "2-D shapes":{const v=[3,4,5,6,8][n%5];return{q:`How many sides does a ${["triangle","quadrilateral","pentagon","hexagon","octagon"][n%5]} have?`,a:String(v),hint:"Count the straight edges."}}
  case "3-D shapes":{const k=n%3;return{q:`How many faces does a ${["cube","triangular prism","square-based pyramid"][k]} have?`,a:String([6,5,5][k]),hint:"Count all flat faces."}}
- case "Coordinates":return{q:`A point is at (${x}, ${y}). Move ${z} units right. What is its new x-coordinate?`,a:String(x+z),hint:"Moving right increases x."};
+ case "Positions and directions":return{q:`You are facing north. Turn ${n%2?"90° clockwise":"90° anticlockwise"}. Which direction are you now facing?`,a:n%2?"east":"west",hint:"Clockwise turns right; anticlockwise turns left."};
  case "Handling data":return{q:`A class recorded ${x} apples, ${y} bananas and ${z} oranges. How many pieces of fruit in total?`,a:String(x+y+z),hint:"Add all three categories.",visual:`Apples: ${"■".repeat(x)}\nBananas: ${"■".repeat(y)}\nOranges: ${"■".repeat(z)}`};
- case "Probability":return{q:`A bag contains ${x} red and ${y} blue balls. How many balls are in the bag?`,a:String(x+y),hint:"Add all outcomes."};
+ case "Simple algebra":return{q:`Solve for n: n + ${x} = ${x+y}.`,a:String(y),hint:"Subtract the known number from both sides."};
  default:return{q:`Find the next term: ${x}, ${x+y}, ${x+2*y}, ___`,a:String(x+3*y),hint:`Add ${y} each time.`};
  }
 }
@@ -60,7 +62,7 @@ const score=questions.filter((p,i)=>answers[i]?.trim().toLowerCase()===p.a.toLow
 return <main className={embedded?"bg-[#f8f5e9] text-[#17234b] print:bg-white":"min-h-screen bg-[#f8f5e9] text-[#17234b] print:bg-white"}>
  <div className="mx-auto max-w-6xl px-3 py-6 sm:px-6 print:max-w-none print:p-0">
  {!embedded&&<div className="mb-5 flex gap-5 print:hidden"><Link href="/dashboard" className="font-bold text-[#073b73]">← Home</Link><Link href="/worksheets" className="font-bold text-[#073b73]">All worksheets</Link></div>}
- <header className="mb-5 print:hidden"><h1 className="text-3xl font-black">Grade 5 Worksheets</h1><p className="text-sm font-medium">Grade 5 mathematics practice.</p></header>
+ <header className="mb-5 print:hidden"><h1 className="text-3xl font-black">Grade 5 Worksheets</h1><p className="text-sm font-medium">Original practice questions aligned to Exploring Mathematics 5A and 5B.</p></header>
  <section className="rounded-[1.5rem] bg-white p-4 shadow-sm sm:p-5 print:hidden">
   <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-4">
    <label className="block min-w-0"><span className="mb-2 block text-sm font-black">Topic</span><select className="w-full rounded-xl border-2 border-violet-100 bg-white px-3 py-3 font-bold focus:border-violet-500" value={topic} onChange={e=>{setTopic(e.target.value);reset()}}>{Array.from(new Set(topics.map(t=>t[1]))).map(group=><optgroup label={group} key={group}>{topics.filter(t=>t[1]===group).map(t=><option key={t[0]} value={t[0]}>{t[0]}</option>)}</optgroup>)}</select></label>
