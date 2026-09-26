@@ -11,6 +11,12 @@
   "orientation": "portrait-primary",
   "icons": [
     {
+      "src": "/parent-app-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    },
+    {
       "src": "/fahi-hisaabu-logo.png",
       "type": "image/png",
       "sizes": "any",
