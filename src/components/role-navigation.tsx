@@ -13,5 +13,5 @@ export default function RoleNavigation(){
  if(pathname.startsWith("/admin"))return <AdminNavigation/>;
  // Visual Questions renders its own student top navigation; do not mount a second header or sidebar.
  if(pathname==="/visual-questions"||pathname.startsWith("/visual-questions/"))return null;
- return <><StudentMobileHeader/>{!["/dashboard","/homework","/brain-games","/leaderboard","/rewards","/progress","/profile","/worksheets"].includes(pathname)&&!pathname.startsWith("/brain-games/")&&!pathname.startsWith("/worksheets/")&&<div className="hidden lg:block"><StudentNavigation/></div>}</>;
+ return <><StudentMobileHeader/>{!["/dashboard","/homework","/revision","/brain-games","/leaderboard","/rewards","/progress","/profile","/worksheets"].includes(pathname)&&!pathname.startsWith("/brain-games/")&&!pathname.startsWith("/worksheets/")&&<div className="hidden lg:block"><StudentNavigation/></div>}</>;
 }
