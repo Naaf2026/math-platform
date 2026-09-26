@@ -26,12 +26,15 @@ export default function RewardsPage(){
   if(!supabase){setError("Your learning account is not configured yet.");setLoading(false);return;}
   const{data:{user}}=await supabase.auth.getUser();
   if(!user){window.location.href="/login";return;}
-  const[{data:profileRow,error:profileError},{data:allAchievements,error:achievementError},{data:earnedRows}]=await Promise.all([
+  // Reconcile badges earned in earlier sessions before reading the collection.
+  const {error:refreshError}=await supabase.rpc("refresh_learning_achievements");
+  if(refreshError){setError("Could not refresh achievements: "+refreshError.message);setLoading(false);return;}
+  const[{data:profileRow,error:profileError},{data:allAchievements,error:achievementError},{data:earnedRows,error:earnedError}]=await Promise.all([
    supabase.from("profiles").select("full_name,grade,avatar_url,avatar_emoji,xp,current_streak,best_streak").eq("id",user.id).maybeSingle(),
    supabase.from("learning_achievements").select("id,title,description,icon,sort_order").order("sort_order"),
    supabase.from("student_achievements").select("achievement_id").eq("user_id",user.id)
   ]);
-  if(profileError||achievementError){setError(profileError?.message||achievementError?.message||"Rewards could not be loaded.");setLoading(false);return;}
+  if(profileError||achievementError||earnedError){setError(profileError?.message||achievementError?.message||earnedError?.message||"Rewards could not be loaded.");setLoading(false);return;}
   const xp=profileRow?.xp??0;
   setProfile({full_name:profileRow?.full_name??null,grade:profileRow?.grade??null,avatar_url:profileRow?.avatar_url??null,avatar_emoji:profileRow?.avatar_emoji??null,xp,current_streak:profileRow?.current_streak??0,best_streak:profileRow?.best_streak??0});
   setLevel(levelForXp(xp));
@@ -44,7 +47,7 @@ export default function RewardsPage(){
  const nextLevelXp=level*100;
  const levelProgress=Math.min(100,Math.round(((profile.xp-levelStart)/100)*100));
  const remaining=Math.max(0,nextLevelXp-profile.xp);
- const earnedCount=earned.size;
+ const earnedCount=achievements.filter(a=>earned.has(a.id)).length;
  const badgeProgress=achievements.length?Math.round((earnedCount/achievements.length)*100):0;
  const message=useMemo(()=>profile.current_streak>=30?"30 days! You are building an incredible maths habit. 🏆":profile.current_streak>=14?"Two weeks strong! Your consistency is becoming a superpower. 🔥":profile.current_streak>=7?"Amazing! Your learning habit is on fire. 🔥":profile.current_streak>=3?"Great streak! Keep your maths adventure moving.":"Start a daily mission to build your streak.",[profile.current_streak]);
 
