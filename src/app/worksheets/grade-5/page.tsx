@@ -11,20 +11,20 @@ const topics=[
 ["3-D shapes","5B · Shape and Space"],["Symmetry","5B · Shape and Space"],["2-D shapes","5B · Shape and Space"],["Positions and directions","5B · Shape and Space"],["Angles","5B · Shape and Space"],
 ["Handling data","5B · Handling Data"],["Mode and range","5B · Handling Data"],["Probability","5B · Handling Data"],["Number patterns","5B · Patterning and Algebra"],["Prime numbers","5B · Patterning and Algebra"],["Lowest common multiple","5B · Patterning and Algebra"],["Simple algebra","5B · Patterning and Algebra"]
 ] as const;
-function make(topic:string,i:number,seed:number):Item{
+function make(topic:string,i:number,seed:number,challenge=1):Item{
  const n=i+seed*43+1,a=100000+(n*7919)%850000,b=10000+(n*3791)%85000,x=3+n%16,y=2+(n*7)%11,z=1+n%8;
  switch(topic){
- case "6-digit numbers":return{q:`Write the number immediately before ${a.toLocaleString("en-US")}.`,a:String(a-1),hint:"Subtract one."};
+ case "6-digit numbers":return challenge===1?{q:`Write the number immediately before ${a.toLocaleString("en-US")}.`,a:String(a-1),hint:"Subtract one."}:challenge===2?{q:`Write the number immediately after ${a.toLocaleString("en-US")}.`,a:String(a+1),hint:"Add one."}:{q:`What is ${a.toLocaleString("en-US")} plus 1,000?`,a:String(a+1000),hint:"Increase the thousands place."};
  case "Comparing large numbers":return{q:`Write >, < or = : ${a.toLocaleString("en-US")} ___ ${(a+(n%3-1)*1000).toLocaleString("en-US")}.`,a:n%3===0?">":n%3===1?"=":"<",hint:"Compare from the hundred-thousands place."};
  case "Counting in thousands":return{q:`Count on by ${[100,1000,10000][n%3]}: ${a.toLocaleString("en-US")}, ___ .`,a:String(a+[100,1000,10000][n%3]),hint:"Add the given interval."};
- case "Number words":{const v=[100000,200000,300000,400000,500000,600000,700000,800000,900000][n%9];return{q:`Write ${v.toLocaleString("en-US")} in words.`,a:["one hundred thousand","two hundred thousand","three hundred thousand","four hundred thousand","five hundred thousand","six hundred thousand","seven hundred thousand","eight hundred thousand","nine hundred thousand"][n%9],hint:"Read the hundred-thousands digit."}}
+ case "Number words":{const thousands=100+n%900;const v=thousands*1000;const words=(num:number)=>{const ones=["","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"],tens=["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];return [num>=100?ones[Math.floor(num/100)]+" hundred":"",num%100<20?ones[num%100]:[tens[Math.floor(num%100/10)],ones[num%10]].filter(Boolean).join(" ")].filter(Boolean).join(" ")};return{q:`Write ${v.toLocaleString("en-US")} in words.`,a:`${words(thousands)} thousand`,hint:"Read the thousands group, then add thousand."}}
  case "Place value":{const place=[1,10,100,1000,10000,100000][n%6];return{q:`What is the value of digit ${Math.floor(a/place)%10} in ${a.toLocaleString("en-US")}?`,a:String(Math.floor(a/place)%10*place),hint:"Find the digit's place value."}}
  case "Rounding and estimation":{const u=[10,100,1000,10000][n%4];return{q:`Round ${a.toLocaleString("en-US")} to the nearest ${u.toLocaleString("en-US")}.`,a:String(Math.round(a/u)*u),hint:"Look at the next digit to decide whether to round up."}}
  case "Factors and multiples":return{q:`What is the smallest multiple of ${x} greater than ${x*y}?`,a:String(x*(y+1)),hint:"Add the number to its previous multiple."};
  case "Prime and composite numbers":{const v=[11,12,13,15,17,19,21,23,25,29][n%10];return{q:`Is ${v} prime or composite?`,a:[11,13,17,19,23,29].includes(v)?"prime":"composite",hint:"A prime number has exactly two positive factors."}}
  case "Addition and subtraction":return n%2?{q:`${a.toLocaleString("en-US")} + ${b.toLocaleString("en-US")} = ?`,a:String(a+b),hint:"Align place values."}:{q:`${a.toLocaleString("en-US")} − ${b.toLocaleString("en-US")} = ?`,a:String(a-b),hint:"Use column subtraction."};
- case "Multiplication":return{q:`${x*12} × ${y} = ?`,a:String(x*12*y),hint:"Use partial products or long multiplication."};
- case "Division":return{q:`${x*y*z} ÷ ${x} = ?`,a:String(y*z),hint:"Divide or use inverse multiplication."};
+ case "Multiplication":{const left=challenge===1?x*3:challenge===2?x*12:x*123;const right=challenge===1?y:challenge===2?y+9:y+19;return{q:`${left} × ${right} = ?`,a:String(left*right),hint:"Use partial products or long multiplication."}}
+ case "Division":{const divisor=challenge===1?x:challenge===2?x+10:x+20;const quotient=challenge===1?y*z:challenge===2?y*z*3:y*z*11;return{q:`${divisor*quotient} ÷ ${divisor} = ?`,a:String(quotient),hint:"Divide or use inverse multiplication."}}
  case "Order of operations":return{q:`${x} + ${y} × ${z} = ?`,a:String(x+y*z),hint:"Multiply before adding."};
  case "Ordering fractions":{const d=5+n%8,p=1+n%3,q=p+1;return{q:`Which is larger: ${p}/${d} or ${q}/${d}?`,a:`${q}/${d}`,hint:"With equal denominators, compare numerators."}}
  case "Fractions":return{q:`What is ${z}/${z+1} of ${(z+1)*x}?`,a:String(z*x),hint:"Divide by the denominator, then multiply by the numerator."};
@@ -45,14 +45,14 @@ function make(topic:string,i:number,seed:number):Item{
  case "Time":{const duration=30+n%4*15;return{q:`A lesson starts at 09:00 and lasts ${duration} minutes. What time does it end? (HH:MM)`,a:`${String(9+Math.floor(duration/60)).padStart(2,"0")}:${String(duration%60).padStart(2,"0")}`,hint:"Add the minutes to 09:00."}}
  case "Angles":{const v=[45,90,115,180,70,135][n%6];return{q:`Classify a ${v}° angle: acute, right, obtuse or straight.`,a:v===90?"right":v===180?"straight":v<90?"acute":"obtuse",hint:"Acute < 90°, right = 90°, obtuse between 90° and 180°."}}
  case "2-D shapes":{const v=[3,4,5,6,8][n%5];return{q:`How many sides does a ${["triangle","quadrilateral","pentagon","hexagon","octagon"][n%5]} have?`,a:String(v),hint:"Count the straight edges."}}
- case "Symmetry":{const v=["square","rectangle","equilateral triangle","regular pentagon"][n%4];return{q:`How many lines of symmetry does a ${v} have?`,a:String([4,2,3,5][n%4]),hint:"Count the reflection lines."}}
- case "3-D shapes":{const k=n%3;return{q:`How many faces does a ${["cube","triangular prism","square-based pyramid"][k]} have?`,a:String([6,5,5][k]),hint:"Count all flat faces."}}
+ case "Symmetry":{const shapes=["square","rectangle","equilateral triangle","regular pentagon","regular hexagon","isosceles triangle","regular octagon"];const k=n%shapes.length;return{q:`How many lines of symmetry does a ${shapes[k]} have?`,a:String([4,2,3,5,6,1,8][k]),hint:"Count the reflection lines."}}
+ case "3-D shapes":{const k=n%4;const names=["cube","triangular prism","square-based pyramid","rectangular prism"],faces=[6,5,5,6],edges=[12,9,8,12],vertices=[8,6,5,8];const mode=Math.floor(n/4)%3;return{q:`How many ${["faces","edges","vertices"][mode]} does a ${names[k]} have?`,a:String([faces,edges,vertices][mode][k]),hint:"Count the requested features of the solid."}}
  case "Positions and directions":return{q:`You are facing north. Turn ${n%2?"90° clockwise":"90° anticlockwise"}. Which direction are you now facing?`,a:n%2?"east":"west",hint:"Clockwise turns right; anticlockwise turns left."};
  case "Mode and range":{const v=[x,y,x,z,x+2];return{q:`Find the range of the data: ${v.join(", ")}.`,a:String(Math.max(...v)-Math.min(...v)),hint:"Range = highest value − lowest value."}}
  case "Probability":{const red=2+n%4,blue=red+2;return{q:`A bag has ${red} red and ${blue} blue counters. What is the probability of picking a red counter? Answer as a fraction.`,a:`${red}/${red+blue}`,hint:"Favourable outcomes / total outcomes."}}
  case "Handling data":return{q:`A class recorded ${x} apples, ${y} bananas and ${z} oranges. How many pieces of fruit in total?`,a:String(x+y+z),hint:"Add all three categories.",visual:`Apples: ${"■".repeat(x)}\nBananas: ${"■".repeat(y)}\nOranges: ${"■".repeat(z)}`};
  case "Simple algebra":return{q:`Solve for n: n + ${x} = ${x+y}.`,a:String(y),hint:"Subtract the known number from both sides."};
- case "Prime numbers":{const v=[11,12,13,15,17,19,21,23,25,29][n%10];return{q:`Is ${v} prime or composite?`,a:[11,13,17,19,23,29].includes(v)?"prime":"composite",hint:"Prime numbers have exactly two positive factors."}}
+ case "Prime numbers":{const v=2+(n*17)%48;const prime=Array.from({length:Math.max(0,v-2)},(_,k)=>k+2).every(d=>v%d!==0);return{q:`Is ${v} prime or composite?`,a:prime?"prime":"composite",hint:"Prime numbers have exactly two positive factors."}}
  case "Lowest common multiple":{const u=2+n%7,v=2+(n*3)%6;let k=Math.max(u,v);while(k%u!==0||k%v!==0)k++;return{q:`Find the lowest common multiple (LCM) of ${u} and ${v}.`,a:String(k),hint:"Find the smallest positive number divisible by both."}}
  default:return{q:`Find the next term: ${x}, ${x+y}, ${x+2*y}, ___`,a:String(x+3*y),hint:`Add ${y} each time.`};
  }
@@ -60,7 +60,7 @@ function make(topic:string,i:number,seed:number):Item{
 export default function Grade5Worksheets({embedded=false}:{embedded?:boolean}){
 const [challenge,setChallenge]=useState(1),[learnerName,setLearnerName]=useState(""),[printMode,setPrintMode]=useState<"blank"|"completed"|"answer"|null>(null);
 const [topic,setTopic]=useState<string>(topics[0][0]),[count,setCount]=useState(10),[seed,setSeed]=useState(0),[answers,setAnswers]=useState<Record<number,string>>({}),[checked,setChecked]=useState(false);
-const questions=useMemo(()=>Array.from({length:count},(_,i)=>make(topic,i+((challenge-1)*count),seed)),[topic,count,seed,challenge]);
+const questions=useMemo(()=>Array.from({length:count},(_,i)=>make(topic,i+((challenge-1)*count),seed,challenge)),[topic,count,seed,challenge]);
 useEffect(()=>{let active=true;const client=createClient();void client?.auth.getUser().then(async ({data:auth})=>{if(!auth.user)return;const {data}=await client.from("profiles").select("full_name").eq("id",auth.user.id).maybeSingle();if(active)setLearnerName(data?.full_name||"")});return()=>{active=false}},[]);
 useEffect(()=>{const finish=()=>setPrintMode(null);window.addEventListener("afterprint",finish);return()=>window.removeEventListener("afterprint",finish)},[]);
 const print=(mode:"blank"|"completed"|"answer")=>{if(mode==="answer"&&!worksheetCompleted)return;setPrintMode(mode);setTimeout(()=>window.print(),150)};
