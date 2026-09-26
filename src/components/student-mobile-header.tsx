@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X, Home, BookOpen, ClipboardCheck, Gamepad2, Trophy, Gift, BarChart3, GraduationCap } from "lucide-react";
 import NotificationBell from "@/components/learner-notification-bell";
-const links=[{href:"/dashboard",label:"Home",icon:Home},{href:"/learn",label:"Learn",icon:BookOpen},{href:"/homework",label:"Homework",icon:ClipboardCheck},{href:"/brain-games",label:"Games",icon:Gamepad2},{href:"/leaderboard",label:"Leaderboard",icon:Trophy},{href:"/rewards",label:"Rewards",icon:Gift},{href:"/progress",label:"Progress",icon:BarChart3},{href:"/profile",label:"Profile",icon:GraduationCap}];
+const links=[{href:"/dashboard",label:"Home",icon:Home},{href:"/homework",label:"Homework",icon:ClipboardCheck},{href:"/brain-games",label:"Games",icon:Gamepad2},{href:"/leaderboard",label:"Leaderboard",icon:Trophy},{href:"/rewards",label:"Rewards",icon:Gift},{href:"/progress",label:"Progress",icon:BarChart3},{href:"/profile",label:"Profile",icon:GraduationCap}];
 export default function StudentMobileHeader(){
  const path=usePathname(),[open,setOpen]=useState(false);
  useEffect(()=>setOpen(false),[path]);
