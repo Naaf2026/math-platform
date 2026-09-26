@@ -66,7 +66,7 @@ const MoneyPiece=({value}:{value:number})=><span className={value>=5?"inline-fle
 
 const ShapePicture=({shape,markCorners=false}:{shape:string;markCorners?:boolean})=>{const points=shape==="triangle"?[[120,18],[28,174],[212,174]]:shape==="square"?[[49,29],[191,29],[191,171],[49,171]]:shape==="rectangle"?[[20,54],[220,54],[220,148],[20,148]]:[];return <svg viewBox="0 0 240 200" role="img" aria-label={shape} className="h-36 w-44 shrink-0 sm:h-40 sm:w-48">{shape==="circle"?<circle cx="120" cy="100" r="77" fill="#bfdbfe" stroke="#1d4ed8" strokeWidth="5"/>:<polygon points={points.map(p=>p.join(",")).join(" ")} fill={shape==="triangle"?"#fed7aa":shape==="square"?"#ddd6fe":"#a7f3d0"} stroke={shape==="triangle"?"#c2410c":shape==="square"?"#6d28d9":"#047857"} strokeWidth="5" strokeLinejoin="round"/>}{markCorners&&points.map(([x,y],i)=><circle key={i} cx={x} cy={y} r="7" fill="#ef4444" stroke="#fff" strokeWidth="2"/>)}</svg>};
 export default function WorksheetsPage(){
- const [worksheetGrade,setWorksheetGrade]=useState(1);
+ const [worksheetGrade,setWorksheetGrade]=useState(4);
  const [challenge,setChallenge]=useState(1),[count,setCount]=useState(5),[seed,setSeed]=useState(0);
  const [operation,setOperation]=useState<Operation>("Addition");
  const [problems,setProblems]=useState<Problem[]>([]),[answers,setAnswers]=useState<Record<number,string>>({});
@@ -74,7 +74,7 @@ export default function WorksheetsPage(){
  const [learnerName,setLearnerName]=useState("");
  const [printOpen,setPrintOpen]=useState(false),[printMode,setPrintMode]=useState<PrintMode>("blank"),[activePrintMode,setActivePrintMode]=useState<PrintMode|null>(null);
  useEffect(()=>{setProblems(makeProblems(count,challenge,operation,seed));setAnswers({});setChecked(false)},[count,challenge,operation,seed]);
- useEffect(()=>{let mounted=true;async function loadLearner(){const supabase=createClient();if(!supabase)return;const {data:auth}=await supabase.auth.getUser();if(!mounted||!auth.user)return;const {data}=await supabase.from("profiles").select("full_name").eq("id",auth.user.id).maybeSingle();if(mounted)setLearnerName(data?.full_name?.trim()||auth.user.user_metadata?.full_name?.trim()||"");}void loadLearner();return()=>{mounted=false}},[]);
+ useEffect(()=>{let mounted=true;async function loadLearner(){const supabase=createClient();if(!supabase)return;const {data:auth}=await supabase.auth.getUser();if(!mounted||!auth.user)return;const {data}=await supabase.from("profiles").select("full_name,grade").eq("id",auth.user.id).maybeSingle();if(mounted){setLearnerName(data?.full_name?.trim()||auth.user.user_metadata?.full_name?.trim()||"");const g=Number(String(data?.grade??"").match(/[1-4]/)?.[0]);if(g>=1&&g<=4)setWorksheetGrade(g);}}void loadLearner();return()=>{mounted=false}},[]);
  useEffect(()=>{const after=()=>setActivePrintMode(null);window.addEventListener("afterprint",after);return()=>window.removeEventListener("afterprint",after)},[]);
  const normalise=(v:string,op:Operation)=>{let x=v.trim().toLowerCase();if(op==="Ordering Numbers to 50"||op==="Ordering Numbers to 100")x=x.replace(/\s/g,"");if(op==="Number Names to 50"||op==="Number Names to 100")x=x.replace(/[-\s]+/g," ");if(op==="Expanded & Standard Form to 50"||op==="Expanded & Standard Form to 100")x=x.replace(/\s/g,"");return x};
  const score=problems.reduce((n,p,i)=>n+Number(normalise(answers[i]??"",operation)===normalise(answerFor(p,operation),operation)),0);
