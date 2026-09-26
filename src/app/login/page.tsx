@@ -61,7 +61,7 @@ export default function LoginPage() {
         : "This account is not an admin, teacher, or parent account. Please use the learner login if you are signing in as a learner.");
     }
 
-    window.location.href = returnToSubscription && (role === "parent" || role === "guardian") ? next! : roleHome(role);
+    window.location.href = (role === "parent" || role === "guardian") && (returnToSubscription || next === "/parent/app") ? next! : roleHome(role);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {

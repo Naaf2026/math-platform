@@ -1,0 +1,32 @@
+{
+  "id": "/parent/app",
+  "name": "Fahi Hisaabu Parent",
+  "short_name": "Fahi Parent",
+  "description": "Follow your child's maths learning and assign revision.",
+  "start_url": "/parent/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f1f8fb",
+  "theme_color": "#116c88",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/parent-app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/parent-app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/parent-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
