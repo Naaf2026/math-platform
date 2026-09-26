@@ -36,4 +36,4 @@ jobs:
           test -s public/parent-app.webmanifest
           test -s public/parent-app-sw.js
           test -s src/app/parent/app/page.tsx
-          node -e "const m=require('./public/parent-app.webmanifest'); if(m.start_url!=='/parent/app'||m.display!=='standalone')process.exit(1)"
+          node -e "const m=JSON.parse(require('fs').readFileSync('public/parent-app.webmanifest','utf8')); if(m.start_url!=='/parent/app'||m.display!=='standalone')process.exit(1)"
