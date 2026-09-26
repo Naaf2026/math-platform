@@ -1,91 +1,90 @@
 "use client";
-
-import { useEffect, useMemo, useState } from "react";
+import {useEffect,useState} from "react";
 import Link from "next/link";
-import { BarChart3, CheckCircle2, Flame, Gamepad2, Gift, GraduationCap, Home, LockKeyhole, Map, Sparkles, Trophy, Zap } from "lucide-react";
+import {Home,Gamepad2,Trophy,Gift,BarChart3,GraduationCap,LockKeyhole,CheckCircle2,CalendarDays,ArrowRight} from "lucide-react";
 import NotificationBell from "@/components/learner-notification-bell";
-import { createClient } from "@/lib/supabase/client";
+import {createClient} from "@/lib/supabase/client";
 
-type Profile={full_name:string|null;grade:string|null;avatar_url:string|null;avatar_emoji:string|null;xp:number;current_streak:number;best_streak:number};
 type Achievement={id:string;title:string;description:string;icon:string;sort_order:number};
-
-function levelForXp(xp:number){return Math.floor(Math.max(0,xp)/100)+1;}
-
+const days=[5,10,15,20,25,30,50];
+const badgeIcons:Record<string,string>={"first-lesson":"🎓","xp-100":"⭐","streak-3":"🔥","topic-complete":"📖","lessons-10":"🏆"};
 export default function RewardsPage(){
- const[profile,setProfile]=useState<Profile>({full_name:null,grade:null,avatar_url:null,avatar_emoji:null,xp:0,current_streak:0,best_streak:0});
- const[achievements,setAchievements]=useState<Achievement[]>([]);
- const[earned,setEarned]=useState<Set<string>>(new Set());
- const[loading,setLoading]=useState(true);
- const[level,setLevel]=useState(1);
- const[error,setError]=useState("");
-
- useEffect(()=>{load();},[]);
-
- async function load(){
-  const supabase=createClient();
-  if(!supabase){setError("Your learning account is not configured yet.");setLoading(false);return;}
-  const{data:{user}}=await supabase.auth.getUser();
-  if(!user){window.location.href="/login";return;}
-  // Reconcile badges earned in earlier sessions before reading the collection.
-  const {error:refreshError}=await supabase.rpc("refresh_learning_achievements");
-  if(refreshError){setError("Could not refresh achievements: "+refreshError.message);setLoading(false);return;}
-  const[{data:profileRow,error:profileError},{data:allAchievements,error:achievementError},{data:earnedRows,error:earnedError}]=await Promise.all([
-   supabase.from("profiles").select("full_name,grade,avatar_url,avatar_emoji,xp,current_streak,best_streak").eq("id",user.id).maybeSingle(),
-   supabase.from("learning_achievements").select("id,title,description,icon,sort_order").order("sort_order"),
-   supabase.from("student_achievements").select("achievement_id").eq("user_id",user.id)
+ const [profile,setProfile]=useState({xp:0,current_streak:0});
+ const [sparks,setSparks]=useState(0);
+ const [achievements,setAchievements]=useState<Achievement[]>([]);
+ const [earned,setEarned]=useState<Set<string>>(new Set());
+ const [loading,setLoading]=useState(true);
+ const [error,setError]=useState("");
+ useEffect(()=>{let active=true;(async()=>{
+  const db=createClient();if(!db){setError("Rewards are unavailable right now.");setLoading(false);return;}
+  const {data:{user}}=await db.auth.getUser();if(!user){window.location.href="/login";return;}
+  // Existing achievement reconciliation; never show badges as earned without stored progress.
+  const refreshed=await db.rpc("refresh_learning_achievements");
+  const [p,a,e,m]=await Promise.all([
+   db.from("profiles").select("xp,current_streak").eq("id",user.id).maybeSingle(),
+   db.from("learning_achievements").select("id,title,description,icon,sort_order").order("sort_order"),
+   db.from("student_achievements").select("achievement_id").eq("user_id",user.id),
+   db.rpc("get_mind_spark_status")
   ]);
-  if(profileError||achievementError||earnedError){setError(profileError?.message||achievementError?.message||earnedError?.message||"Rewards could not be loaded.");setLoading(false);return;}
-  const xp=profileRow?.xp??0;
-  setProfile({full_name:profileRow?.full_name??null,grade:profileRow?.grade??null,avatar_url:profileRow?.avatar_url??null,avatar_emoji:profileRow?.avatar_emoji??null,xp,current_streak:profileRow?.current_streak??0,best_streak:profileRow?.best_streak??0});
-  setLevel(levelForXp(xp));
-  setAchievements((allAchievements??[]) as Achievement[]);
-  setEarned(new Set((earnedRows??[]).map((row:{achievement_id:string})=>row.achievement_id)));
+  if(!active)return;
+  if(p.error||a.error||e.error){setError(p.error?.message||a.error?.message||e.error?.message||"Rewards could not load.");setLoading(false);return;}
+  setProfile({xp:p.data?.xp??0,current_streak:p.data?.current_streak??0});
+  setAchievements((a.data??[]) as Achievement[]);
+  setEarned(new Set((e.data??[]).map((row:{achievement_id:string})=>row.achievement_id)));
+  const status=Array.isArray(m.data)?m.data[0]:m.data;
+  setSparks(Number(status?.balance??0));
+  if(refreshed.error)console.warn("Achievement refresh unavailable",refreshed.error.message);
   setLoading(false);
- }
-
- const levelStart=(level-1)*100;
- const nextLevelXp=level*100;
- const levelProgress=Math.min(100,Math.round(((profile.xp-levelStart)/100)*100));
- const remaining=Math.max(0,nextLevelXp-profile.xp);
- const earnedCount=achievements.filter(a=>earned.has(a.id)).length;
- const badgeProgress=achievements.length?Math.round((earnedCount/achievements.length)*100):0;
- const message=useMemo(()=>profile.current_streak>=30?"30 days! You are building an incredible maths habit. 🏆":profile.current_streak>=14?"Two weeks strong! Your consistency is becoming a superpower. 🔥":profile.current_streak>=7?"Amazing! Your learning habit is on fire. 🔥":profile.current_streak>=3?"Great streak! Keep your maths adventure moving.":"Start a daily mission to build your streak.",[profile.current_streak]);
-
- const streakMilestones=[3,7,14,30];
- const nextStreak=streakMilestones.find(n=>n>profile.current_streak)||30;
- const streakProgress=Math.min(100,Math.round((profile.current_streak/nextStreak)*100));
-
- if(loading)return <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-6"><div className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center"><div className="rounded-[2rem] bg-white p-10 text-center shadow-xl"><div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-violet-100 border-t-violet-600"/><p className="mt-5 font-black text-[#071b3a]">Loading your rewards…</p></div></div></main>;
-
- if(error)return <main className="min-h-screen bg-violet-50 p-6"><div className="mx-auto mt-20 max-w-xl rounded-[2rem] bg-white p-10 text-center shadow-xl"><Sparkles className="mx-auto text-violet-600" size={42}/><h1 className="mt-4 text-2xl font-black text-[#071b3a]">Rewards unavailable</h1><p className="mt-2 text-slate-500">{error}</p><Link href="/dashboard" className="mt-6 inline-flex rounded-2xl bg-violet-600 px-5 py-3 font-black text-white">Back to dashboard</Link></div></main>;
-
- return <main className="min-h-screen overflow-x-hidden bg-[#eef9ff] text-[#083d78]">
-  <header className="sticky top-0 z-40 hidden h-[76px] lg:block bg-[#073b73] text-white shadow-sm lg:h-[90px]"><div className="mx-auto flex h-full max-w-[1680px] items-center justify-between px-4 sm:px-6 lg:px-12"><Link href="/dashboard" className="flex min-w-0 shrink-0 items-center rounded-2xl bg-white px-3 py-1.5 shadow-md ring-1 ring-white/40 transition hover:shadow-lg"><img src="/fahi-hisaabu-logo-optimized.webp" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/fahi-hisaabu-logo.png"; }} alt="Fahi Hisaabu" className="h-[44px] w-auto max-w-[200px] object-contain lg:h-[57px] lg:max-w-[220px]" /></Link><nav className="hidden items-center gap-8 lg:flex"><Link href="/dashboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Home size={25}/>Home</Link><Link href="/brain-games" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Gamepad2 size={25}/>Games</Link><Link href="/leaderboard" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><Trophy size={25}/>Leaderboard</Link><Link href="/rewards" className="relative flex items-center gap-3 px-4 py-7 text-lg font-black"><Gift size={25}/>Rewards<span className="absolute bottom-0 left-4 right-4 h-1 rounded-full bg-yellow-400"/></Link><Link href="/progress" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><BarChart3 size={25}/>Progress</Link><Link href="/profile" className="flex items-center gap-3 px-4 py-7 text-lg font-bold"><GraduationCap size={25}/>Profile</Link></nav><NotificationBell/></div></header>
-  <div className="mx-auto flex max-w-[1680px]"><section className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-12 lg:py-10"><div className="mx-auto max-w-[1340px]"><div className="mb-7"><p className="text-sm font-black uppercase tracking-[.18em] text-[#735fe6]">Rewards Centre</p><h1 className="mt-1 text-[38px] font-black sm:text-[48px] lg:text-[54px]">Your Rewards 🎁</h1><p className="mt-2 text-[18px] font-semibold text-[#6685a4] sm:text-[21px]">Celebrate your progress, streaks and achievements.</p></div>
-
-   <section className="mt-7 overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-500 p-7 text-white shadow-2xl sm:p-10">
-    <div className="grid gap-8 lg:grid-cols-[1.2fr_.8fr] lg:items-center">
-     <div><div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-black uppercase tracking-wider"><Sparkles size={14}/> Student rewards</div><h1 className="mt-4 text-4xl font-black sm:text-5xl">Level {level} <span className="text-yellow-300">Maths Hero</span> 🏆</h1><p className="mt-3 max-w-xl text-indigo-100">{message}</p></div>
-     <div className="rounded-3xl bg-white/10 p-5 backdrop-blur"><div className="flex items-center justify-between"><div><p className="text-xs font-bold text-indigo-100">Current XP</p><p className="text-3xl font-black">{profile.xp}</p></div><div className="text-right"><p className="text-xs font-bold text-indigo-100">Next level</p><p className="font-black">{nextLevelXp} XP</p></div></div><div className="mt-4 h-4 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-yellow-300 transition-all" style={{width:`${levelProgress}%`}}/></div><p className="mt-2 text-xs text-indigo-100">{remaining} XP to Level {level+1}</p></div>
-    </div>
+ })();return()=>{active=false};},[]);
+ const cards=achievements.length?achievements:[
+  {id:"first-lesson",title:"First Lesson",description:"Complete your first lesson.",icon:"🎓",sort_order:1},
+  {id:"xp-100",title:"100 XP",description:"Earn 100 XP from learning activities.",icon:"⭐",sort_order:2},
+  {id:"streak-3",title:"3-Day Streak",description:"Learn for three days in a row.",icon:"🔥",sort_order:3},
+  {id:"topic-complete",title:"Topic Complete",description:"Complete all practice questions in a topic.",icon:"📖",sort_order:4},
+  {id:"lessons-10",title:"10 Lessons",description:"Complete ten lessons.",icon:"🏆",sort_order:5}
+ ];
+ return <main className="min-h-screen bg-[#eef9ff] text-[#102b51]">
+  <header className="hidden lg:block bg-white shadow-sm"><div className="mx-auto flex h-[74px] max-w-[1400px] items-center justify-between gap-5 px-7">
+   <Link href="/dashboard"><img src="/fahi-hisaabu-logo-optimized.webp" alt="Fahi Hisaabu" className="h-14 max-w-[180px] object-contain" /></Link>
+   <nav className="flex items-center gap-2 text-[15px] font-bold">
+    {([{href:"/dashboard",label:"Home",Icon:Home},{href:"/brain-games",label:"Games",Icon:Gamepad2},{href:"/leaderboard",label:"Leaderboard",Icon:Trophy},{href:"/rewards",label:"Rewards",Icon:Gift},{href:"/progress",label:"Progress",Icon:BarChart3},{href:"/profile",label:"Profile",Icon:GraduationCap}]).map(({href,label,Icon})=><Link key={href} href={href} className={`flex items-center gap-2 rounded-xl px-4 py-3 ${href==="/rewards"?"bg-[#e2f3ff] text-[#007be5]":"text-[#425a78] hover:bg-sky-50"}`}><Icon size={19}/>{label}</Link>)}
+   </nav><NotificationBell/>
+  </div></header>
+  <div className="mx-auto max-w-[1400px] pb-12">
+   <section aria-label="My Rewards: Solve maths, collect rewards and unlock exciting surprises!" className="relative w-full overflow-hidden bg-[#55c4f6]">
+    <img src="/rewards-assets/rewards-hero.webp" alt="My Rewards. Solve maths, collect rewards and unlock exciting surprises. A happy child beside a treasure chest on a Maldivian beach." className="block w-full" />
    </section>
-
-   <section className="mt-6 grid gap-4 sm:grid-cols-3">
-    <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-violet-100"><Zap className="text-violet-600" size={24}/><p className="mt-4 text-3xl font-black text-[#071b3a]">{profile.xp}</p><p className="text-sm text-slate-500">Total XP</p></div>
-    <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-orange-100"><Flame className="text-orange-500" size={24}/><p className="mt-4 text-3xl font-black text-[#071b3a]">{profile.current_streak}</p><p className="text-sm text-slate-500">Current streak</p><p className="mt-2 text-xs font-bold text-orange-600">Best: {profile.best_streak} days</p></div>
-    <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-yellow-100"><Trophy className="text-yellow-500" size={24}/><p className="mt-4 text-3xl font-black text-[#071b3a]">{earnedCount}/{achievements.length}</p><p className="text-sm text-slate-500">Badges earned</p><p className="mt-2 text-xs font-bold text-yellow-600">{badgeProgress}% complete</p></div>
-   </section>
-
-   <section className="mt-6 grid gap-4 sm:grid-cols-3">
-    <Link href="/challenge" className="group rounded-3xl bg-gradient-to-br from-pink-500 to-rose-500 p-5 text-white shadow-lg shadow-pink-100 transition hover:-translate-y-1"><Zap size={22}/><h2 className="mt-4 text-xl font-black">Daily Challenge</h2><p className="mt-1 text-sm text-pink-50">Take today's maths sprint and earn XP.</p><span className="mt-4 inline-flex text-sm font-black">Play now →</span></Link>
-    <Link href="/progress" className="group rounded-3xl bg-gradient-to-br from-cyan-400 to-blue-500 p-5 text-white shadow-lg shadow-cyan-100 transition hover:-translate-y-1"><Map size={22}/><h2 className="mt-4 text-xl font-black">Progress Map</h2><p className="mt-1 text-sm text-cyan-50">See your topic mastery and learning journey.</p><span className="mt-4 inline-flex text-sm font-black">View progress →</span></Link>
-   </section>
-
-   <section className="mt-8 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-orange-100 sm:p-8"><div className="flex items-center justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.15em] text-orange-600">Streak journey</p><h2 className="mt-1 text-2xl font-black text-[#071b3a]">Next milestone: {nextStreak} days 🔥</h2></div><Flame className="text-orange-500"/></div><div className="mt-5 h-4 overflow-hidden rounded-full bg-orange-50"><div className="h-full rounded-full bg-gradient-to-r from-orange-400 to-rose-500 transition-all" style={{width:`${streakProgress}%`}}/></div><div className="mt-4 grid grid-cols-4 gap-2">{streakMilestones.map(m=><div key={m} className={`rounded-2xl p-3 text-center ${profile.current_streak>=m?"bg-orange-100 text-orange-700":"bg-slate-50 text-slate-400"}`}><p className="text-lg font-black">{m}</p><p className="text-[10px] font-bold uppercase">days</p></div>)}</div></section>
-
-   <section className="mt-8 rounded-3xl border border-white bg-white p-6 shadow-sm sm:p-8"><div className="flex items-center justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.15em] text-violet-600">Achievement journey</p><h2 className="mt-1 text-2xl font-black text-[#071b3a]">Your badge collection</h2></div><Trophy className="text-yellow-500"/></div><div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{achievements.map(a=>{const isEarned=earned.has(a.id);return <div key={a.id} className={`rounded-3xl border-2 p-5 transition ${isEarned?"border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50":"border-slate-100 bg-slate-50"}`}><div className="flex items-start justify-between"><div className={`flex h-14 w-14 items-center justify-center rounded-2xl text-3xl ${isEarned?"bg-white shadow-sm":"bg-slate-200 grayscale"}`}>{isEarned?a.icon:"🔒"}</div>{isEarned?<CheckCircle2 className="text-emerald-500"/>:<LockKeyhole className="text-slate-400" size={20}/>}</div><h3 className="mt-4 font-black text-[#071b3a]">{a.title}</h3><p className="mt-1 text-sm leading-5 text-slate-500">{a.description}</p><p className={`mt-4 text-xs font-black uppercase tracking-wider ${isEarned?"text-emerald-600":"text-slate-400"}`}>{isEarned?"Unlocked":"Keep learning"}</p></div>})}</div></section>
-
-   <section className="mt-6 rounded-3xl bg-gradient-to-r from-amber-50 via-white to-violet-50 p-6 ring-1 ring-amber-100 sm:p-8"><div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-black uppercase tracking-wider text-orange-600">Keep the adventure going</p><h2 className="mt-1 text-2xl font-black text-[#071b3a]">Earn more XP today</h2><p className="mt-2 text-sm text-slate-600">Complete a Daily Challenge, finish lessons and build your streak to unlock more rewards.</p></div><Link href="/challenge" className="inline-flex shrink-0 items-center justify-center rounded-2xl bg-violet-600 px-5 py-3.5 font-black text-white shadow-lg shadow-violet-200 hover:bg-violet-700">Take today's challenge 🚀</Link></div></section>
-  </div></section></div>
+   <div className="space-y-5 px-4 pt-4 sm:px-7">
+    {error&&<div role="alert" className="rounded-xl bg-red-50 p-4 font-semibold text-red-700">{error}</div>}
+    <section className="grid gap-4 sm:grid-cols-3" aria-label="Reward balances">
+     <div className="flex min-h-[120px] items-center gap-5 rounded-[22px] bg-[#fff8e9] p-6"><span className="text-5xl">⭐</span><div><p className="text-4xl font-black">{loading?"—":profile.xp}</p><p className="font-extrabold">Total XP</p><p className="mt-1 text-sm">Keep solving to reach the next level!</p></div></div>
+     <div className="flex min-h-[120px] items-center gap-5 rounded-[22px] bg-[#f7edff] p-6"><span className="text-5xl">✨</span><div><p className="text-4xl font-black">{loading?"—":sparks}</p><p className="font-extrabold">Mind Sparks</p><p className="mt-1 text-sm">Earn more to unlock rewards in the shop!</p></div></div>
+     <div className="flex min-h-[120px] items-center gap-5 rounded-[22px] bg-[#e8f6ff] p-6"><span className="text-5xl">🔥</span><div><p className="text-4xl font-black">{loading?"—":profile.current_streak}</p><p className="font-extrabold">Day streak</p><p className="mt-1 text-sm">Great job! Keep your streak going!</p></div></div>
+    </section>
+    <section className="rounded-[24px] border border-[#d3eaff] bg-[#f6fbff] p-4 sm:p-6">
+     <div className="flex flex-wrap items-start justify-between gap-2"><div><h2 className="text-2xl font-black sm:text-[28px]">Daily Login Rewards</h2><p className="mt-1 text-[#4b6380]">Log in each day to earn Mind Sparks. Keep your streak going for bigger rewards!</p></div><span className="inline-flex items-center gap-2 rounded-full border border-[#9fd1ff] bg-[#e8f5ff] px-3 py-2 text-sm font-bold text-[#1677d6]"><CalendarDays size={16}/>7-day cycle</span></div>
+     <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7 sm:gap-3">
+      {days.map((reward,i)=><div key={i} className="flex min-h-[166px] flex-col items-center justify-between rounded-2xl border border-[#d4e2f1] bg-white p-3 text-center"><p className="font-bold">Day {i+1}</p><span className="text-4xl">{i===2?"🎁":i===6?"🏆":"✨"}</span><p className="font-black">+{reward}<span className="block text-sm font-normal">Sparks</span></p><span className="flex w-full items-center justify-center gap-1 rounded-full bg-[#edf2f8] px-2 py-1.5 text-xs font-bold text-[#647791]"><LockKeyhole size={12}/>Coming soon</span></div>)}
+     </div>
+     <p className="mt-3 text-xs font-semibold text-[#6583a0]">Daily reward claiming will be enabled when its tracking system is ready.</p>
+    </section>
+    <section className="rounded-[24px] border border-[#d9eafa] bg-white p-4 sm:p-6">
+     <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-2xl font-black sm:text-[28px]">My Badge Collection</h2><p className="mt-1 text-[#4b6380]">Complete challenges to unlock badges and show your achievements!</p></div><Link href="/progress/achievements" className="inline-flex items-center gap-2 rounded-full border border-[#b7dcff] px-4 py-2 text-sm font-bold text-[#1272d1]">View all badges <ArrowRight size={16}/></Link></div>
+     <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      {cards.map(a=>{const unlocked=earned.has(a.id);return <div key={a.id} className={`flex min-h-[190px] flex-col items-center rounded-2xl border p-4 text-center ${unlocked?"border-[#c9e9d8] bg-[#f6fff9]":"border-[#d9e5f3] bg-[#f8fbff]"}`}><span className={`text-5xl ${unlocked?"":"grayscale opacity-60"}`}>{badgeIcons[a.id]||a.icon||"🏅"}</span><h3 className="mt-3 font-extrabold">{a.title}</h3><p className="mt-1 flex-1 text-xs leading-5 text-[#536a85]">{a.description}</p><span className={`mt-3 inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-xs font-bold ${unlocked?"bg-[#1d9e4b] text-white":"bg-[#eaf0f6] text-[#60758d]"}`}>{unlocked?<CheckCircle2 size={14}/>:<LockKeyhole size={13}/>} {unlocked?"Unlocked":"Locked"}</span></div>})}
+     </div>
+    </section>
+    <section className="relative overflow-hidden rounded-[24px] bg-[#60d5ef]">
+     <img src="/rewards-assets/rewards-revision-chest.webp" alt="Revision Treasure Chest: Complete your Revision Paper to earn a surprise gift of 5–20 Mind Sparks. A glowing chest and a sea turtle." className="block w-full" />
+     <Link href="/revision" aria-label="Start Revision" className="absolute bottom-[12%] left-[5%] h-[21%] w-[19%] rounded-xl focus-visible:outline-4 focus-visible:outline-white"><span className="sr-only">Start Revision</span></Link>
+    </section>
+    <section className="rounded-[24px] border border-[#d9eafa] bg-white p-4 sm:p-6">
+     <div className="flex flex-wrap items-start justify-between gap-2"><div><h2 className="text-2xl font-black sm:text-[28px]">Rewards Shop</h2><p className="mt-1 text-[#4b6380]">Spend your Mind Sparks on special rewards!</p></div><span className="rounded-2xl bg-[#f9e8ff] px-4 py-2 font-extrabold text-[#a127b5]">✨ {loading?"—":sparks} Mind Sparks</span></div>
+     <div className="mt-5 grid gap-3 md:grid-cols-3">
+      {([{icon:"🪸",name:"Ocean Avatar Frame",description:"Decorate your profile with a beautiful ocean frame.",price:50},{icon:"👑",name:"Maths Champion Title",description:"Show off your Maths Champion title on your profile.",price:150},{icon:"🛡️",name:"Streak Shield",description:"Protect your streak if you miss a day.",price:200}]).map(item=><div key={item.name} className="flex min-h-[156px] items-center gap-4 rounded-2xl border border-[#d7e6f7] p-4"><span className="text-6xl">{item.icon}</span><div className="flex flex-1 flex-col gap-2"><h3 className="font-extrabold">{item.name}</h3><p className="text-xs leading-5 text-[#536a85]">{item.description}</p><span className="rounded-xl bg-[#f7e5ff] px-3 py-2 text-center text-sm font-extrabold text-[#a127b5]">✨ {item.price} Sparks</span><span className="text-center text-xs text-[#7c8da3]">Coming soon</span></div></div>)}
+     </div>
+    </section>
+   </div>
+  </div>
  </main>;
 }
