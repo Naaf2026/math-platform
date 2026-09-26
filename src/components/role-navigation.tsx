@@ -9,6 +9,7 @@ export default function RoleNavigation(){
  const pathname=usePathname();
  if(pathname==="/"||pathname==="/parents"||pathname.startsWith("/parents/")||pathname==="/login"||pathname.startsWith("/login/")||pathname==="/register"||pathname.startsWith("/register/")||pathname.startsWith("/subscription")||pathname.startsWith("/pricing")||pathname.startsWith("/about")||pathname.startsWith("/privacy")||pathname.startsWith("/terms")||pathname.startsWith("/payment-policy"))return null;
  if(pathname.startsWith("/teacher"))return <TeacherNavigation/>;
+ if(pathname === "/parent/app" || pathname.startsWith("/parent/app/"))return null;
  if(pathname.startsWith("/parent"))return <ParentNavigation/>;
  if(pathname.startsWith("/admin"))return <AdminNavigation/>;
  // Visual Questions renders its own student top navigation; do not mount a second header or sidebar.
