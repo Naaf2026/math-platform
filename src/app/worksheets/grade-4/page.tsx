@@ -51,7 +51,7 @@ const score=questions.filter((p,i)=>answers[i]?.trim().toLowerCase()===p.a.toLow
 return <main className={embedded?"bg-[#f8f5e9] text-[#17234b] print:bg-white":"min-h-screen bg-[#f8f5e9] text-[#17234b] print:bg-white"}>
  <div className="mx-auto max-w-6xl px-3 py-6 sm:px-6 print:max-w-none print:p-0">
  {!embedded&&<div className="mb-5 flex gap-5 print:hidden"><Link href="/dashboard" className="font-bold text-[#073b73]">← Home</Link><Link href="/worksheets" className="font-bold text-[#073b73]">All worksheets</Link></div>}
- <header className="mb-5 print:hidden"><h1 className="text-3xl font-black">Grade 4 Worksheets</h1><p className="text-sm font-medium">Based on Exploring Mathematics 4A &amp; 4B.</p></header>
+ <div className="mb-4 flex justify-end gap-2 print:hidden"><Link href="/worksheets/grade-5" className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-black text-violet-700">Grade 5 Worksheets →</Link></div><header className="mb-5 print:hidden"><h1 className="text-3xl font-black">Grade 4 Worksheets</h1><p className="text-sm font-medium">Based on Exploring Mathematics 4A &amp; 4B.</p></header>
  <section className="rounded-[1.5rem] bg-white p-4 shadow-sm sm:p-5 print:hidden">
   <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-4">
    <label className="block min-w-0"><span className="mb-2 block text-sm font-black">Topic</span><select className="w-full rounded-xl border-2 border-violet-100 bg-white px-3 py-3 font-bold focus:border-violet-500" value={topic} onChange={e=>{setTopic(e.target.value);reset()}}>{Array.from(new Set(topics.map(t=>t[1]))).map(group=><optgroup label={group} key={group}>{topics.filter(t=>t[1]===group).map(t=><option key={t[0]} value={t[0]}>{t[0]}</option>)}</optgroup>)}</select></label>
