@@ -158,7 +158,7 @@ export default function DashboardPage() {
     </div>
   </Link>
 
-  <Link href="/worksheets" className="order-4 group relative h-auto min-h-[320px] overflow-hidden rounded-[32px] border-2 border-[#f0b95b] bg-[#fff8df] text-left shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[clamp(320px,calc(100dvh-340px),360px)] md:min-h-0">
+  <Link href={grade === "Grade 2" ? "/worksheets/grade-2" : "/worksheets"} className="order-4 group relative h-auto min-h-[320px] overflow-hidden rounded-[32px] border-2 border-[#f0b95b] bg-[#fff8df] text-left shadow-lg transition hover:-translate-y-1 hover:shadow-2xl md:h-[clamp(320px,calc(100dvh-340px),360px)] md:min-h-0">
     <div className="absolute inset-x-0 top-0 h-[49%] overflow-hidden rounded-t-[30px] bg-[#dff3ff]"><img src="/dashboard-assets/dashboard-worksheets.webp" alt="Colourful maths worksheets with pencil, clock and ruler" className="block h-full w-full object-cover object-center transition duration-300 group-hover:scale-[1.03]" /></div>
     <div className="absolute bottom-0 left-4 right-4 top-[46%] rounded-t-[42px] bg-[#fffdf4] flex flex-col justify-end px-2 pb-[64px] pt-3">
       <h2 className="text-[25px] font-black leading-[0.95] text-[#183b68] sm:text-[28px]">Worksheets</h2>
