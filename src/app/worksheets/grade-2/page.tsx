@@ -26,7 +26,7 @@ const generate=(topic:Topic,challenge:number,index:number,seed:number):Problem=>
  case "Compare Numbers to 1000":return{question:`Fill in >, < or =: ${a} ___ ${k%5===0?a:b}`,answer:a===(k%5===0?a:b)?"=":a>b?">":"<",options:[">","<","="]};
  case "Order Numbers to 1000":{const nums=Array.from({length:4},(_,j)=>101+(k*31+j*73)%(max-100));const asc=k%2===0;return{question:`Put these numbers in ${asc?"ascending":"descending"} order: ${nums.join(", ")}`,answer:[...nums].sort((x,y)=>asc?x-y:y-x).join(", ")};}
  case "Number Patterns to 1000":{const step=challenge===1?10:challenge===2?25:50,first=100+(k*step)%Math.max(step,max-100-step*3);return{question:`Fill in the missing number: ${first}, ${first+step}, ___, ${first+step*3}`,answer:String(first+step*2)};}
- case "Addition to 100":{const x=1+(k*7%small),y=1+(k*13%(101-x));return{question:`${x} + ${y} = ?`,answer:String(x+y)};}
+ case "Addition to 100":{const x=1+(k*7%Math.min(small,99)),y=1+(k*13%(100-x));return{question:`${x} + ${y} = ?`,answer:String(x+y)};}
  case "Subtraction to 100":{const x=small+(k*7%(101-small)),y=1+(k*11%x);return{question:`${x} − ${y} = ?`,answer:String(x-y)};}
  case "Multiplication by 2":case "Multiplication by 5":case "Multiplication by 10":{const m=Number(topic.split("by ")[1]),n=1+(k*7%(challenge===1?5:challenge===2?10:12));return{question:`${n} × ${m} = ?`,answer:String(n*m),visual:challenge===1?Array.from({length:n},()=>`[ ${m} ]`).join("  "):undefined};}
  case "Equal Sharing":{const groups=[2,5,10][k%3],each=1+(k*3%(challenge===1?4:challenge===2?7:10));return{question:`Share ${groups*each} objects equally among ${groups} children. How many does each child get?`,answer:String(each),visual:groups*each<=30?"● ".repeat(groups*each):undefined};}
